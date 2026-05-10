@@ -589,3 +589,14 @@
 @media (max-width: 480px) {
   .cart-drawer { width: 100%; left: -100%; }
 }
+
+/* ═══ SERVICES PAGE EXTRA ═══ */
+@media (max-width: 768px) {
+  .service-detail-grid {
+    grid-template-columns: 1fr !important;
+  }
+  .service-detail-grid > div:nth-child(even) {
+    order: -1; /* Keep icon/image on top for alternating layouts */
+  }
+}
+
