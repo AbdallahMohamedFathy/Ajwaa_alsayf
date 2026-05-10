@@ -1,0 +1,120 @@
+/* ═══════════════════════════════════════
+   أجواء الصيف - Design System Variables
+   ═══════════════════════════════════════ */
+
+@import url('https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;500;600;700;800;900&family=Tajawal:wght@300;400;500;700;800;900&display=swap');
+
+:root {
+  /* Primary Colors */
+  --primary: #007BFF;
+  --primary-light: #00D4FF;
+  --primary-dark: #004AAD;
+  --white: #FFFFFF;
+  --black: #1a1a2e;
+
+  /* Gradient */
+  --gradient-primary: linear-gradient(135deg, #00D4FF, #004AAD);
+  --gradient-hero: linear-gradient(135deg, #e8f4fd 0%, #d1ecf9 50%, #b8e0f7 100%);
+  --gradient-dark: linear-gradient(135deg, #0a1628, #1a2744);
+  --gradient-card: linear-gradient(135deg, rgba(255,255,255,0.9), rgba(255,255,255,0.6));
+  --gradient-glow: radial-gradient(circle, rgba(0,212,255,0.15) 0%, transparent 70%);
+
+  /* Glass */
+  --glass-bg: rgba(255, 255, 255, 0.15);
+  --glass-border: rgba(255, 255, 255, 0.25);
+  --glass-shadow: 0 8px 32px rgba(0, 75, 173, 0.1);
+  --glass-blur: blur(20px);
+
+  /* Shadows */
+  --shadow-sm: 0 2px 8px rgba(0, 75, 173, 0.08);
+  --shadow-md: 0 4px 16px rgba(0, 75, 173, 0.12);
+  --shadow-lg: 0 8px 32px rgba(0, 75, 173, 0.15);
+  --shadow-xl: 0 16px 48px rgba(0, 75, 173, 0.2);
+  --shadow-glow: 0 0 20px rgba(0, 212, 255, 0.3);
+  --shadow-glow-lg: 0 0 40px rgba(0, 212, 255, 0.4);
+
+  /* Typography */
+  --font-primary: 'Cairo', sans-serif;
+  --font-secondary: 'Tajawal', sans-serif;
+
+  /* Spacing */
+  --section-padding: 80px 0;
+  --container-max: 1280px;
+  --radius-sm: 8px;
+  --radius-md: 12px;
+  --radius-lg: 16px;
+  --radius-xl: 24px;
+  --radius-full: 50px;
+
+  /* Transitions */
+  --transition-fast: 0.2s ease;
+  --transition-normal: 0.3s ease;
+  --transition-slow: 0.5s ease;
+  --transition-bounce: 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+
+  /* Neutral Colors */
+  --gray-50: #f8fafc;
+  --gray-100: #f1f5f9;
+  --gray-200: #e2e8f0;
+  --gray-300: #cbd5e1;
+  --gray-400: #94a3b8;
+  --gray-500: #64748b;
+  --gray-600: #475569;
+  --gray-700: #334155;
+  --gray-800: #1e293b;
+  --gray-900: #0f172a;
+
+  /* Status Colors */
+  --success: #10b981;
+  --warning: #f59e0b;
+  --danger: #ef4444;
+  --info: #06b6d4;
+}
+
+/* ═══ Base Reset ═══ */
+*, *::before, *::after {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+html {
+  scroll-behavior: smooth;
+  font-size: 16px;
+}
+
+body {
+  font-family: var(--font-primary);
+  color: var(--gray-800);
+  background: var(--white);
+  direction: rtl;
+  overflow-x: hidden;
+  line-height: 1.7;
+  -webkit-font-smoothing: antialiased;
+}
+
+a { text-decoration: none; color: inherit; }
+ul, ol { list-style: none; }
+img { max-width: 100%; height: auto; display: block; }
+button { cursor: pointer; border: none; outline: none; font-family: inherit; }
+input, textarea, select { font-family: inherit; outline: none; }
+
+.container {
+  max-width: var(--container-max);
+  margin: 0 auto;
+  padding: 0 20px;
+}
+
+/* ═══ Scrollbar ═══ */
+::-webkit-scrollbar { width: 8px; }
+::-webkit-scrollbar-track { background: var(--gray-100); }
+::-webkit-scrollbar-thumb {
+  background: var(--gradient-primary);
+  border-radius: 10px;
+}
+
+/* ═══ Selection ═══ */
+::selection {
+  background: var(--primary-light);
+  color: var(--white);
+}

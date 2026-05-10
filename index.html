@@ -1,0 +1,374 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="مؤسسة أجواء الصيف للتكييف - حلول متكاملة للتكييف والتبريد والتجميد بالرياض. تركيب وصيانة جميع أنواع المكيفات، تصميم وتنفيذ غرف التبريد والتجميد.">
+  <title>مؤسسة أجواء الصيف للتكييف | راحة وبرودة طول الصيف ❄️</title>
+
+  <!-- Fonts & Icons -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+  <link rel="stylesheet" href="https://unpkg.com/aos@2.3.4/dist/aos.css">
+
+  <!-- Styles -->
+  <link rel="stylesheet" href="assets/css/main.css">
+  <link rel="icon" href="assets/images/logo.png" type="image/png">
+</head>
+<body>
+
+<!-- Loading Screen -->
+<div class="loading-screen" id="loading">
+  <div class="loading-spinner"></div>
+  <p>جاري التحميل...</p>
+</div>
+
+<!-- Navbar -->
+<nav class="navbar" id="navbar">
+  <div class="container">
+    <a href="index.html" class="navbar-logo">
+      <img src="assets/images/logo.png" alt="أجواء الصيف للتكييف">
+    </a>
+
+    <div class="navbar-menu" id="navMenu">
+      <a href="index.html" class="active">الرئيسية</a>
+      <a href="products.html">المنتجات</a>
+      <a href="services.html">الخدمات</a>
+      <a href="booking.html">احجز صيانة</a>
+      <a href="#about">من نحن</a>
+      <a href="#contact">تواصل معنا</a>
+    </div>
+
+    <div class="navbar-actions">
+      <a href="https://wa.me/966530656834" target="_blank" class="btn-whatsapp">
+        <i class="fab fa-whatsapp"></i> واتساب
+      </a>
+      <a href="#" class="cart-icon" id="cartToggle">
+        <i class="fas fa-shopping-cart"></i>
+        <span class="cart-badge">0</span>
+      </a>
+      <a href="admin.html" class="btn btn-primary btn-sm">
+        <i class="fas fa-user"></i> دخول
+      </a>
+      <button class="menu-toggle" id="menuToggle">
+        <span></span><span></span><span></span>
+      </button>
+    </div>
+  </div>
+</nav>
+<div class="menu-overlay" id="menuOverlay"></div>
+
+<!-- Hero Section -->
+<section class="hero" id="hero">
+  <div class="particles-container"></div>
+  <div class="container">
+    <div class="hero-content">
+      <div class="hero-badge">
+        <i class="fas fa-snowflake"></i> عروض الصيف الحصرية
+      </div>
+      <h1 class="hero-title">
+        راحة و<span class="highlight">برودة</span><br>
+        طول الصيف ❄️
+      </h1>
+      <p class="hero-desc">
+        اكتشف أحدث تكييفات الهواء بأفضل الأسعار مع خدمة تركيب وصيانة احترافية.
+        وفر طاقتك مع تكييفات الانفرتر الموفرة للكهرباء.
+      </p>
+      <div class="hero-buttons">
+        <a href="products.html" class="btn btn-primary btn-lg">
+          <i class="fas fa-shopping-bag"></i> تسوق الآن
+        </a>
+        <a href="booking.html" class="btn btn-outline btn-lg">
+          <i class="fas fa-calendar-check"></i> احجز صيانة
+        </a>
+      </div>
+      <div class="hero-stats">
+        <div class="stat-item">
+          <div class="stat-number">+5000</div>
+          <div class="stat-label">عميل سعيد</div>
+        </div>
+        <div class="stat-item">
+          <div class="stat-number">+10</div>
+          <div class="stat-label">سنة خبرة</div>
+        </div>
+        <div class="stat-item">
+          <div class="stat-number">24/7</div>
+          <div class="stat-label">دعم فني</div>
+        </div>
+      </div>
+    </div>
+    <div class="hero-image">
+      <img src="assets/images/hero-ac.png" alt="تكييف حديث">
+    </div>
+  </div>
+</section>
+
+<!-- Services Section -->
+<section class="section-bg-light" id="services" style="padding:var(--section-padding);">
+  <div class="container">
+    <div class="section-header" data-aos="fade-up">
+      <div class="section-badge"><i class="fas fa-cog"></i> خدماتنا</div>
+      <h2 class="section-title">خدمات <span>احترافية</span> متكاملة</h2>
+      <p class="section-desc">نقدم لك أفضل خدمات التكييف من التركيب حتى الصيانة الدورية</p>
+    </div>
+    <div class="services-grid">
+      <div class="service-card" data-aos="fade-up" data-aos-delay="0">
+        <div class="service-icon"><i class="fas fa-tools"></i></div>
+        <h3>تركيب التكييفات</h3>
+        <p>تركيب احترافي بأيدي فنيين متخصصين مع ضمان على التركيب</p>
+      </div>
+      <div class="service-card" data-aos="fade-up" data-aos-delay="100">
+        <div class="service-icon"><i class="fas fa-wrench"></i></div>
+        <h3>صيانة دورية</h3>
+        <p>صيانة شاملة لجميع أنواع التكييفات للحفاظ على الأداء</p>
+      </div>
+      <div class="service-card" data-aos="fade-up" data-aos-delay="200">
+        <div class="service-icon"><i class="fas fa-shower"></i></div>
+        <h3>غسيل التكييفات</h3>
+        <p>غسيل عميق وتنظيف بمواد آمنة لهواء نظيف وصحي</p>
+      </div>
+      <div class="service-card" data-aos="fade-up" data-aos-delay="300">
+        <div class="service-icon"><i class="fas fa-snowflake"></i></div>
+        <h3>شحن فريون</h3>
+        <p>شحن فريون بأنواعه المختلفة وكشف تسريب الغاز</p>
+      </div>
+      <div class="service-card" data-aos="fade-up" data-aos-delay="400">
+        <div class="service-icon"><i class="fas fa-search"></i></div>
+        <h3>كشف أعطال</h3>
+        <p>تشخيص دقيق للأعطال مع تقرير مفصل وعرض سعر</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Featured Products -->
+<section style="padding:var(--section-padding);">
+  <div class="container">
+    <div class="section-header" data-aos="fade-up">
+      <div class="section-badge"><i class="fas fa-star"></i> الأكثر مبيعاً</div>
+      <h2 class="section-title">منتجات <span>مميزة</span></h2>
+      <p class="section-desc">اكتشف أحدث التكييفات من أفضل الماركات العالمية</p>
+    </div>
+    <div class="products-grid" id="featured-products">
+      <!-- JS renders products -->
+    </div>
+    <div style="text-align:center;margin-top:36px;" data-aos="fade-up">
+      <a href="products.html" class="btn btn-primary btn-lg">
+        <i class="fas fa-th-large"></i> عرض جميع المنتجات
+      </a>
+    </div>
+  </div>
+</section>
+
+<!-- Brands -->
+<section class="section-bg-light" style="padding:var(--section-padding);">
+  <div class="container">
+    <div class="section-header" data-aos="fade-up">
+      <div class="section-badge"><i class="fas fa-award"></i> براندات موثوقة</div>
+      <h2 class="section-title">أفضل <span>الماركات</span> العالمية</h2>
+    </div>
+    <div class="brands-grid">
+      <div class="brand-card" data-aos="fade-up" data-aos-delay="0"><span>Carrier</span></div>
+      <div class="brand-card" data-aos="fade-up" data-aos-delay="50"><span>Sharp</span></div>
+      <div class="brand-card" data-aos="fade-up" data-aos-delay="100"><span>LG</span></div>
+      <div class="brand-card" data-aos="fade-up" data-aos-delay="150"><span>Tornado</span></div>
+      <div class="brand-card" data-aos="fade-up" data-aos-delay="200"><span>Fresh</span></div>
+      <div class="brand-card" data-aos="fade-up" data-aos-delay="250"><span>Midea</span></div>
+    </div>
+  </div>
+</section>
+
+<!-- Offers Countdown -->
+<section class="offers-section">
+  <div class="container" style="position:relative;">
+    <h2 class="offers-title" data-aos="fade-up">🔥 عروض الصيف الكبرى</h2>
+    <p class="offers-desc" data-aos="fade-up">خصومات تصل إلى 20% على جميع التكييفات - العرض لفترة محدودة!</p>
+    <div class="countdown" id="countdown" data-aos="fade-up"></div>
+    <div style="margin-top:24px;" data-aos="fade-up">
+      <a href="products.html" class="btn btn-white btn-lg"><i class="fas fa-fire"></i> تسوق العروض</a>
+    </div>
+  </div>
+</section>
+
+<!-- Testimonials -->
+<section style="padding:var(--section-padding);" id="testimonials">
+  <div class="container">
+    <div class="section-header" data-aos="fade-up">
+      <div class="section-badge"><i class="fas fa-comments"></i> آراء العملاء</div>
+      <h2 class="section-title">ماذا يقول <span>عملاؤنا</span></h2>
+    </div>
+    <div class="testimonials-grid">
+      <div class="testimonial-card" data-aos="fade-up" data-aos-delay="0">
+        <i class="fas fa-quote-right quote-icon"></i>
+        <p class="testimonial-text">خدمة ممتازة وتركيب احترافي جداً. التكييف شغال زي الفل والفنيين محترمين ومتعاونين. أنصح الكل بالتعامل معاهم.</p>
+        <div class="testimonial-author">
+          <div class="testimonial-avatar">أ</div>
+          <div><h4>أحمد محمد</h4><span>القاهرة</span></div>
+        </div>
+      </div>
+      <div class="testimonial-card" data-aos="fade-up" data-aos-delay="100">
+        <i class="fas fa-quote-right quote-icon"></i>
+        <p class="testimonial-text">أسعار ممتازة مقارنة بالسوق وجودة التركيب عالية جداً. الضمان ريحني وخدمة ما بعد البيع ممتازة.</p>
+        <div class="testimonial-author">
+          <div class="testimonial-avatar">س</div>
+          <div><h4>سارة أحمد</h4><span>الإسكندرية</span></div>
+        </div>
+      </div>
+      <div class="testimonial-card" data-aos="fade-up" data-aos-delay="200">
+        <i class="fas fa-quote-right quote-icon"></i>
+        <p class="testimonial-text">عملت صيانة لـ 3 تكييفات وكلهم رجعوا زي الجداد. الفنيين شغلهم نضيف ومواعيدهم مظبوطة. شكراً أجواء الصيف!</p>
+        <div class="testimonial-author">
+          <div class="testimonial-avatar">م</div>
+          <div><h4>محمد علي</h4><span>الجيزة</span></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- About -->
+<section class="section-bg-gradient" id="about" style="padding:var(--section-padding);">
+  <div class="container">
+    <div class="section-header" data-aos="fade-up">
+      <div class="section-badge"><i class="fas fa-info-circle"></i> من نحن</div>
+      <h2 class="section-title">لماذا <span>أجواء الصيف</span>؟</h2>
+    </div>
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:20px;">
+      <div class="glass-card" style="padding:32px 24px;text-align:center;" data-aos="fade-up" data-aos-delay="0">
+        <div style="width:70px;height:70px;background:rgba(0,212,255,0.1);border-radius:50%;display:flex;align-items:center;justify-content:center;margin:0 auto 16px;color:var(--primary);font-size:2rem;border:1px solid rgba(0,212,255,0.2);box-shadow:0 4px 15px rgba(0,212,255,0.1);">
+          <i class="fas fa-trophy"></i>
+        </div>
+        <h3 style="font-weight:700;margin-bottom:8px;">مؤسسة معتمدة</h3>
+        <p style="color:var(--gray-500);font-size:0.9rem;line-height:1.6;">تأسست عام 2021 في مدينة الرياض، متخصصون في جميع أنواع التكييف والتبريد.</p>
+      </div>
+      <div class="glass-card" style="padding:32px 24px;text-align:center;" data-aos="fade-up" data-aos-delay="100">
+        <div style="width:70px;height:70px;background:rgba(0,212,255,0.1);border-radius:50%;display:flex;align-items:center;justify-content:center;margin:0 auto 16px;color:var(--primary);font-size:2rem;border:1px solid rgba(0,212,255,0.2);box-shadow:0 4px 15px rgba(0,212,255,0.1);">
+          <i class="fas fa-snowflake"></i>
+        </div>
+        <h3 style="font-weight:700;margin-bottom:8px;">غرف تبريد وتجميد</h3>
+        <p style="color:var(--gray-500);font-size:0.9rem;line-height:1.6;">تصميم وتنفيذ غرف التبريد والتجميد للمطاعم والمستودعات بأعلى المعايير.</p>
+      </div>
+      <div class="glass-card" style="padding:32px 24px;text-align:center;" data-aos="fade-up" data-aos-delay="200">
+        <div style="width:70px;height:70px;background:rgba(0,212,255,0.1);border-radius:50%;display:flex;align-items:center;justify-content:center;margin:0 auto 16px;color:var(--primary);font-size:2rem;border:1px solid rgba(0,212,255,0.2);box-shadow:0 4px 15px rgba(0,212,255,0.1);">
+          <i class="fas fa-shield-alt"></i>
+        </div>
+        <h3 style="font-weight:700;margin-bottom:8px;">جودة واحترافية</h3>
+        <p style="color:var(--gray-500);font-size:0.9rem;line-height:1.6;">نلتزم بتقديم أفضل جودة وأحدث التقنيات لتحقيق رضا عملائنا.</p>
+      </div>
+      <div class="glass-card" style="padding:32px 24px;text-align:center;" data-aos="fade-up" data-aos-delay="300">
+        <div style="width:70px;height:70px;background:rgba(0,212,255,0.1);border-radius:50%;display:flex;align-items:center;justify-content:center;margin:0 auto 16px;color:var(--primary);font-size:2rem;border:1px solid rgba(0,212,255,0.2);box-shadow:0 4px 15px rgba(0,212,255,0.1);">
+          <i class="fas fa-cogs"></i>
+        </div>
+        <h3 style="font-weight:700;margin-bottom:8px;">تنفيذ عالي الجودة</h3>
+        <p style="color:var(--gray-500);font-size:0.9rem;line-height:1.6;">سرعة في إنجاز الأعمال بأسعار تنافسية تناسب تطلعاتكم.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Footer -->
+<footer class="footer" id="contact">
+  <div class="container">
+    <div class="footer-grid">
+      <div class="footer-about">
+        <div class="footer-logo">
+          <img src="assets/images/logo.png" alt="أجواء الصيف">
+        </div>
+        <p>مؤسسة أجواء الصيف للتكييف - حلول متكاملة للتكييف والتبريد والتجميد.</p>
+        <div class="footer-social">
+          <a href="#"><i class="fab fa-facebook-f"></i></a>
+          <a href="#"><i class="fab fa-instagram"></i></a>
+          <a href="#"><i class="fab fa-twitter"></i></a>
+          <a href="#"><i class="fab fa-youtube"></i></a>
+          <a href="#"><i class="fab fa-tiktok"></i></a>
+        </div>
+      </div>
+      <div class="footer-col">
+        <h3>روابط سريعة</h3>
+        <ul>
+          <li><a href="index.html">الرئيسية</a></li>
+          <li><a href="products.html">المنتجات</a></li>
+          <li><a href="services.html">الخدمات</a></li>
+          <li><a href="booking.html">حجز صيانة</a></li>
+        </ul>
+      </div>
+      <div class="footer-col">
+        <h3>تواصل معنا</h3>
+        <ul>
+          <li><a href="tel:0530656834"><i class="fas fa-phone"></i> 0530656834</a></li>
+          <li><a href="mailto:info@ajwaa.com"><i class="fas fa-envelope"></i> info@ajwaa.com</a></li>
+          <li><a href="#"><i class="fas fa-map-marker-alt"></i> الرياض، المملكة العربية السعودية</a></li>
+        </ul>
+      </div>
+
+    </div>
+    <div class="footer-bottom">
+      <p>© 2026 أجواء الصيف للتكييف. جميع الحقوق محفوظة ❄️</p>
+      <a href="https://dev-x-one.vercel.app/" target="_blank" class="powered-by">
+        <span>Powered By</span>
+        <img src="assets/images/devx_logo.jpeg" alt="DEV SmartX Logo" class="powered-logo">
+      </a>
+    </div>
+  </div>
+</footer>
+
+<!-- Cart Drawer -->
+<div class="cart-drawer-overlay" id="cartOverlay"></div>
+<div class="cart-drawer" id="cartDrawer">
+  <div class="cart-drawer-header">
+    <h3><i class="fas fa-shopping-cart"></i> سلة المشتريات</h3>
+    <button class="cart-drawer-close" id="cartClose"><i class="fas fa-times"></i></button>
+  </div>
+  <div class="cart-drawer-items"></div>
+  <div class="cart-drawer-footer">
+    <div class="cart-total">
+      <span>الإجمالي:</span>
+      <span class="cart-total-price">0 ريال</span>
+    </div>
+    <a href="checkout.html" class="btn btn-primary" style="width:100%;">إتمام الشراء</a>
+  </div>
+</div>
+
+<!-- Chatbot -->
+<div class="chatbot-toggle" id="chatbotToggle">
+  <i class="fas fa-robot"></i>
+</div>
+<div class="chatbot-window" id="chatbotWindow">
+  <div class="chatbot-header">
+    <div class="chatbot-header-info">
+      <div class="chatbot-avatar"><i class="fas fa-snowflake"></i></div>
+      <div>
+        <h4>مساعد أجواء الصيف</h4>
+        <span>متصل الآن</span>
+      </div>
+    </div>
+    <button class="chatbot-close"><i class="fas fa-times"></i></button>
+  </div>
+  <div class="chatbot-messages"></div>
+  <div class="chat-quick-actions">
+    <button class="quick-action-btn">أسعار التكييفات</button>
+    <button class="quick-action-btn">حجز صيانة</button>
+    <button class="quick-action-btn">أفضل تكييف</button>
+    <button class="quick-action-btn">تواصل واتساب</button>
+  </div>
+  <div class="chatbot-input">
+    <input type="text" placeholder="اكتب رسالتك...">
+    <button><i class="fas fa-paper-plane"></i></button>
+  </div>
+</div>
+
+<!-- WhatsApp Float -->
+<a href="https://wa.me/966530656834" target="_blank" class="whatsapp-float">
+  <i class="fab fa-whatsapp"></i>
+</a>
+
+<!-- Scroll Top -->
+<button class="scroll-top"><i class="fas fa-chevron-up"></i></button>
+
+<!-- Scripts -->
+<script src="https://unpkg.com/aos@2.3.4/dist/aos.js"></script>
+<script src="assets/js/main.js"></script>
+
+</body>
+</html>

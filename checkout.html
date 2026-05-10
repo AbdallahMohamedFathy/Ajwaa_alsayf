@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>إتمام الشراء | أجواء الصيف للتكييف</title>
+  <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+  <link rel="stylesheet" href="assets/css/main.css">
+  <link rel="icon" href="assets/images/logo.png">
+</head>
+<body>
+
+<nav class="navbar scrolled" id="navbar">
+  <div class="container">
+    <a href="index.html" class="navbar-logo"><img src="assets/images/logo.png" alt="أجواء الصيف"></a>
+    <div class="navbar-menu" id="navMenu">
+      <a href="index.html">الرئيسية</a>
+      <a href="products.html">المنتجات</a>
+    </div>
+    <div class="navbar-actions">
+      <button class="menu-toggle" id="menuToggle"><span></span><span></span><span></span></button>
+    </div>
+  </div>
+</nav>
+<div class="menu-overlay" id="menuOverlay"></div>
+
+<div class="page-header">
+  <h1><i class="fas fa-credit-card"></i> إتمام الشراء</h1>
+  <div class="breadcrumb"><a href="index.html">الرئيسية</a><span>/</span><a href="products.html">المنتجات</a><span>/</span><span>الدفع</span></div>
+</div>
+
+<section style="padding:40px 0 80px;">
+  <div class="container">
+    <div style="display:grid;grid-template-columns:1.4fr 1fr;gap:30px;" id="checkoutGrid">
+      <!-- Checkout Form -->
+      <div>
+        <div class="booking-form-card" id="checkoutForm">
+          <h2 style="font-size:1.2rem;font-weight:800;margin-bottom:20px;"><i class="fas fa-user" style="color:var(--primary);margin-left:8px;"></i> بيانات الشحن</h2>
+          <div class="form-row">
+            <div class="form-group">
+              <label>الاسم الكامل *</label>
+              <input type="text" class="form-control" placeholder="الاسم" required>
+            </div>
+            <div class="form-group">
+              <label>رقم الهاتف *</label>
+              <input type="tel" class="form-control" placeholder="01xxxxxxxxx" required>
+            </div>
+          </div>
+          <div class="form-group">
+            <label>البريد الإلكتروني</label>
+            <input type="email" class="form-control" placeholder="email@example.com">
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label>المنطقة *</label>
+              <select class="form-control">
+                <option value="">اختر المنطقة</option>
+                <option>الرياض</option>
+                <option>مكة المكرمة</option>
+                <option>المدينة المنورة</option>
+                <option>المنطقة الشرقية</option>
+                <option>القصيم</option>
+                <option>عسير</option>
+                <option>تبوك</option>
+                <option>حائل</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label>المدينة *</label>
+              <input type="text" class="form-control" placeholder="المدينة">
+            </div>
+          </div>
+          <div class="form-group">
+            <label>العنوان بالتفصيل *</label>
+            <textarea class="form-control" rows="2" placeholder="الشارع - رقم العمارة - الدور - الشقة"></textarea>
+          </div>
+          <div class="form-group">
+            <label>ملاحظات (اختياري)</label>
+            <input type="text" class="form-control" placeholder="ملاحظات إضافية للتوصيل">
+          </div>
+
+          <h2 style="font-size:1.2rem;font-weight:800;margin:28px 0 16px;"><i class="fas fa-money-bill" style="color:var(--primary);margin-left:8px;"></i> طريقة الدفع</h2>
+          <div style="display:flex;flex-direction:column;gap:10px;">
+            <label class="filter-option" style="padding:14px;border:2px solid var(--gray-200);border-radius:var(--radius-md);cursor:pointer;transition:all 0.2s;" onclick="this.parentElement.querySelectorAll('label').forEach(l=>{l.style.borderColor='var(--gray-200)'});this.style.borderColor='var(--primary)';">
+              <input type="radio" name="payment" value="cash" checked> <i class="fas fa-money-bill-wave" style="color:var(--success);margin:0 6px;"></i> الدفع عند الاستلام
+            </label>
+            <label class="filter-option" style="padding:14px;border:2px solid var(--gray-200);border-radius:var(--radius-md);cursor:pointer;transition:all 0.2s;" onclick="this.parentElement.querySelectorAll('label').forEach(l=>{l.style.borderColor='var(--gray-200)'});this.style.borderColor='var(--primary)';">
+              <input type="radio" name="payment" value="mada"> <i class="fas fa-credit-card" style="color:var(--primary);margin:0 6px;"></i> مدى / بطاقة ائتمان
+            </label>
+            <label class="filter-option" style="padding:14px;border:2px solid var(--gray-200);border-radius:var(--radius-md);cursor:pointer;transition:all 0.2s;" onclick="this.parentElement.querySelectorAll('label').forEach(l=>{l.style.borderColor='var(--gray-200)'});this.style.borderColor='var(--primary)';">
+              <input type="radio" name="payment" value="applepay"> <i class="fab fa-apple" style="color:var(--gray-900);margin:0 6px;"></i> Apple Pay
+            </label>
+          </div>
+
+          <button class="btn btn-primary btn-lg" style="width:100%;margin-top:24px;" onclick="placeOrder()">
+            <i class="fas fa-check-circle"></i> تأكيد الطلب
+          </button>
+        </div>
+
+        <!-- Success -->
+        <div class="booking-form-card" id="orderSuccess" style="display:none;">
+          <div class="booking-success">
+            <div class="success-icon"><i class="fas fa-check"></i></div>
+            <h2 style="font-size:1.5rem;font-weight:800;color:var(--gray-900);margin-bottom:8px;">تم تأكيد طلبك بنجاح! 🎉</h2>
+            <p style="color:var(--gray-500);margin-bottom:6px;">رقم الطلب: <strong style="color:var(--primary);">#AJW-${Math.floor(Math.random()*9000+1000)}</strong></p>
+            <p style="color:var(--gray-500);margin-bottom:24px;">سنتواصل معك قريباً لتأكيد موعد التوصيل</p>
+            <div style="display:flex;gap:12px;justify-content:center;flex-wrap:wrap;">
+              <a href="index.html" class="btn btn-primary"><i class="fas fa-home"></i> الرئيسية</a>
+              <a href="products.html" class="btn btn-outline"><i class="fas fa-shopping-bag"></i> تسوق المزيد</a>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Order Summary -->
+      <div>
+        <div class="booking-form-card" style="position:sticky;top:100px;">
+          <h2 style="font-size:1.2rem;font-weight:800;margin-bottom:16px;"><i class="fas fa-receipt" style="color:var(--primary);margin-left:8px;"></i> ملخص الطلب</h2>
+          <div id="checkoutItems"></div>
+          <div style="border-top:2px solid var(--gray-100);margin-top:16px;padding-top:16px;">
+            <div style="display:flex;justify-content:space-between;font-size:0.9rem;color:var(--gray-500);margin-bottom:8px;">
+              <span>المنتجات</span><span id="subtotal">0 ريال</span>
+            </div>
+            <div style="display:flex;justify-content:space-between;font-size:0.9rem;color:var(--gray-500);margin-bottom:8px;">
+              <span>التوصيل</span><span style="color:var(--success);font-weight:600;">مجاني</span>
+            </div>
+            <div style="display:flex;justify-content:space-between;font-size:1.2rem;font-weight:800;color:var(--gray-900);padding-top:12px;border-top:2px solid var(--gray-100);">
+              <span>الإجمالي</span><span id="grandTotal" style="color:var(--primary-dark);">0 ريال</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<script src="assets/js/main.js"></script>
+<script>
+  // Render checkout items
+  const checkoutItems = document.getElementById('checkoutItems');
+  if (checkoutItems) {
+    if (cart.length === 0) {
+      checkoutItems.innerHTML = '<p style="text-align:center;color:var(--gray-400);padding:20px;">السلة فارغة</p>';
+    } else {
+      checkoutItems.innerHTML = cart.map(item => `
+        <div style="display:flex;gap:10px;padding:10px 0;border-bottom:1px solid var(--gray-50);">
+          <div style="width:55px;height:55px;background:var(--gray-50);border-radius:8px;display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+            <img src="${item.image}" style="max-width:80%;max-height:80%;object-fit:contain;" alt="">
+          </div>
+          <div style="flex:1;">
+            <div style="font-size:0.85rem;font-weight:600;color:var(--gray-800);">${item.name}</div>
+            <div style="font-size:0.8rem;color:var(--gray-400);">الكمية: ${item.qty}</div>
+          </div>
+          <div style="font-size:0.9rem;font-weight:700;color:var(--primary-dark);">${(item.price * item.qty).toLocaleString()} ريال</div>
+        </div>
+      `).join('');
+    }
+    document.getElementById('subtotal').textContent = getCartTotal().toLocaleString() + ' ريال';
+    document.getElementById('grandTotal').textContent = getCartTotal().toLocaleString() + ' ريال';
+  }
+
+  function placeOrder() {
+    document.getElementById('checkoutForm').style.display = 'none';
+    document.getElementById('orderSuccess').style.display = 'block';
+    cart = [];
+    saveCart();
+    updateCartBadge();
+    window.scrollTo({ top: 300, behavior: 'smooth' });
+  }
+</script>
+<style>
+  @media(max-width:768px) {
+    #checkoutGrid { grid-template-columns: 1fr !important; }
+  }
+</style>
+</body>
+</html>

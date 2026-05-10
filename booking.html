@@ -1,0 +1,273 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="احجز موعد صيانة تكييف مع أجواء الصيف - خدمة سريعة واحترافية">
+  <title>حجز صيانة | أجواء الصيف للتكييف</title>
+  <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+  <link rel="stylesheet" href="https://unpkg.com/aos@2.3.4/dist/aos.css">
+  <link rel="stylesheet" href="assets/css/main.css">
+  <link rel="icon" href="assets/images/logo.png">
+</head>
+<body>
+
+<div class="loading-screen" id="loading"><div class="loading-spinner"></div><p>جاري التحميل...</p></div>
+
+<nav class="navbar scrolled" id="navbar">
+  <div class="container">
+    <a href="index.html" class="navbar-logo"><img src="assets/images/logo.png" alt="أجواء الصيف"></a>
+    <div class="navbar-menu" id="navMenu">
+      <a href="index.html">الرئيسية</a>
+      <a href="products.html">المنتجات</a>
+      <a href="services.html">الخدمات</a>
+      <a href="booking.html" class="active">احجز صيانة</a>
+    </div>
+    <div class="navbar-actions">
+      <a href="https://wa.me/966530656834" target="_blank" class="btn-whatsapp"><i class="fab fa-whatsapp"></i> واتساب</a>
+      <a href="#" class="cart-icon" id="cartToggle"><i class="fas fa-shopping-cart"></i><span class="cart-badge">0</span></a>
+      <button class="menu-toggle" id="menuToggle"><span></span><span></span><span></span></button>
+    </div>
+  </div>
+</nav>
+<div class="menu-overlay" id="menuOverlay"></div>
+
+<div class="page-header">
+  <h1><i class="fas fa-calendar-check"></i> حجز صيانة</h1>
+  <div class="breadcrumb"><a href="index.html">الرئيسية</a><span>/</span><span>حجز صيانة</span></div>
+</div>
+
+<section class="booking-section">
+  <div class="container">
+    <div class="booking-container">
+
+      <!-- Steps Indicator -->
+      <div class="booking-steps" id="stepsIndicator">
+        <div class="booking-step active" data-step="1">
+          <div class="step-number">1</div>
+          <span class="step-label">البيانات</span>
+        </div>
+        <div class="step-line"></div>
+        <div class="booking-step" data-step="2">
+          <div class="step-number">2</div>
+          <span class="step-label">التفاصيل</span>
+        </div>
+        <div class="step-line"></div>
+        <div class="booking-step" data-step="3">
+          <div class="step-number">3</div>
+          <span class="step-label">الموعد</span>
+        </div>
+      </div>
+
+      <!-- Step 1: Personal Info -->
+      <div class="booking-form-card" id="step1" data-aos="fade-up">
+        <h2 style="font-size:1.3rem;font-weight:800;margin-bottom:24px;color:var(--gray-900);">
+          <i class="fas fa-user" style="color:var(--primary);margin-left:8px;"></i> بياناتك الشخصية
+        </h2>
+        <div class="form-row">
+          <div class="form-group">
+            <label>الاسم الكامل *</label>
+            <input type="text" class="form-control" id="bookName" placeholder="أدخل اسمك" required>
+          </div>
+          <div class="form-group">
+            <label>رقم الهاتف *</label>
+            <input type="tel" class="form-control" id="bookPhone" placeholder="01xxxxxxxxx" required>
+          </div>
+        </div>
+        <div class="form-group">
+          <label>العنوان بالتفصيل *</label>
+          <input type="text" class="form-control" id="bookAddress" placeholder="المحافظة - المنطقة - الشارع - رقم العمارة" required>
+        </div>
+        <div style="display:flex;justify-content:flex-start;margin-top:8px;">
+          <button class="btn btn-primary btn-lg" onclick="goToStep(2)">
+            التالي <i class="fas fa-arrow-left"></i>
+          </button>
+        </div>
+      </div>
+
+      <!-- Step 2: AC Details -->
+      <div class="booking-form-card" id="step2" style="display:none;">
+        <h2 style="font-size:1.3rem;font-weight:800;margin-bottom:24px;color:var(--gray-900);">
+          <i class="fas fa-snowflake" style="color:var(--primary);margin-left:8px;"></i> تفاصيل التكييف
+        </h2>
+        <div class="form-row">
+          <div class="form-group">
+            <label>نوع التكييف *</label>
+            <select class="form-control" id="bookACType">
+              <option value="">اختر النوع</option>
+              <option>سبليت (Split)</option>
+              <option>شباك (Window)</option>
+              <option>مركزي (Central)</option>
+              <option>كونسيلد (Concealed)</option>
+              <option>بورتابل (Portable)</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>الخدمة المطلوبة *</label>
+            <select class="form-control" id="bookService">
+              <option value="">اختر الخدمة</option>
+              <option>صيانة عامة</option>
+              <option>غسيل وتنظيف</option>
+              <option>شحن فريون</option>
+              <option>كشف أعطال</option>
+              <option>تركيب جديد</option>
+              <option>تركيب غرف تبريد وتجميد</option>
+              <option>صيانة غرف تبريد وتجميد</option>
+              <option>تمديد مواسير نحاس</option>
+            </select>
+          </div>
+        </div>
+        <div class="form-group">
+          <label>وصف المشكلة</label>
+          <textarea class="form-control" id="bookDesc" placeholder="اشرح المشكلة بالتفصيل (اختياري)..." rows="3"></textarea>
+        </div>
+        <div class="form-group">
+          <label>صورة للعطل (اختياري)</label>
+          <div class="file-upload" onclick="document.getElementById('bookImage').click();">
+            <i class="fas fa-cloud-upload-alt" style="display:block;"></i>
+            <p id="fileLabel">اضغط لرفع صورة أو اسحب الملف هنا</p>
+            <input type="file" id="bookImage" accept="image/*" style="display:none;" onchange="document.getElementById('fileLabel').textContent=this.files[0]?.name || 'اضغط لرفع صورة';">
+          </div>
+        </div>
+        <div style="display:flex;justify-content:space-between;margin-top:8px;">
+          <button class="btn btn-outline" onclick="goToStep(1)">
+            <i class="fas fa-arrow-right"></i> السابق
+          </button>
+          <button class="btn btn-primary btn-lg" onclick="goToStep(3)">
+            التالي <i class="fas fa-arrow-left"></i>
+          </button>
+        </div>
+      </div>
+
+      <!-- Step 3: Appointment -->
+      <div class="booking-form-card" id="step3" style="display:none;">
+        <h2 style="font-size:1.3rem;font-weight:800;margin-bottom:24px;color:var(--gray-900);">
+          <i class="fas fa-clock" style="color:var(--primary);margin-left:8px;"></i> اختيار الموعد
+        </h2>
+        <div class="form-row">
+          <div class="form-group">
+            <label>التاريخ المفضل *</label>
+            <input type="date" class="form-control" id="bookDate">
+          </div>
+          <div class="form-group">
+            <label>الوقت المفضل *</label>
+            <select class="form-control" id="bookTime">
+              <option value="">اختر الوقت</option>
+              <option>صباحاً (9 - 12)</option>
+              <option>ظهراً (12 - 3)</option>
+              <option>عصراً (3 - 6)</option>
+              <option>مساءً (6 - 9)</option>
+            </select>
+          </div>
+        </div>
+
+        <!-- Summary -->
+        <div style="background:var(--gray-50);border-radius:var(--radius-md);padding:20px;margin:16px 0;">
+          <h3 style="font-size:0.95rem;font-weight:700;margin-bottom:12px;color:var(--gray-800);">ملخص الحجز</h3>
+          <div id="bookingSummary" style="font-size:0.88rem;color:var(--gray-600);line-height:2;"></div>
+        </div>
+
+        <div style="display:flex;justify-content:space-between;margin-top:8px;">
+          <button class="btn btn-outline" onclick="goToStep(2)">
+            <i class="fas fa-arrow-right"></i> السابق
+          </button>
+          <button class="btn btn-primary btn-lg" onclick="submitBooking()">
+            <i class="fas fa-check"></i> تأكيد الحجز
+          </button>
+        </div>
+      </div>
+
+      <!-- Success -->
+      <div class="booking-form-card" id="stepSuccess" style="display:none;">
+        <div class="booking-success">
+          <div class="success-icon"><i class="fas fa-check"></i></div>
+          <h2 style="font-size:1.5rem;font-weight:800;color:var(--gray-900);margin-bottom:8px;">تم الحجز بنجاح! 🎉</h2>
+          <p style="color:var(--gray-500);margin-bottom:24px;">سيتم التواصل معك خلال ساعة لتأكيد الموعد</p>
+          <div style="display:flex;gap:12px;justify-content:center;flex-wrap:wrap;">
+            <a href="index.html" class="btn btn-primary"><i class="fas fa-home"></i> الرئيسية</a>
+            <a href="https://wa.me/966530656834" target="_blank" class="btn btn-outline" style="border-color:#25d366;color:#25d366;">
+              <i class="fab fa-whatsapp"></i> واتساب
+            </a>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<footer class="footer">
+  <div class="container">
+    <div class="footer-bottom">
+      <p>© 2026 أجواء الصيف للتكييف. جميع الحقوق محفوظة ❄️</p>
+      <a href="https://dev-x-one.vercel.app/" target="_blank" class="powered-by">
+        <span>Powered By</span>
+        <img src="assets/images/devx_logo.jpeg" alt="DEVX Logo" class="powered-logo">
+      </a>
+    </div>
+  </div>
+</footer>
+
+<a href="https://wa.me/966530656834" target="_blank" class="whatsapp-float"><i class="fab fa-whatsapp"></i></a>
+<button class="scroll-top"><i class="fas fa-chevron-up"></i></button>
+
+<script src="https://unpkg.com/aos@2.3.4/dist/aos.js"></script>
+<script src="assets/js/main.js"></script>
+<script>
+  // Set min date to today
+  const dateInput = document.getElementById('bookDate');
+  if (dateInput) dateInput.min = new Date().toISOString().split('T')[0];
+
+  function goToStep(step) {
+    // Validation
+    if (step === 2) {
+      const name = document.getElementById('bookName').value.trim();
+      const phone = document.getElementById('bookPhone').value.trim();
+      const address = document.getElementById('bookAddress').value.trim();
+      if (!name || !phone || !address) { showToast('يرجى ملء جميع البيانات المطلوبة'); return; }
+    }
+    if (step === 3) {
+      const acType = document.getElementById('bookACType').value;
+      const service = document.getElementById('bookService').value;
+      if (!acType || !service) { showToast('يرجى اختيار نوع التكييف والخدمة'); return; }
+      updateSummary();
+    }
+
+    document.querySelectorAll('.booking-form-card').forEach(c => c.style.display = 'none');
+    document.getElementById('step' + step).style.display = 'block';
+
+    document.querySelectorAll('.booking-step').forEach(s => {
+      const sStep = parseInt(s.dataset.step);
+      s.classList.remove('active', 'completed');
+      if (sStep < step) s.classList.add('completed');
+      if (sStep === step) s.classList.add('active');
+    });
+
+    window.scrollTo({ top: 300, behavior: 'smooth' });
+  }
+
+  function updateSummary() {
+    const summary = document.getElementById('bookingSummary');
+    summary.innerHTML = `
+      <div><strong>الاسم:</strong> ${document.getElementById('bookName').value}</div>
+      <div><strong>الهاتف:</strong> ${document.getElementById('bookPhone').value}</div>
+      <div><strong>العنوان:</strong> ${document.getElementById('bookAddress').value}</div>
+      <div><strong>نوع التكييف:</strong> ${document.getElementById('bookACType').value}</div>
+      <div><strong>الخدمة:</strong> ${document.getElementById('bookService').value}</div>
+    `;
+  }
+
+  function submitBooking() {
+    const date = document.getElementById('bookDate').value;
+    const time = document.getElementById('bookTime').value;
+    if (!date || !time) { showToast('يرجى اختيار التاريخ والوقت'); return; }
+
+    document.querySelectorAll('.booking-form-card').forEach(c => c.style.display = 'none');
+    document.getElementById('stepSuccess').style.display = 'block';
+    document.querySelectorAll('.booking-step').forEach(s => s.classList.add('completed'));
+    showToast('تم حجز الصيانة بنجاح! ✅');
+  }
+</script>
+</body>
+</html>
