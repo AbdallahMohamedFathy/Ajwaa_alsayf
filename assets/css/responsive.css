@@ -62,12 +62,12 @@
     order: 2 !important;
     flex: none;
     width: 100% !important;
-    height: 72vw !important;
-    min-height: 260px !important;
+    height: 52vw !important;
+    min-height: 200px !important;
   }
   .hpv-img {
-    max-width: 88% !important;
-    max-height: 88% !important;
+    max-width: 65% !important;
+    max-height: 80% !important;
     width: auto !important;
     height: auto !important;
     object-fit: contain !important;
@@ -117,8 +117,8 @@
   .container { padding: 0 16px; }
 
   .hero-panel-content { padding: 88px 16px 28px !important; }
-  .hero-panel-visual { height: 80vw !important; min-height: 240px !important; }
-  .hpv-img { max-width: 92% !important; }
+  .hero-panel-visual { height: 55vw !important; min-height: 180px !important; }
+  .hpv-img { max-width: 60% !important; }
   .ht-big { font-size: 1.8rem !important; }
   .ht-sub { font-size: 1.05rem !important; }
   .ht-intro { font-size: 0.85rem; }
