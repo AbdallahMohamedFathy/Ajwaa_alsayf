@@ -46,37 +46,35 @@
 
   /* ── Hero Mobile ── */
   .hero {
-    flex-direction: column !important;
     height: auto !important;
-    min-height: 100vh !important;
+    min-height: auto !important;
+    padding-top: 100px;
+    padding-bottom: 40px;
   }
-  .hero-panel-content {
-    flex: none !important;
-    width: 100% !important;
-    order: 1;
-    padding: 96px 24px 36px !important;
+  .hero .container {
+    grid-template-columns: 1fr;
     text-align: center;
+    gap: 30px;
   }
-  .hero-panel-visual {
-    flex: none !important;
-    width: 100% !important;
-    height: 52vw !important;
-    min-height: 200px !important;
+  .hero-content {
+    order: 1;
+  }
+  .hero-image {
     order: 2;
+    padding: 20px 0;
   }
-  .hpv-img {
-    max-width: 65% !important;
-    max-height: 80% !important;
-    width: auto !important;
-    height: auto !important;
-    object-fit: contain !important;
+  .hero-blob {
+    width: 280px;
+    height: 300px;
   }
+  .blob-ring-1 { width: 340px; height: 340px; }
+  .blob-ring-2 { width: 400px; height: 400px; }
+  
   .hero-badge { margin: 0 auto 16px !important; }
   .hero-buttons { justify-content: center !important; }
   .hero-desc { margin: 0 auto 20px !important; font-size: 0.92rem; }
   .ht-big { font-size: 2rem !important; }
   .ht-sub { font-size: 1.15rem !important; }
-  .hpv-ring-1, .hpv-ring-2 { display: none !important; }
   .hero-float-badge { display: none !important; }
 
   /* Products */
@@ -115,9 +113,9 @@
 @media (max-width: 480px) {
   .container { padding: 0 16px; }
 
-  .hero-panel-content { padding: 88px 16px 28px !important; }
-  .hero-panel-visual { height: 55vw !important; min-height: 180px !important; }
-  .hpv-img { max-width: 60% !important; }
+  .hero-blob { width: 240px; height: 260px; }
+  .blob-ring-1 { width: 280px; height: 280px; }
+  .blob-ring-2 { width: 320px; height: 320px; }
   .ht-big { font-size: 1.8rem !important; }
   .ht-sub { font-size: 1.05rem !important; }
   .ht-intro { font-size: 0.85rem; }
