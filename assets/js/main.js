@@ -533,6 +533,7 @@ function initWorkStrip() {
   }, { passive: true });
 
   window.addEventListener('touchend', () => { isDragging = false; });
+  window.addEventListener('touchcancel', () => { isDragging = false; });
 
   wrapper.addEventListener('touchmove', (e) => {
     if (!isDragging) return;
