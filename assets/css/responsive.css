@@ -46,24 +46,23 @@
 
   /* ── Hero Mobile ── */
   .hero {
-    display: flex !important;
     flex-direction: column !important;
     height: auto !important;
     min-height: 100vh !important;
   }
   .hero-panel-content {
-    order: 1 !important;
-    flex: 1;
+    flex: none !important;
     width: 100% !important;
+    order: 1;
     padding: 96px 24px 36px !important;
     text-align: center;
   }
   .hero-panel-visual {
-    order: 2 !important;
-    flex: none;
+    flex: none !important;
     width: 100% !important;
     height: 52vw !important;
     min-height: 200px !important;
+    order: 2;
   }
   .hpv-img {
     max-width: 65% !important;

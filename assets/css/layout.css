@@ -153,9 +153,14 @@
   min-height: 600px;
   display: flex;
   grid-template-columns: 1fr 1fr;
-  grid-template-rows: 1fr;
   overflow: hidden;
   background: #fff;
+}
+
+.hero-panel-content,
+.hero-panel-visual {
+  flex: 1;
+  min-height: 0;
 }
 
 .hero::before, .hero::after { display: none; }
