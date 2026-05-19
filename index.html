@@ -89,20 +89,6 @@
           <i class="fas fa-calendar-check"></i> احجز صيانة
         </a>
       </div>
-      <div class="hero-stats">
-        <div class="stat-item">
-          <div class="stat-number">+5000</div>
-          <div class="stat-label">عميل سعيد</div>
-        </div>
-        <div class="stat-item">
-          <div class="stat-number">+10</div>
-          <div class="stat-label">سنة خبرة</div>
-        </div>
-        <div class="stat-item">
-          <div class="stat-number">24/7</div>
-          <div class="stat-label">دعم فني</div>
-        </div>
-      </div>
     </div>
     <div class="hero-image">
       <div class="hero-blob-wrap">
@@ -496,27 +482,25 @@
 }
 
 .work-strip-wrapper {
-  overflow: hidden;
+  overflow-x: scroll;
+  overflow-y: hidden;
   cursor: grab;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+  direction: ltr;
 }
-.work-strip-wrapper:active { cursor: grabbing; }
+.work-strip-wrapper::-webkit-scrollbar { display: none; }
+.work-strip-wrapper.is-dragging { cursor: grabbing; }
 
 .work-strip-track {
   display: flex;
   gap: 20px;
   width: max-content;
-  animation: ws-scroll 38s linear infinite;
-  padding: 12px 0 16px;
+  padding: 12px 10px 16px;
+  direction: ltr;
 }
 
-.work-strip-wrapper:hover .work-strip-track {
-  animation-play-state: paused;
-}
-
-@keyframes ws-scroll {
-  from { transform: translateX(0); }
-  to   { transform: translateX(-50%); }
-}
+.ws-card { direction: rtl; }
 
 /* Work Strip Card */
 .ws-card {

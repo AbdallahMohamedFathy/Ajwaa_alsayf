@@ -29,6 +29,7 @@ document.addEventListener('DOMContentLoaded', () => {
   initChatbot();
   initScrollTop();
   updateNavbarAuth();
+  initWorkStrip();
 
   // AOS Init
   if (typeof AOS !== 'undefined') {
@@ -480,6 +481,66 @@ function updateNavbarAuth() {
       </a>
     `;
   }
+}
+
+// ═══ Work Strip: Auto-scroll + Drag ═══
+function initWorkStrip() {
+  const wrapper = document.querySelector('.work-strip-wrapper');
+  const track   = document.querySelector('.work-strip-track');
+  if (!wrapper || !track) return;
+
+  const speed = 0.7;
+  let isDragging = false;
+  let startX = 0, scrollLeft = 0;
+
+  // Auto-scroll loop
+  (function tick() {
+    if (!isDragging) {
+      wrapper.scrollLeft += speed;
+      if (wrapper.scrollLeft >= track.scrollWidth / 2) {
+        wrapper.scrollLeft -= track.scrollWidth / 2;
+      }
+    }
+    requestAnimationFrame(tick);
+  })();
+
+  // Mouse drag
+  wrapper.addEventListener('mousedown', (e) => {
+    isDragging = true;
+    wrapper.classList.add('is-dragging');
+    startX = e.pageX - wrapper.offsetLeft;
+    scrollLeft = wrapper.scrollLeft;
+    e.preventDefault();
+  });
+
+  window.addEventListener('mouseup', () => {
+    isDragging = false;
+    wrapper.classList.remove('is-dragging');
+  });
+
+  wrapper.addEventListener('mousemove', (e) => {
+    if (!isDragging) return;
+    e.preventDefault();
+    const x = e.pageX - wrapper.offsetLeft;
+    wrapper.scrollLeft = scrollLeft - (x - startX) * 1.4;
+  });
+
+  // Touch drag
+  wrapper.addEventListener('touchstart', (e) => {
+    isDragging = true;
+    startX = e.touches[0].pageX;
+    scrollLeft = wrapper.scrollLeft;
+  }, { passive: true });
+
+  window.addEventListener('touchend', () => { isDragging = false; });
+
+  wrapper.addEventListener('touchmove', (e) => {
+    if (!isDragging) return;
+    const x = e.touches[0].pageX;
+    wrapper.scrollLeft = scrollLeft - (x - startX);
+    if (wrapper.scrollLeft >= track.scrollWidth / 2) wrapper.scrollLeft -= track.scrollWidth / 2;
+    if (wrapper.scrollLeft < 0) wrapper.scrollLeft += track.scrollWidth / 2;
+  }, { passive: true });
 }
 
 function filterWork(category, btn) {
