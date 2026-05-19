@@ -28,6 +28,7 @@ document.addEventListener('DOMContentLoaded', () => {
   updateCartBadge();
   initChatbot();
   initScrollTop();
+  updateNavbarAuth();
 
   // AOS Init
   if (typeof AOS !== 'undefined') {
@@ -405,4 +406,100 @@ function getBotReply(text) {
 // ═══ Render Featured Products on Home ═══
 if (document.getElementById('featured-products')) {
   renderProducts('featured-products', productsData.slice(0, 4));
+}
+
+// ═══ Auth System ═══
+function getUsers() {
+  return JSON.parse(localStorage.getItem('ajwaa_users')) || [];
+}
+
+function getCurrentUser() {
+  return JSON.parse(localStorage.getItem('ajwaa_current_user')) || null;
+}
+
+function isLoggedIn() {
+  return !!getCurrentUser();
+}
+
+function loginUser(email, password) {
+  const users = getUsers();
+  const user = users.find(u => u.email.toLowerCase() === email.toLowerCase() && u.password === password);
+  if (user) {
+    const { password: _p, ...safeUser } = user;
+    localStorage.setItem('ajwaa_current_user', JSON.stringify(safeUser));
+    return { success: true };
+  }
+  return { success: false, error: 'البريد الإلكتروني أو كلمة المرور غير صحيحة' };
+}
+
+function registerUser(name, email, phone, password) {
+  const users = getUsers();
+  if (users.find(u => u.email.toLowerCase() === email.toLowerCase())) {
+    return { success: false, error: 'هذا البريد الإلكتروني مسجل مسبقاً' };
+  }
+  const newUser = {
+    id: Date.now(),
+    name: name.trim(),
+    email: email.toLowerCase().trim(),
+    phone: phone.trim(),
+    password,
+    createdAt: new Date().toISOString()
+  };
+  users.push(newUser);
+  localStorage.setItem('ajwaa_users', JSON.stringify(users));
+  const { password: _p, ...safeUser } = newUser;
+  localStorage.setItem('ajwaa_current_user', JSON.stringify(safeUser));
+  return { success: true };
+}
+
+function logoutUser() {
+  localStorage.removeItem('ajwaa_current_user');
+  window.location.href = 'index.html';
+}
+
+function updateNavbarAuth() {
+  const container = document.getElementById('navbarAuth');
+  if (!container) return;
+  const user = getCurrentUser();
+  if (user) {
+    const firstName = user.name.split(' ')[0];
+    container.innerHTML = `
+      <div style="display:flex;align-items:center;gap:6px;">
+        <a href="profile.html" class="btn btn-primary btn-sm" style="gap:6px;">
+          <i class="fas fa-user-circle"></i><span>${firstName}</span>
+        </a>
+        <button onclick="logoutUser()" class="btn btn-outline btn-sm" style="padding:8px 12px;" title="تسجيل الخروج">
+          <i class="fas fa-sign-out-alt"></i>
+        </button>
+      </div>
+    `;
+  } else {
+    container.innerHTML = `
+      <a href="login.html" class="btn btn-primary btn-sm">
+        <i class="fas fa-user"></i> دخول
+      </a>
+    `;
+  }
+}
+
+function filterWork(category, btn) {
+  document.querySelectorAll('.work-filter').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+
+  document.querySelectorAll('.work-card').forEach(card => {
+    const match = category === 'all' || card.dataset.category === category;
+    card.style.display = match ? '' : 'none';
+    if (match) card.style.animation = 'fadeInUp 0.4s ease';
+  });
+}
+
+function getStatusLabel(status) {
+  const map = {
+    pending: { label: 'قيد المراجعة', color: 'var(--warning)' },
+    confirmed: { label: 'تم التأكيد', color: 'var(--primary)' },
+    shipping: { label: 'جارٍ التوصيل', color: '#f97316' },
+    delivered: { label: 'تم التوصيل', color: 'var(--success)' },
+    cancelled: { label: 'ملغي', color: 'var(--danger)' }
+  };
+  return map[status] || map.pending;
 }

@@ -36,6 +36,7 @@
       <a href="products.html">المنتجات</a>
       <a href="services.html">الخدمات</a>
       <a href="booking.html">احجز صيانة</a>
+      <a href="#our-work">أعمالنا</a>
       <a href="#about">من نحن</a>
       <a href="#contact">تواصل معنا</a>
     </div>
@@ -46,9 +47,11 @@
         <i class="fas fa-shopping-cart"></i>
         <span class="cart-badge">0</span>
       </a>
-      <a href="admin.html" class="btn btn-primary btn-sm">
-        <i class="fas fa-user"></i> دخول
-      </a>
+      <div id="navbarAuth">
+        <a href="login.html" class="btn btn-primary btn-sm">
+          <i class="fas fa-user"></i> دخول
+        </a>
+      </div>
       <button class="menu-toggle" id="menuToggle">
         <span></span><span></span><span></span>
       </button>
@@ -59,15 +62,20 @@
 
 <!-- Hero Section -->
 <section class="hero" id="hero">
-  <div class="particles-container"></div>
+  <div class="hero-deco">
+    <i class="fas fa-snowflake hero-deco-1"></i>
+    <i class="fas fa-snowflake hero-deco-2"></i>
+    <i class="fas fa-snowflake hero-deco-3"></i>
+  </div>
   <div class="container">
     <div class="hero-content">
       <div class="hero-badge">
         <i class="fas fa-snowflake"></i> عروض الصيف الحصرية
       </div>
       <h1 class="hero-title">
-        راحة و<span class="highlight">برودة</span><br>
-        طول الصيف ❄️
+        <span class="ht-intro">راحة و</span>
+        <span class="ht-big">برودة</span>
+        <span class="ht-sub">طول الصيف ❄️</span>
       </h1>
       <p class="hero-desc">
         اكتشف أحدث تكييفات الهواء بأفضل الأسعار مع خدمة تركيب وصيانة احترافية.
@@ -97,7 +105,27 @@
       </div>
     </div>
     <div class="hero-image">
-      <img src="assets/images/hero-ac.png" alt="تكييف حديث">
+      <div class="hero-blob-wrap">
+        <div class="blob-ring blob-ring-1"></div>
+        <div class="blob-ring blob-ring-2"></div>
+        <div class="hero-blob">
+          <img src="assets/images/hero-ac.png" alt="تكييف حديث">
+        </div>
+      </div>
+      <div class="hero-float-badge hfb-1">
+        <div class="hfb-icon"><i class="fas fa-bolt"></i></div>
+        <div>
+          <div class="hfb-label">كفاءة الطاقة</div>
+          <div class="hfb-value">انفرتر A+++</div>
+        </div>
+      </div>
+      <div class="hero-float-badge hfb-2">
+        <div class="hfb-icon" style="background:rgba(16,185,129,0.1);color:var(--success);"><i class="fas fa-shield-alt"></i></div>
+        <div>
+          <div class="hfb-label">ضمان شامل</div>
+          <div class="hfb-value">5 سنوات</div>
+        </div>
+      </div>
     </div>
   </div>
 </section>
@@ -224,6 +252,340 @@
     </div>
   </div>
 </section>
+
+<!-- Our Work -->
+<section class="section-bg-light" id="our-work" style="padding:var(--section-padding) 0 60px;">
+  <div class="container">
+    <div class="section-header" data-aos="fade-up">
+      <div class="section-badge"><i class="fas fa-images"></i> معرض أعمالنا</div>
+      <h2 class="section-title">من <span>أعمالنا</span> المنجزة</h2>
+      <p class="section-desc">نفخر بإنجازاتنا في تركيب وصيانة التكييفات وتصميم غرف التبريد على مستوى المملكة</p>
+    </div>
+  </div>
+
+  <!-- Scrolling Strip -->
+  <div class="work-strip-outer" data-aos="fade-up">
+    <div class="work-strip-wrapper">
+      <div class="work-strip-track">
+
+        <!-- Set 1 -->
+        <div class="ws-card">
+          <div class="ws-img" style="background:linear-gradient(135deg,#dbeafe,#bfdbfe);">
+            <i class="fas fa-wind"></i>
+            <span class="ws-badge" style="background:var(--primary);">تركيب</span>
+          </div>
+          <div class="ws-body">
+            <h4>تركيب 6 مكيفات سبليت</h4>
+            <p>فيلا سكنية - تمديد نحاس كامل مع عزل</p>
+            <div class="ws-meta"><i class="fas fa-map-marker-alt"></i> الرياض - حي النخيل</div>
+          </div>
+        </div>
+
+        <div class="ws-card">
+          <div class="ws-img" style="background:linear-gradient(135deg,#e0f2fe,#bae6fd);">
+            <i class="fas fa-snowflake"></i>
+            <span class="ws-badge" style="background:var(--info);">غرفة تبريد</span>
+          </div>
+          <div class="ws-body">
+            <h4>غرفة تبريد لمطعم</h4>
+            <p>20م² بعزل كامل ونظام تبريد مركزي</p>
+            <div class="ws-meta"><i class="fas fa-map-marker-alt"></i> الرياض - طريق الملك فهد</div>
+          </div>
+        </div>
+
+        <div class="ws-card">
+          <div class="ws-img" style="background:linear-gradient(135deg,#fef3c7,#fde68a);">
+            <i class="fas fa-wrench"></i>
+            <span class="ws-badge" style="background:var(--warning);">صيانة</span>
+          </div>
+          <div class="ws-body">
+            <h4>صيانة دورية شاملة</h4>
+            <p>12 مكيف مركزي في مجمع تجاري</p>
+            <div class="ws-meta"><i class="fas fa-map-marker-alt"></i> جدة - حي الروضة</div>
+          </div>
+        </div>
+
+        <div class="ws-card">
+          <div class="ws-img" style="background:linear-gradient(135deg,#ede9fe,#ddd6fe);">
+            <i class="fas fa-temperature-low"></i>
+            <span class="ws-badge" style="background:#8b5cf6;">غرفة تجميد</span>
+          </div>
+          <div class="ws-body">
+            <h4>غرفة تجميد لمستودع</h4>
+            <p>40م² لمستودع مواد غذائية</p>
+            <div class="ws-meta"><i class="fas fa-map-marker-alt"></i> الرياض - المنطقة الصناعية</div>
+          </div>
+        </div>
+
+        <div class="ws-card">
+          <div class="ws-img" style="background:linear-gradient(135deg,#fce7f3,#fbcfe8);">
+            <i class="fas fa-grip-lines"></i>
+            <span class="ws-badge" style="background:#ec4899;">مواسير نحاس</span>
+          </div>
+          <div class="ws-body">
+            <h4>تمديد مواسير نحاس</h4>
+            <p>شبكة كاملة لبرج سكني 8 أدوار</p>
+            <div class="ws-meta"><i class="fas fa-map-marker-alt"></i> الدمام - حي الشاطئ</div>
+          </div>
+        </div>
+
+        <div class="ws-card">
+          <div class="ws-img" style="background:linear-gradient(135deg,#dcfce7,#bbf7d0);">
+            <i class="fas fa-building"></i>
+            <span class="ws-badge" style="background:var(--primary);">تركيب</span>
+          </div>
+          <div class="ws-body">
+            <h4>تكييف مركزي لمكتب</h4>
+            <p>نظام مركزي لمكتب تجاري 500م²</p>
+            <div class="ws-meta"><i class="fas fa-map-marker-alt"></i> الرياض - العليا</div>
+          </div>
+        </div>
+
+        <div class="ws-card">
+          <div class="ws-img" style="background:linear-gradient(135deg,#fff7ed,#fed7aa);">
+            <i class="fas fa-shower"></i>
+            <span class="ws-badge" style="background:#f97316;">غسيل</span>
+          </div>
+          <div class="ws-body">
+            <h4>غسيل وتعقيم 20 مكيف</h4>
+            <p>مجمع سكني - تنظيف عميق وتعقيم كامل</p>
+            <div class="ws-meta"><i class="fas fa-map-marker-alt"></i> مكة المكرمة</div>
+          </div>
+        </div>
+
+        <div class="ws-card">
+          <div class="ws-img" style="background:linear-gradient(135deg,#f0fdf4,#bbf7d0);">
+            <i class="fas fa-hospital"></i>
+            <span class="ws-badge" style="background:var(--success);">تركيب</span>
+          </div>
+          <div class="ws-body">
+            <h4>تكييف مستشفى خاص</h4>
+            <p>تركيب وتمديد نظام تبريد كامل</p>
+            <div class="ws-meta"><i class="fas fa-map-marker-alt"></i> المدينة المنورة</div>
+          </div>
+        </div>
+
+        <!-- Set 2 - duplicate for seamless loop -->
+        <div class="ws-card">
+          <div class="ws-img" style="background:linear-gradient(135deg,#dbeafe,#bfdbfe);">
+            <i class="fas fa-wind"></i>
+            <span class="ws-badge" style="background:var(--primary);">تركيب</span>
+          </div>
+          <div class="ws-body">
+            <h4>تركيب 6 مكيفات سبليت</h4>
+            <p>فيلا سكنية - تمديد نحاس كامل مع عزل</p>
+            <div class="ws-meta"><i class="fas fa-map-marker-alt"></i> الرياض - حي النخيل</div>
+          </div>
+        </div>
+
+        <div class="ws-card">
+          <div class="ws-img" style="background:linear-gradient(135deg,#e0f2fe,#bae6fd);">
+            <i class="fas fa-snowflake"></i>
+            <span class="ws-badge" style="background:var(--info);">غرفة تبريد</span>
+          </div>
+          <div class="ws-body">
+            <h4>غرفة تبريد لمطعم</h4>
+            <p>20م² بعزل كامل ونظام تبريد مركزي</p>
+            <div class="ws-meta"><i class="fas fa-map-marker-alt"></i> الرياض - طريق الملك فهد</div>
+          </div>
+        </div>
+
+        <div class="ws-card">
+          <div class="ws-img" style="background:linear-gradient(135deg,#fef3c7,#fde68a);">
+            <i class="fas fa-wrench"></i>
+            <span class="ws-badge" style="background:var(--warning);">صيانة</span>
+          </div>
+          <div class="ws-body">
+            <h4>صيانة دورية شاملة</h4>
+            <p>12 مكيف مركزي في مجمع تجاري</p>
+            <div class="ws-meta"><i class="fas fa-map-marker-alt"></i> جدة - حي الروضة</div>
+          </div>
+        </div>
+
+        <div class="ws-card">
+          <div class="ws-img" style="background:linear-gradient(135deg,#ede9fe,#ddd6fe);">
+            <i class="fas fa-temperature-low"></i>
+            <span class="ws-badge" style="background:#8b5cf6;">غرفة تجميد</span>
+          </div>
+          <div class="ws-body">
+            <h4>غرفة تجميد لمستودع</h4>
+            <p>40م² لمستودع مواد غذائية</p>
+            <div class="ws-meta"><i class="fas fa-map-marker-alt"></i> الرياض - المنطقة الصناعية</div>
+          </div>
+        </div>
+
+        <div class="ws-card">
+          <div class="ws-img" style="background:linear-gradient(135deg,#fce7f3,#fbcfe8);">
+            <i class="fas fa-grip-lines"></i>
+            <span class="ws-badge" style="background:#ec4899;">مواسير نحاس</span>
+          </div>
+          <div class="ws-body">
+            <h4>تمديد مواسير نحاس</h4>
+            <p>شبكة كاملة لبرج سكني 8 أدوار</p>
+            <div class="ws-meta"><i class="fas fa-map-marker-alt"></i> الدمام - حي الشاطئ</div>
+          </div>
+        </div>
+
+        <div class="ws-card">
+          <div class="ws-img" style="background:linear-gradient(135deg,#dcfce7,#bbf7d0);">
+            <i class="fas fa-building"></i>
+            <span class="ws-badge" style="background:var(--primary);">تركيب</span>
+          </div>
+          <div class="ws-body">
+            <h4>تكييف مركزي لمكتب</h4>
+            <p>نظام مركزي لمكتب تجاري 500م²</p>
+            <div class="ws-meta"><i class="fas fa-map-marker-alt"></i> الرياض - العليا</div>
+          </div>
+        </div>
+
+        <div class="ws-card">
+          <div class="ws-img" style="background:linear-gradient(135deg,#fff7ed,#fed7aa);">
+            <i class="fas fa-shower"></i>
+            <span class="ws-badge" style="background:#f97316;">غسيل</span>
+          </div>
+          <div class="ws-body">
+            <h4>غسيل وتعقيم 20 مكيف</h4>
+            <p>مجمع سكني - تنظيف عميق وتعقيم كامل</p>
+            <div class="ws-meta"><i class="fas fa-map-marker-alt"></i> مكة المكرمة</div>
+          </div>
+        </div>
+
+        <div class="ws-card">
+          <div class="ws-img" style="background:linear-gradient(135deg,#f0fdf4,#bbf7d0);">
+            <i class="fas fa-hospital"></i>
+            <span class="ws-badge" style="background:var(--success);">تركيب</span>
+          </div>
+          <div class="ws-body">
+            <h4>تكييف مستشفى خاص</h4>
+            <p>تركيب وتمديد نظام تبريد كامل</p>
+            <div class="ws-meta"><i class="fas fa-map-marker-alt"></i> المدينة المنورة</div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+  <div class="container" style="text-align:center;margin-top:44px;" data-aos="fade-up">
+    <a href="booking.html" class="btn btn-primary btn-lg">
+      <i class="fas fa-phone-alt"></i> اطلب خدمتك الآن
+    </a>
+  </div>
+</section>
+
+<style>
+/* Work Strip */
+.work-strip-outer { position: relative; overflow: hidden; padding: 12px 0 8px; }
+
+.work-strip-outer::before,
+.work-strip-outer::after {
+  content: '';
+  position: absolute;
+  top: 0; bottom: 0;
+  width: 120px;
+  z-index: 2;
+  pointer-events: none;
+}
+.work-strip-outer::before {
+  right: 0;
+  background: linear-gradient(to left, var(--gray-50) 20%, transparent);
+}
+.work-strip-outer::after {
+  left: 0;
+  background: linear-gradient(to right, var(--gray-50) 20%, transparent);
+}
+
+.work-strip-wrapper {
+  overflow: hidden;
+  cursor: grab;
+}
+.work-strip-wrapper:active { cursor: grabbing; }
+
+.work-strip-track {
+  display: flex;
+  gap: 20px;
+  width: max-content;
+  animation: ws-scroll 38s linear infinite;
+  padding: 12px 0 16px;
+}
+
+.work-strip-wrapper:hover .work-strip-track {
+  animation-play-state: paused;
+}
+
+@keyframes ws-scroll {
+  from { transform: translateX(0); }
+  to   { transform: translateX(-50%); }
+}
+
+/* Work Strip Card */
+.ws-card {
+  width: 260px;
+  flex-shrink: 0;
+  background: var(--white);
+  border-radius: var(--radius-xl);
+  overflow: hidden;
+  box-shadow: var(--shadow-sm);
+  border: 1px solid var(--gray-100);
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  user-select: none;
+}
+.ws-card:hover {
+  transform: translateY(-6px);
+  box-shadow: var(--shadow-xl);
+}
+
+.ws-img {
+  height: 150px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 3rem;
+  color: rgba(0,75,173,0.22);
+  position: relative;
+  transition: all 0.3s ease;
+}
+.ws-card:hover .ws-img i {
+  transform: scale(1.15) rotate(-6deg);
+  display: block;
+}
+.ws-img i { transition: transform 0.3s ease; }
+
+.ws-badge {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  color: var(--white);
+  font-size: 0.72rem;
+  font-weight: 700;
+  padding: 3px 10px;
+  border-radius: var(--radius-full);
+}
+
+.ws-body { padding: 14px 16px 16px; }
+.ws-body h4 {
+  font-size: 0.92rem;
+  font-weight: 700;
+  color: var(--gray-900);
+  margin-bottom: 4px;
+}
+.ws-body p {
+  font-size: 0.78rem;
+  color: var(--gray-500);
+  line-height: 1.5;
+  margin-bottom: 10px;
+}
+.ws-meta {
+  font-size: 0.75rem;
+  color: var(--gray-400);
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  padding-top: 8px;
+  border-top: 1px solid var(--gray-100);
+}
+.ws-meta i { color: var(--primary); font-size: 0.7rem; }
+</style>
 
 <!-- About -->
 <section class="section-bg-gradient" id="about" style="padding:var(--section-padding);">

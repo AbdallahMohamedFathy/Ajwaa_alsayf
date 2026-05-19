@@ -1,0 +1,480 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>حسابي | أجواء الصيف للتكييف</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+  <link rel="stylesheet" href="https://unpkg.com/aos@2.3.4/dist/aos.css">
+  <link rel="stylesheet" href="assets/css/main.css">
+  <link rel="icon" href="assets/images/logo.png">
+  <style>
+    .profile-layout {
+      display: grid;
+      grid-template-columns: 280px 1fr;
+      gap: 28px;
+      align-items: start;
+    }
+    .profile-sidebar {
+      position: sticky;
+      top: 90px;
+    }
+    .profile-card {
+      background: var(--white);
+      border-radius: var(--radius-xl);
+      box-shadow: var(--shadow-md);
+      border: 1px solid var(--gray-100);
+      overflow: hidden;
+    }
+    .profile-card-header {
+      background: var(--gradient-primary);
+      padding: 32px 24px;
+      text-align: center;
+      color: var(--white);
+    }
+    .profile-avatar {
+      width: 80px;
+      height: 80px;
+      border-radius: 50%;
+      background: rgba(255,255,255,0.25);
+      border: 3px solid rgba(255,255,255,0.5);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 2rem;
+      font-weight: 800;
+      margin: 0 auto 14px;
+      color: var(--white);
+    }
+    .profile-card-header h2 {
+      font-size: 1.15rem;
+      font-weight: 800;
+    }
+    .profile-card-header p {
+      font-size: 0.82rem;
+      opacity: 0.85;
+      margin-top: 4px;
+    }
+    .profile-card-body {
+      padding: 20px;
+    }
+    .profile-info-item {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 10px 0;
+      border-bottom: 1px solid var(--gray-100);
+      font-size: 0.88rem;
+      color: var(--gray-700);
+    }
+    .profile-info-item:last-child { border-bottom: none; }
+    .profile-info-item i {
+      width: 32px;
+      height: 32px;
+      background: rgba(0,123,255,0.08);
+      color: var(--primary);
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      font-size: 0.82rem;
+    }
+    .profile-nav {
+      margin-top: 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+    .profile-nav-item {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 12px 16px;
+      border-radius: var(--radius-md);
+      font-size: 0.9rem;
+      font-weight: 600;
+      color: var(--gray-600);
+      cursor: pointer;
+      transition: all var(--transition-fast);
+      background: none;
+      border: none;
+      width: 100%;
+      text-align: right;
+    }
+    .profile-nav-item:hover { background: var(--gray-50); color: var(--primary); }
+    .profile-nav-item.active { background: rgba(0,123,255,0.08); color: var(--primary); }
+    .profile-nav-item.logout { color: var(--danger); }
+    .profile-nav-item.logout:hover { background: rgba(239,68,68,0.08); }
+    .profile-nav-item i { width: 20px; text-align: center; }
+
+    .content-card {
+      background: var(--white);
+      border-radius: var(--radius-xl);
+      box-shadow: var(--shadow-md);
+      border: 1px solid var(--gray-100);
+      padding: 28px;
+    }
+    .content-card h2 {
+      font-size: 1.15rem;
+      font-weight: 800;
+      color: var(--gray-900);
+      margin-bottom: 22px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .content-card h2 i {
+      color: var(--primary);
+      font-size: 1.05rem;
+    }
+    .tab-content { display: none; }
+    .tab-content.active { display: block; }
+
+    /* Orders */
+    .order-card {
+      border: 2px solid var(--gray-100);
+      border-radius: var(--radius-lg);
+      padding: 18px;
+      margin-bottom: 16px;
+      transition: all var(--transition-normal);
+    }
+    .order-card:hover { border-color: var(--primary-light); box-shadow: var(--shadow-sm); }
+    .order-card-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-bottom: 14px;
+    }
+    .order-num {
+      font-weight: 800;
+      color: var(--primary-dark);
+      font-size: 1rem;
+    }
+    .order-date {
+      font-size: 0.8rem;
+      color: var(--gray-400);
+    }
+    .status-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      padding: 5px 12px;
+      border-radius: var(--radius-full);
+      font-size: 0.78rem;
+      font-weight: 700;
+    }
+    .order-items-mini {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      margin-bottom: 12px;
+    }
+    .order-item-chip {
+      background: var(--gray-50);
+      border: 1px solid var(--gray-200);
+      border-radius: var(--radius-sm);
+      padding: 4px 10px;
+      font-size: 0.78rem;
+      color: var(--gray-600);
+    }
+    .order-footer {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding-top: 12px;
+      border-top: 1px solid var(--gray-100);
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+    .order-total {
+      font-size: 1.05rem;
+      font-weight: 800;
+      color: var(--primary-dark);
+    }
+    .order-payment {
+      font-size: 0.8rem;
+      color: var(--gray-500);
+      display: flex;
+      align-items: center;
+      gap: 5px;
+    }
+    .empty-state {
+      text-align: center;
+      padding: 60px 20px;
+      color: var(--gray-400);
+    }
+    .empty-state i {
+      font-size: 3.5rem;
+      margin-bottom: 16px;
+      display: block;
+      opacity: 0.5;
+    }
+    .empty-state h3 { font-size: 1.1rem; margin-bottom: 8px; color: var(--gray-600); }
+    .empty-state p { font-size: 0.9rem; margin-bottom: 20px; }
+
+    /* Edit Profile */
+    .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+    .save-success {
+      background: rgba(16,185,129,0.08);
+      color: var(--success);
+      border: 1px solid rgba(16,185,129,0.2);
+      padding: 12px 16px;
+      border-radius: var(--radius-md);
+      font-size: 0.85rem;
+      margin-top: 12px;
+      display: none;
+      align-items: center;
+      gap: 8px;
+    }
+    .save-success.show { display: flex; }
+
+    @media(max-width: 900px) {
+      .profile-layout { grid-template-columns: 1fr; }
+      .profile-sidebar { position: static; }
+      .form-row { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+
+<div class="loading-screen" id="loading"><div class="loading-spinner"></div><p>جاري التحميل...</p></div>
+
+<nav class="navbar scrolled" id="navbar">
+  <div class="container">
+    <a href="index.html" class="navbar-logo"><img src="assets/images/logo.png" alt="أجواء الصيف"></a>
+    <div class="navbar-menu" id="navMenu">
+      <a href="index.html">الرئيسية</a>
+      <a href="products.html">المنتجات</a>
+      <a href="services.html">الخدمات</a>
+      <a href="booking.html">احجز صيانة</a>
+    </div>
+    <div class="navbar-actions">
+      <div id="navbarAuth"></div>
+      <button class="menu-toggle" id="menuToggle"><span></span><span></span><span></span></button>
+    </div>
+  </div>
+</nav>
+<div class="menu-overlay" id="menuOverlay"></div>
+
+<div class="page-header">
+  <h1><i class="fas fa-user-circle"></i> حسابي</h1>
+  <div class="breadcrumb">
+    <a href="index.html">الرئيسية</a><span>/</span><span>حسابي</span>
+  </div>
+</div>
+
+<section style="padding:40px 0 80px;">
+  <div class="container">
+    <div class="profile-layout" id="profileLayout">
+
+      <!-- Sidebar -->
+      <div class="profile-sidebar" data-aos="fade-left">
+        <div class="profile-card">
+          <div class="profile-card-header">
+            <div class="profile-avatar" id="avatarLetter">م</div>
+            <h2 id="sidebarName">...</h2>
+            <p id="sidebarEmail">...</p>
+          </div>
+          <div class="profile-card-body">
+            <div class="profile-info-item">
+              <i class="fas fa-phone"></i>
+              <span id="sidebarPhone">-</span>
+            </div>
+            <div class="profile-info-item">
+              <i class="fas fa-calendar-alt"></i>
+              <span id="sidebarJoined">-</span>
+            </div>
+            <div class="profile-info-item">
+              <i class="fas fa-shopping-bag"></i>
+              <span id="sidebarOrderCount">0 طلبات</span>
+            </div>
+          </div>
+          <div class="profile-nav" style="padding:0 16px 16px;">
+            <button class="profile-nav-item active" id="navOrders" onclick="switchTab('orders')">
+              <i class="fas fa-box"></i> طلباتي
+            </button>
+            <button class="profile-nav-item" id="navEdit" onclick="switchTab('edit')">
+              <i class="fas fa-edit"></i> تعديل البيانات
+            </button>
+            <a href="products.html" class="profile-nav-item" style="text-decoration:none;">
+              <i class="fas fa-shopping-bag"></i> تسوق الآن
+            </a>
+            <button class="profile-nav-item logout" onclick="logoutUser()">
+              <i class="fas fa-sign-out-alt"></i> تسجيل الخروج
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Main Content -->
+      <div data-aos="fade-right">
+
+        <!-- Orders Tab -->
+        <div class="content-card tab-content active" id="tabOrders">
+          <h2><i class="fas fa-box"></i> طلباتي</h2>
+          <div id="ordersList"></div>
+        </div>
+
+        <!-- Edit Profile Tab -->
+        <div class="content-card tab-content" id="tabEdit">
+          <h2><i class="fas fa-edit"></i> تعديل البيانات</h2>
+          <form onsubmit="saveProfile(event)">
+            <div class="form-row">
+              <div class="form-group">
+                <label>الاسم الكامل *</label>
+                <input type="text" class="form-control" id="editName" required>
+              </div>
+              <div class="form-group">
+                <label>رقم الهاتف *</label>
+                <input type="tel" class="form-control" id="editPhone" required>
+              </div>
+            </div>
+            <div class="form-group">
+              <label>البريد الإلكتروني</label>
+              <input type="email" class="form-control" id="editEmail" disabled style="background:var(--gray-50);color:var(--gray-500);">
+              <p style="font-size:0.78rem;color:var(--gray-400);margin-top:4px;"><i class="fas fa-info-circle"></i> لا يمكن تغيير البريد الإلكتروني</p>
+            </div>
+            <div class="form-group">
+              <label>كلمة المرور الجديدة <span style="font-size:0.75rem;color:var(--gray-400);font-weight:400;">(اتركها فارغة لعدم التغيير)</span></label>
+              <input type="password" class="form-control" id="editPassword" placeholder="••••••••" minlength="8">
+            </div>
+            <button type="submit" class="btn btn-primary">
+              <i class="fas fa-save"></i> حفظ التغييرات
+            </button>
+            <div class="save-success" id="saveSuccess">
+              <i class="fas fa-check-circle"></i> تم حفظ التغييرات بنجاح!
+            </div>
+          </form>
+        </div>
+
+      </div>
+    </div>
+  </div>
+</section>
+
+<a href="https://wa.me/966530656834" target="_blank" class="whatsapp-float">
+  <i class="fab fa-whatsapp"></i>
+</a>
+<button class="scroll-top"><i class="fas fa-chevron-up"></i></button>
+
+<script src="https://unpkg.com/aos@2.3.4/dist/aos.js"></script>
+<script src="assets/js/main.js"></script>
+<script>
+  // Redirect to login if not logged in
+  if (!isLoggedIn()) {
+    window.location.href = 'login.html';
+  }
+
+  const user = getCurrentUser();
+
+  // Fill sidebar info
+  document.getElementById('avatarLetter').textContent = user.name.charAt(0);
+  document.getElementById('sidebarName').textContent = user.name;
+  document.getElementById('sidebarEmail').textContent = user.email;
+  document.getElementById('sidebarPhone').textContent = user.phone || 'غير محدد';
+  const joinDate = new Date(user.createdAt || Date.now());
+  document.getElementById('sidebarJoined').textContent = 'عضو منذ: ' + joinDate.toLocaleDateString('ar-SA', { year:'numeric', month:'long' });
+
+  // Fill edit form
+  document.getElementById('editName').value = user.name;
+  document.getElementById('editPhone').value = user.phone || '';
+  document.getElementById('editEmail').value = user.email;
+
+  // Load orders
+  function loadOrders() {
+    const allOrders = JSON.parse(localStorage.getItem('ajwaa_orders')) || [];
+    const userOrders = allOrders.filter(o => o.userId === user.id || o.phone === user.phone).sort((a,b) => b.id - a.id);
+
+    document.getElementById('sidebarOrderCount').textContent = userOrders.length + ' طلبات';
+
+    const container = document.getElementById('ordersList');
+    if (userOrders.length === 0) {
+      container.innerHTML = `
+        <div class="empty-state">
+          <i class="fas fa-box-open"></i>
+          <h3>لا توجد طلبات بعد</h3>
+          <p>اطلب منتجاً من المتجر وستظهر طلباتك هنا</p>
+          <a href="products.html" class="btn btn-primary"><i class="fas fa-shopping-bag"></i> تسوق الآن</a>
+        </div>`;
+      return;
+    }
+
+    const paymentMap = { cash: 'الدفع عند الاستلام', mada: 'مدى / بطاقة ائتمان', applepay: 'Apple Pay' };
+
+    container.innerHTML = userOrders.map(order => {
+      const st = getStatusLabel(order.status);
+      const dateStr = new Date(order.date).toLocaleDateString('ar-SA', { year:'numeric', month:'long', day:'numeric' });
+      const itemsHtml = (order.items || []).map(it =>
+        `<span class="order-item-chip">${it.name.split(' ').slice(0,3).join(' ')} x${it.qty}</span>`
+      ).join('');
+      return `
+        <div class="order-card">
+          <div class="order-card-header">
+            <div>
+              <div class="order-num">#${order.orderNum}</div>
+              <div class="order-date">${dateStr}</div>
+            </div>
+            <span class="status-badge" style="background:${st.color}22;color:${st.color};border:1px solid ${st.color}44;">
+              <i class="fas fa-circle" style="font-size:0.5rem;"></i>${st.label}
+            </span>
+          </div>
+          <div class="order-items-mini">${itemsHtml || '<span class="order-item-chip">لا توجد منتجات</span>'}</div>
+          <div class="order-footer">
+            <span class="order-total">${(order.total || 0).toLocaleString()} ريال</span>
+            <span class="order-payment">
+              <i class="fas fa-credit-card"></i>
+              ${paymentMap[order.payment] || order.payment || 'غير محدد'}
+            </span>
+          </div>
+        </div>`;
+    }).join('');
+  }
+
+  loadOrders();
+
+  function switchTab(tab) {
+    ['orders', 'edit'].forEach(t => {
+      const id = 'tab' + t.charAt(0).toUpperCase() + t.slice(1);
+      document.getElementById(id).classList.toggle('active', t === tab);
+      const navId = 'nav' + t.charAt(0).toUpperCase() + t.slice(1);
+      document.getElementById(navId)?.classList.toggle('active', t === tab);
+    });
+  }
+
+  function saveProfile(e) {
+    e.preventDefault();
+    const newName = document.getElementById('editName').value.trim();
+    const newPhone = document.getElementById('editPhone').value.trim();
+    const newPassword = document.getElementById('editPassword').value;
+
+    const users = getUsers();
+    const idx = users.findIndex(u => u.id === user.id);
+    if (idx === -1) return;
+
+    users[idx].name = newName;
+    users[idx].phone = newPhone;
+    if (newPassword) users[idx].password = newPassword;
+
+    localStorage.setItem('ajwaa_users', JSON.stringify(users));
+    const { password: _p, ...safeUser } = users[idx];
+    localStorage.setItem('ajwaa_current_user', JSON.stringify(safeUser));
+
+    document.getElementById('sidebarName').textContent = newName;
+    document.getElementById('avatarLetter').textContent = newName.charAt(0);
+    document.getElementById('sidebarPhone').textContent = newPhone || 'غير محدد';
+
+    const successEl = document.getElementById('saveSuccess');
+    successEl.classList.add('show');
+    setTimeout(() => successEl.classList.remove('show'), 3000);
+    document.getElementById('editPassword').value = '';
+
+    updateNavbarAuth();
+  }
+</script>
+</body>
+</html>

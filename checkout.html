@@ -19,6 +19,9 @@
       <a href="products.html">المنتجات</a>
     </div>
     <div class="navbar-actions">
+      <div id="navbarAuth">
+        <a href="login.html" class="btn btn-primary btn-sm"><i class="fas fa-user"></i> دخول</a>
+      </div>
       <button class="menu-toggle" id="menuToggle"><span></span><span></span><span></span></button>
     </div>
   </div>
@@ -103,10 +106,11 @@
           <div class="booking-success">
             <div class="success-icon"><i class="fas fa-check"></i></div>
             <h2 style="font-size:1.5rem;font-weight:800;color:var(--gray-900);margin-bottom:8px;">تم تأكيد طلبك بنجاح! 🎉</h2>
-            <p style="color:var(--gray-500);margin-bottom:6px;">رقم الطلب: <strong style="color:var(--primary);">#AJW-${Math.floor(Math.random()*9000+1000)}</strong></p>
+            <p style="color:var(--gray-500);margin-bottom:6px;">رقم الطلب: <strong style="color:var(--primary);" id="confirmedOrderNum">#AJW-0000</strong></p>
             <p style="color:var(--gray-500);margin-bottom:24px;">سنتواصل معك قريباً لتأكيد موعد التوصيل</p>
             <div style="display:flex;gap:12px;justify-content:center;flex-wrap:wrap;">
               <a href="index.html" class="btn btn-primary"><i class="fas fa-home"></i> الرئيسية</a>
+              <a href="profile.html" class="btn btn-outline" id="viewOrderBtn" style="display:none;"><i class="fas fa-box"></i> تتبع طلبي</a>
               <a href="products.html" class="btn btn-outline"><i class="fas fa-shopping-bag"></i> تسوق المزيد</a>
             </div>
           </div>
@@ -161,6 +165,40 @@
   }
 
   function placeOrder() {
+    const nameInput = document.querySelector('input[placeholder="الاسم"]');
+    const phoneInput = document.querySelector('input[placeholder="01xxxxxxxxx"]');
+
+    if (!nameInput?.value.trim() || !phoneInput?.value.trim()) {
+      showToast('يرجى ملء الاسم ورقم الهاتف على الأقل');
+      return;
+    }
+    if (cart.length === 0) {
+      showToast('السلة فارغة! أضف منتجات أولاً');
+      return;
+    }
+
+    const orderNum = 'AJW-' + Math.floor(Math.random() * 9000 + 1000);
+    const user = getCurrentUser();
+    const order = {
+      id: Date.now(),
+      orderNum,
+      items: [...cart],
+      total: getCartTotal(),
+      status: 'pending',
+      date: new Date().toISOString(),
+      userId: user ? user.id : null,
+      customerName: nameInput.value.trim(),
+      phone: phoneInput.value.trim(),
+      payment: document.querySelector('input[name="payment"]:checked')?.value || 'cash'
+    };
+
+    const orders = JSON.parse(localStorage.getItem('ajwaa_orders')) || [];
+    orders.push(order);
+    localStorage.setItem('ajwaa_orders', JSON.stringify(orders));
+
+    document.getElementById('confirmedOrderNum').textContent = '#' + orderNum;
+    if (user) document.getElementById('viewOrderBtn').style.display = 'inline-flex';
+
     document.getElementById('checkoutForm').style.display = 'none';
     document.getElementById('orderSuccess').style.display = 'block';
     cart = [];
