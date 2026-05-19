@@ -151,7 +151,7 @@
 .hero {
   height: 100vh;
   min-height: 600px;
-  display: flex;
+  display: grid;
   grid-template-columns: 1fr 1fr;
   grid-template-rows: 1fr;
   overflow: hidden;
