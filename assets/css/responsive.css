@@ -46,36 +46,38 @@
 
   /* ── Hero Mobile ── */
   .hero {
-    display: grid !important;
+    display: flex !important;
+    flex-direction: column !important;
     height: auto !important;
-    min-height: 100svh !important;
-    grid-template-columns: 1fr !important;
-    grid-template-rows: auto auto !important;
+    min-height: 100vh !important;
   }
   .hero-panel-content {
-    padding: 96px 24px 40px !important;
-    order: 1;
+    order: 1 !important;
+    flex: 1;
+    width: 100% !important;
+    padding: 96px 24px 36px !important;
     text-align: center;
   }
   .hero-panel-visual {
-    order: 2;
-    height: 75vw !important;
-    min-height: 280px !important;
+    order: 2 !important;
+    flex: none;
     width: 100% !important;
+    height: 72vw !important;
+    min-height: 260px !important;
   }
   .hpv-img {
-    max-width: 90% !important;
-    max-height: 90% !important;
+    max-width: 88% !important;
+    max-height: 88% !important;
     width: auto !important;
     height: auto !important;
     object-fit: contain !important;
   }
-  .hero-badge { margin: 0 auto 16px; }
-  .hero-buttons { justify-content: center; }
-  .hero-desc { margin: 0 auto 20px; font-size: 0.92rem; }
+  .hero-badge { margin: 0 auto 16px !important; }
+  .hero-buttons { justify-content: center !important; }
+  .hero-desc { margin: 0 auto 20px !important; font-size: 0.92rem; }
   .ht-big { font-size: 2rem !important; }
   .ht-sub { font-size: 1.15rem !important; }
-  .hpv-ring-1, .hpv-ring-2 { display: none; }
+  .hpv-ring-1, .hpv-ring-2 { display: none !important; }
   .hero-float-badge { display: none !important; }
 
   /* Products */
@@ -114,9 +116,9 @@
 @media (max-width: 480px) {
   .container { padding: 0 16px; }
 
-  .hero-panel-content { padding: 88px 18px 36px !important; }
-  .hero-panel-visual { height: 80vw !important; }
-  .hpv-img { max-width: 94% !important; }
+  .hero-panel-content { padding: 88px 16px 28px !important; }
+  .hero-panel-visual { height: 80vw !important; min-height: 240px !important; }
+  .hpv-img { max-width: 92% !important; }
   .ht-big { font-size: 1.8rem !important; }
   .ht-sub { font-size: 1.05rem !important; }
   .ht-intro { font-size: 0.85rem; }
