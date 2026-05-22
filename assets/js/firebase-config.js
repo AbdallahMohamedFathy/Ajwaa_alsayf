@@ -71,11 +71,14 @@ async function registerUser(name, email, phone, password) {
     return { success: true };
   } catch (e) {
     const msgs = {
-      'auth/email-already-in-use': 'هذا البريد الإلكتروني مسجل مسبقاً',
-      'auth/weak-password':        'كلمة المرور يجب أن تكون 8 أحرف على الأقل',
-      'auth/invalid-email':        'البريد الإلكتروني غير صالح'
+      'auth/email-already-in-use':  'هذا البريد الإلكتروني مسجل مسبقاً',
+      'auth/weak-password':         'كلمة المرور يجب أن تكون 8 أحرف على الأقل',
+      'auth/invalid-email':         'البريد الإلكتروني غير صالح',
+      'auth/operation-not-allowed': 'يرجى تفعيل Email/Password في Firebase Console',
+      'auth/network-request-failed':'تحقق من الاتصال بالإنترنت'
     };
-    return { success: false, error: msgs[e.code] || 'حدث خطأ، يرجى المحاولة مرة أخرى' };
+    console.error('Firebase register error:', e.code, e.message);
+    return { success: false, error: msgs[e.code] || 'حدث خطأ: ' + e.code };
   }
 }
 
@@ -83,7 +86,10 @@ async function loginUser(email, password) {
   try {
     await auth.signInWithEmailAndPassword(email, password);
     return { success: true };
-  } catch {
+  } catch (e) {
+    console.error('Firebase login error:', e.code, e.message);
+    if (e.code === 'auth/operation-not-allowed')
+      return { success: false, error: 'يرجى تفعيل Email/Password في Firebase Console' };
     return { success: false, error: 'البريد الإلكتروني أو كلمة المرور غير صحيحة' };
   }
 }
