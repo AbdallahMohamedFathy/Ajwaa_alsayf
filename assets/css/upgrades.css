@@ -82,15 +82,15 @@
 .mobile-bottom-nav-item.emergency-nav-item {
   background: linear-gradient(135deg, #ef4444, #b91c1c);
   color: var(--white) !important;
-  width: 52px;
-  height: 52px;
+  width: 62px;
+  height: 62px;
   border-radius: 50%;
-  margin-top: -30px;
+  margin-top: -36px;
   box-shadow: 0 6px 18px rgba(239, 68, 68, 0.45);
   border: 4px solid var(--white);
   flex-grow: 0;
   flex-shrink: 0;
-  max-width: 52px;
+  max-width: 62px;
 }
 
 .mobile-bottom-nav-item.emergency-nav-item i {
