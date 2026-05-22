@@ -370,115 +370,104 @@
   <script src="assets/js/firebase-config.js"></script>
   <script src="assets/js/main.js"></script>
 <script>
-  // Redirect to login if not logged in
-  if (!isLoggedIn()) {
-    window.location.href = 'login.html';
-  }
+  // ─── Wait for Firebase auth before anything ───
+  onAuthReady(async (user) => {
+    if (!user) { window.location.href = 'login.html'; return; }
 
-  const user = getCurrentUser();
+    // Fill sidebar
+    document.getElementById('avatarLetter').textContent  = (user.name || 'م').charAt(0);
+    document.getElementById('sidebarName').textContent   = user.name  || '-';
+    document.getElementById('sidebarEmail').textContent  = user.email || '-';
+    document.getElementById('sidebarPhone').textContent  = user.phone || 'غير محدد';
+    const joinDate = user.createdAt?.toDate ? user.createdAt.toDate() : new Date();
+    document.getElementById('sidebarJoined').textContent = 'عضو منذ: ' + joinDate.toLocaleDateString('ar-SA', { year:'numeric', month:'long' });
 
-  // Fill sidebar info
-  document.getElementById('avatarLetter').textContent = user.name.charAt(0);
-  document.getElementById('sidebarName').textContent = user.name;
-  document.getElementById('sidebarEmail').textContent = user.email;
-  document.getElementById('sidebarPhone').textContent = user.phone || 'غير محدد';
-  const joinDate = new Date(user.createdAt || Date.now());
-  document.getElementById('sidebarJoined').textContent = 'عضو منذ: ' + joinDate.toLocaleDateString('ar-SA', { year:'numeric', month:'long' });
+    // Fill edit form
+    document.getElementById('editName').value  = user.name  || '';
+    document.getElementById('editPhone').value = user.phone || '';
+    document.getElementById('editEmail').value = user.email || '';
 
-  // Fill edit form
-  document.getElementById('editName').value = user.name;
-  document.getElementById('editPhone').value = user.phone || '';
-  document.getElementById('editEmail').value = user.email;
+    await loadOrders(user);
+  });
 
-  // Load orders
-  function loadOrders() {
-    const allOrders = JSON.parse(localStorage.getItem('ajwaa_orders')) || [];
-    const userOrders = allOrders.filter(o => o.userId === user.id || o.phone === user.phone).sort((a,b) => b.id - a.id);
-
-    document.getElementById('sidebarOrderCount').textContent = userOrders.length + ' طلبات';
-
+  async function loadOrders(user) {
     const container = document.getElementById('ordersList');
-    if (userOrders.length === 0) {
-      container.innerHTML = `
-        <div class="empty-state">
-          <i class="fas fa-box-open"></i>
-          <h3>لا توجد طلبات بعد</h3>
-          <p>اطلب منتجاً من المتجر وستظهر طلباتك هنا</p>
-          <a href="products.html" class="btn btn-primary"><i class="fas fa-shopping-bag"></i> تسوق الآن</a>
-        </div>`;
-      return;
-    }
+    container.innerHTML = '<div style="text-align:center;padding:30px;color:var(--gray-400);"><i class="fas fa-spinner fa-spin fa-2x"></i></div>';
 
-    const paymentMap = { cash: 'الدفع عند الاستلام', mada: 'مدى / بطاقة ائتمان', applepay: 'Apple Pay' };
+    try {
+      const userOrders = await getUserOrders(user.uid);
+      document.getElementById('sidebarOrderCount').textContent = userOrders.length + ' طلبات';
 
-    container.innerHTML = userOrders.map(order => {
-      const st = getStatusLabel(order.status);
-      const dateStr = new Date(order.date).toLocaleDateString('ar-SA', { year:'numeric', month:'long', day:'numeric' });
-      const itemsHtml = (order.items || []).map(it =>
-        `<span class="order-item-chip">${it.name.split(' ').slice(0,3).join(' ')} x${it.qty}</span>`
-      ).join('');
-      return `
-        <div class="order-card">
-          <div class="order-card-header">
-            <div>
-              <div class="order-num">#${order.orderNum}</div>
-              <div class="order-date">${dateStr}</div>
+      if (userOrders.length === 0) {
+        container.innerHTML = `
+          <div class="empty-state">
+            <i class="fas fa-box-open"></i>
+            <h3>لا توجد طلبات بعد</h3>
+            <p>اطلب منتجاً من المتجر وستظهر طلباتك هنا</p>
+            <a href="products.html" class="btn btn-primary"><i class="fas fa-shopping-bag"></i> تسوق الآن</a>
+          </div>`;
+        return;
+      }
+
+      const paymentMap = { cash: 'الدفع عند الاستلام', mada: 'مدى / بطاقة ائتمان', applepay: 'Apple Pay' };
+
+      container.innerHTML = userOrders.map(order => {
+        const st      = getStatusLabel(order.status);
+        const d       = order.createdAt?.toDate ? order.createdAt.toDate() : new Date();
+        const dateStr = d.toLocaleDateString('ar-SA', { year:'numeric', month:'long', day:'numeric' });
+        const itemsHtml = (order.items || []).map(it =>
+          `<span class="order-item-chip">${it.name.split(' ').slice(0,3).join(' ')} x${it.qty}</span>`
+        ).join('');
+        return `
+          <div class="order-card">
+            <div class="order-card-header">
+              <div>
+                <div class="order-num">#${order.orderNum}</div>
+                <div class="order-date">${dateStr}</div>
+              </div>
+              <span class="status-badge" style="background:${st.color}22;color:${st.color};border:1px solid ${st.color}44;">
+                <i class="fas fa-circle" style="font-size:0.5rem;"></i>${st.label}
+              </span>
             </div>
-            <span class="status-badge" style="background:${st.color}22;color:${st.color};border:1px solid ${st.color}44;">
-              <i class="fas fa-circle" style="font-size:0.5rem;"></i>${st.label}
-            </span>
-          </div>
-          <div class="order-items-mini">${itemsHtml || '<span class="order-item-chip">لا توجد منتجات</span>'}</div>
-          <div class="order-footer">
-            <span class="order-total">${(order.total || 0).toLocaleString()} ريال</span>
-            <span class="order-payment">
-              <i class="fas fa-credit-card"></i>
-              ${paymentMap[order.payment] || order.payment || 'غير محدد'}
-            </span>
-          </div>
-        </div>`;
-    }).join('');
+            <div class="order-items-mini">${itemsHtml || '<span class="order-item-chip">لا توجد منتجات</span>'}</div>
+            <div class="order-footer">
+              <span class="order-total">${(order.total || 0).toLocaleString()} ريال</span>
+              <span class="order-payment"><i class="fas fa-credit-card"></i> ${paymentMap[order.payment] || order.payment || 'غير محدد'}</span>
+            </div>
+          </div>`;
+      }).join('');
+    } catch (e) {
+      container.innerHTML = '<div style="text-align:center;color:var(--danger);padding:20px;">خطأ في تحميل الطلبات</div>';
+    }
   }
-
-  loadOrders();
 
   function switchTab(tab) {
     ['orders', 'edit'].forEach(t => {
-      const id = 'tab' + t.charAt(0).toUpperCase() + t.slice(1);
-      document.getElementById(id).classList.toggle('active', t === tab);
-      const navId = 'nav' + t.charAt(0).toUpperCase() + t.slice(1);
-      document.getElementById(navId)?.classList.toggle('active', t === tab);
+      document.getElementById('tab' + t.charAt(0).toUpperCase() + t.slice(1))?.classList.toggle('active', t === tab);
+      document.getElementById('nav' + t.charAt(0).toUpperCase() + t.slice(1))?.classList.toggle('active', t === tab);
     });
   }
 
-  function saveProfile(e) {
+  async function saveProfile(e) {
     e.preventDefault();
-    const newName = document.getElementById('editName').value.trim();
+    const user     = getCurrentUser();
+    if (!user) return;
+    const newName  = document.getElementById('editName').value.trim();
     const newPhone = document.getElementById('editPhone').value.trim();
-    const newPassword = document.getElementById('editPassword').value;
+    if (!newName) { showToast('يرجى إدخال الاسم'); return; }
 
-    const users = getUsers();
-    const idx = users.findIndex(u => u.id === user.id);
-    if (idx === -1) return;
-
-    users[idx].name = newName;
-    users[idx].phone = newPhone;
-    if (newPassword) users[idx].password = newPassword;
-
-    localStorage.setItem('ajwaa_users', JSON.stringify(users));
-    const { password: _p, ...safeUser } = users[idx];
-    localStorage.setItem('ajwaa_current_user', JSON.stringify(safeUser));
-
-    document.getElementById('sidebarName').textContent = newName;
-    document.getElementById('avatarLetter').textContent = newName.charAt(0);
-    document.getElementById('sidebarPhone').textContent = newPhone || 'غير محدد';
-
-    const successEl = document.getElementById('saveSuccess');
-    successEl.classList.add('show');
-    setTimeout(() => successEl.classList.remove('show'), 3000);
-    document.getElementById('editPassword').value = '';
-
-    updateNavbarAuth();
+    try {
+      await updateUserProfile(user.uid, { name: newName, phone: newPhone });
+      document.getElementById('sidebarName').textContent  = newName;
+      document.getElementById('avatarLetter').textContent = newName.charAt(0);
+      document.getElementById('sidebarPhone').textContent = newPhone || 'غير محدد';
+      updateNavbarAuth();
+      const successEl = document.getElementById('saveSuccess');
+      successEl.classList.add('show');
+      setTimeout(() => successEl.classList.remove('show'), 3000);
+    } catch (err) {
+      showToast('خطأ في الحفظ: ' + err.message);
+    }
   }
 </script>
 </body>
