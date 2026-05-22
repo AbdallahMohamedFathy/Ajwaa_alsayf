@@ -1290,21 +1290,18 @@ function initSecretAdminAccess() {
     setTimeout(() => document.getElementById('adminSecretEmail')?.focus(), 150);
   }
 
-  // Mobile: 3 taps on logo image (touchend — fires before navigation)
-  let taps = 0, lastTap = 0;
+  // Mobile: Long press on logo (1.5s)
+  let pressTimer = null;
   const logoImg = document.querySelector('.navbar-logo img');
   if (logoImg) {
-    logoImg.addEventListener('touchend', (e) => {
-      const now = Date.now();
-      taps = (now - lastTap < 500) ? taps + 1 : 1;
-      lastTap = now;
-      if (taps >= 3) {
-        taps = 0;
-        e.preventDefault();
-        e.stopPropagation();
+    logoImg.addEventListener('touchstart', () => {
+      pressTimer = setTimeout(() => {
         openAdminModal();
-      }
-    }, { passive: false });
+      }, 1500);
+    }, { passive: true });
+
+    logoImg.addEventListener('touchend',  () => clearTimeout(pressTimer));
+    logoImg.addEventListener('touchmove', () => clearTimeout(pressTimer));
   }
 
   // Desktop: Ctrl + Shift + A
