@@ -130,10 +130,12 @@
   .btn-add-cart { width: 32px; height: 32px; font-size: 0.8rem; }
   .product-brand { font-size: 0.65rem; }
 
-  .services-grid { grid-template-columns: 1fr 1fr; gap: 10px; }
-  .service-card { padding: 20px 14px; }
-  .service-icon { width: 50px; height: 50px; font-size: 1.2rem; }
-  .service-card h3 { font-size: 0.9rem; }
+  .services-grid { grid-template-columns: 1fr 1fr; gap: 8px; }
+  .service-card { padding: 14px 10px; }
+  .service-icon { width: 40px; height: 40px; font-size: 1rem; margin-bottom: 8px; }
+  .service-card h3 { font-size: 0.78rem; margin-bottom: 4px; }
+  .service-card p { font-size: 0.7rem; line-height: 1.4; display: -webkit-box; -webkit-line-clamp: 2; line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+  .service-card .btn { font-size: 0.7rem; padding: 6px 10px; margin-top: 8px; }
 
   .brands-grid { grid-template-columns: repeat(3, 1fr); }
   .brand-card { padding: 14px; min-height: 70px; }
