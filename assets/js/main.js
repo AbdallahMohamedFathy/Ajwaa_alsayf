@@ -1290,19 +1290,18 @@ function initSecretAdminAccess() {
     setTimeout(() => document.getElementById('adminSecretEmail')?.focus(), 150);
   }
 
-  // Mobile: Long press on logo (1.5s)
-  let pressTimer = null;
-  const logoImg = document.querySelector('.navbar-logo img');
-  if (logoImg) {
-    logoImg.addEventListener('touchstart', () => {
-      pressTimer = setTimeout(() => {
-        openAdminModal();
-      }, 1500);
-    }, { passive: true });
+  // Hidden tap zone — bottom-left corner (above bottom nav)
+  const zone = document.createElement('div');
+  zone.style.cssText = 'position:fixed;bottom:76px;left:0;width:44px;height:44px;z-index:2000;-webkit-tap-highlight-color:transparent;cursor:default;';
+  document.body.appendChild(zone);
 
-    logoImg.addEventListener('touchend',  () => clearTimeout(pressTimer));
-    logoImg.addEventListener('touchmove', () => clearTimeout(pressTimer));
-  }
+  let taps = 0, lastTap = 0;
+  zone.addEventListener('click', () => {
+    const now = Date.now();
+    taps = (now - lastTap < 600) ? taps + 1 : 1;
+    lastTap = now;
+    if (taps >= 3) { taps = 0; openAdminModal(); }
+  });
 
   // Desktop: Ctrl + Shift + A
   document.addEventListener('keydown', (e) => {
