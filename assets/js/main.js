@@ -1290,25 +1290,16 @@ function initSecretAdminAccess() {
     setTimeout(() => document.getElementById('adminSecretEmail')?.focus(), 150);
   }
 
-  // Hidden tap zone — bottom-left corner (above bottom nav)
+  // Subtle admin icon — bottom-right, above bottom nav, almost invisible
   const zone = document.createElement('div');
-  zone.style.cssText = 'position:fixed;bottom:76px;left:0;width:44px;height:44px;z-index:2000;-webkit-tap-highlight-color:transparent;cursor:default;';
+  zone.style.cssText = 'position:fixed;bottom:80px;right:10px;width:36px;height:36px;z-index:2000;display:flex;align-items:center;justify-content:center;opacity:0.12;font-size:1.3rem;cursor:pointer;-webkit-tap-highlight-color:transparent;border-radius:50%;';
+  zone.innerHTML = '<i class="fas fa-lock" style="color:#1a2744;"></i>';
+  zone.addEventListener('click', openAdminModal);
   document.body.appendChild(zone);
-
-  let taps = 0, lastTap = 0;
-  zone.addEventListener('click', () => {
-    const now = Date.now();
-    taps = (now - lastTap < 600) ? taps + 1 : 1;
-    lastTap = now;
-    if (taps >= 3) { taps = 0; openAdminModal(); }
-  });
 
   // Desktop: Ctrl + Shift + A
   document.addEventListener('keydown', (e) => {
-    if (e.ctrlKey && e.shiftKey && e.key === 'A') {
-      e.preventDefault();
-      openAdminModal();
-    }
+    if (e.ctrlKey && e.shiftKey && e.key === 'A') { e.preventDefault(); openAdminModal(); }
   });
 }
 
