@@ -184,6 +184,12 @@
   top: 100px;
 }
 
+@media (max-width: 768px) {
+  .product-gallery {
+    position: static;
+  }
+}
+
 .product-gallery .main-image {
   width: 100%;
   aspect-ratio: 1;
