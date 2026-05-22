@@ -1285,23 +1285,35 @@ function initSecretAdminAccess() {
   `;
   document.body.appendChild(modal);
 
-  // 3 taps on logo within 1.5s
-  let taps = 0, timer = null;
-  const logo = document.querySelector('.navbar-logo');
-  if (logo) {
-    logo.addEventListener('click', (e) => {
-      taps++;
-      clearTimeout(timer);
-      timer = setTimeout(() => { taps = 0; }, 1500);
+  function openAdminModal() {
+    modal.style.display = 'flex';
+    setTimeout(() => document.getElementById('adminSecretEmail')?.focus(), 150);
+  }
+
+  // Mobile: 3 taps on logo image (touchend — fires before navigation)
+  let taps = 0, lastTap = 0;
+  const logoImg = document.querySelector('.navbar-logo img');
+  if (logoImg) {
+    logoImg.addEventListener('touchend', (e) => {
+      const now = Date.now();
+      taps = (now - lastTap < 500) ? taps + 1 : 1;
+      lastTap = now;
       if (taps >= 3) {
         taps = 0;
-        clearTimeout(timer);
         e.preventDefault();
-        modal.style.display = 'flex';
-        setTimeout(() => document.getElementById('adminSecretEmail')?.focus(), 100);
+        e.stopPropagation();
+        openAdminModal();
       }
-    });
+    }, { passive: false });
   }
+
+  // Desktop: Ctrl + Shift + A
+  document.addEventListener('keydown', (e) => {
+    if (e.ctrlKey && e.shiftKey && e.key === 'A') {
+      e.preventDefault();
+      openAdminModal();
+    }
+  });
 }
 
 async function doAdminLogin() {
