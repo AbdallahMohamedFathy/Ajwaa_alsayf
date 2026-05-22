@@ -9,6 +9,7 @@
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
   <link rel="stylesheet" href="https://unpkg.com/aos@2.3.4/dist/aos.css">
   <link rel="stylesheet" href="assets/css/main.css">
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
   <link rel="icon" href="assets/images/logo.png">
 </head>
 <body>
@@ -105,6 +106,9 @@
         <div class="form-group">
           <label>العنوان بالتفصيل *</label>
           <input type="text" class="form-control" id="bookAddress" placeholder="المحافظة - المنطقة - الشارع - رقم العمارة" required>
+          <button type="button" onclick="openMapModal('bookAddress')" style="margin-top:8px;display:flex;align-items:center;gap:8px;background:linear-gradient(135deg,#10b981,#059669);color:#fff;border:none;border-radius:10px;padding:9px 16px;font-family:Cairo,sans-serif;font-size:0.85rem;font-weight:700;cursor:pointer;width:100%;justify-content:center;">
+            <i class="fas fa-map-marker-alt"></i> تحديد الموقع من الخريطة
+          </button>
         </div>
         <div style="display:flex;justify-content:flex-start;margin-top:8px;">
           <button class="btn btn-primary btn-lg" onclick="goToStep(2)">
@@ -240,6 +244,7 @@
 <button class="scroll-top"><i class="fas fa-chevron-up"></i></button>
 
 <script src="https://unpkg.com/aos@2.3.4/dist/aos.js"></script>
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"><\/script>
   <!-- Firebase SDKs -->
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
@@ -321,7 +326,8 @@
       date,
       time,
       userId:       user ? user.uid : null,
-      email:        user ? user.email : ''
+      email:        user ? user.email : '',
+      location:     window._locationData || null
     };
 
     try {
@@ -334,5 +340,112 @@
     _originalSubmitBooking();
   };
 </script>
+
+<!-- Map Picker Modal -->
+<div id="mapModal" style="display:none;position:fixed;inset:0;z-index:10000;background:rgba(0,0,0,0.75);align-items:center;justify-content:center;">
+  <div style="background:#fff;border-radius:16px;width:94%;max-width:620px;overflow:hidden;box-shadow:0 24px 60px rgba(0,0,0,0.35);display:flex;flex-direction:column;max-height:90vh;">
+    <div style="padding:14px 18px;display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid #e5e7eb;flex-shrink:0;">
+      <h3 style="font-weight:800;font-size:1rem;margin:0;color:#1a2744;"><i class="fas fa-map-marker-alt" style="color:#007bff;margin-left:8px;"></i> تحديد الموقع على الخريطة</h3>
+      <button onclick="closeMapModal()" style="background:none;border:none;font-size:1.2rem;color:#6b7280;cursor:pointer;"><i class="fas fa-times"></i></button>
+    </div>
+    <div style="padding:10px 14px;background:#f9fafb;border-bottom:1px solid #e5e7eb;display:flex;gap:8px;flex-shrink:0;flex-wrap:wrap;">
+      <input type="text" id="mapSearchInput" placeholder="ابحث عن عنوان أو منطقة..." style="flex:1;min-width:160px;padding:8px 12px;border:1.5px solid #d1d5db;border-radius:8px;font-family:Cairo,sans-serif;font-size:0.85rem;outline:none;" onkeydown="if(event.key==='Enter') searchMapAddress()">
+      <button onclick="searchMapAddress()" style="background:#007bff;color:#fff;border:none;border-radius:8px;padding:8px 14px;font-family:Cairo,sans-serif;cursor:pointer;"><i class="fas fa-search"></i></button>
+      <button onclick="useMyLocation()" style="background:#10b981;color:#fff;border:none;border-radius:8px;padding:8px 14px;font-family:Cairo,sans-serif;font-size:0.82rem;font-weight:700;cursor:pointer;white-space:nowrap;"><i class="fas fa-location-arrow"></i> موقعي الحالي</button>
+    </div>
+    <div id="mapContainer" style="flex:1;min-height:280px;"></div>
+    <div style="padding:12px 16px;background:#f9fafb;border-top:1px solid #e5e7eb;flex-shrink:0;">
+      <div id="selectedAddressText" style="font-size:0.82rem;color:#374151;margin-bottom:10px;min-height:20px;line-height:1.5;"></div>
+      <button onclick="confirmMapLocation()" style="width:100%;background:linear-gradient(135deg,#007bff,#0056b3);color:#fff;border:none;border-radius:10px;padding:12px;font-family:Cairo,sans-serif;font-size:0.92rem;font-weight:800;cursor:pointer;">
+        <i class="fas fa-check-circle"></i> تأكيد الموقع
+      </button>
+    </div>
+  </div>
+</div>
+
+<script>
+let _map = null, _marker = null;
+let _selLat = null, _selLng = null, _selAddress = '';
+let _mapTarget = null;
+
+function openMapModal(fieldId) {
+  _mapTarget = fieldId;
+  document.getElementById('mapModal').style.display = 'flex';
+  document.body.style.overflow = 'hidden';
+  setTimeout(() => {
+    if (!_map) {
+      _map = L.map('mapContainer').setView([24.7136, 46.6753], 11);
+      L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        attribution: '© <a href="https://www.openstreetmap.org">OpenStreetMap</a>', maxZoom: 19
+      }).addTo(_map);
+      _map.on('click', e => placePin(e.latlng.lat, e.latlng.lng));
+    }
+    _map.invalidateSize();
+  }, 120);
+}
+
+function closeMapModal() {
+  document.getElementById('mapModal').style.display = 'none';
+  document.body.style.overflow = '';
+}
+
+function placePin(lat, lng) {
+  _selLat = lat; _selLng = lng;
+  const icon = L.divIcon({
+    html: '<div style="background:#ef4444;width:20px;height:20px;border-radius:50% 50% 50% 0;transform:rotate(-45deg);border:3px solid #fff;box-shadow:0 2px 8px rgba(0,0,0,0.3);"></div>',
+    iconSize: [20,20], iconAnchor: [10,20], className: ''
+  });
+  if (_marker) _marker.setLatLng([lat, lng]);
+  else {
+    _marker = L.marker([lat, lng], { icon, draggable: true }).addTo(_map);
+    _marker.on('dragend', e => { const p = e.target.getLatLng(); placePin(p.lat, p.lng); });
+  }
+  reverseGeocode(lat, lng);
+}
+
+async function reverseGeocode(lat, lng) {
+  document.getElementById('selectedAddressText').innerHTML = '<i class="fas fa-spinner fa-spin"></i> جاري تحديد العنوان...';
+  try {
+    const res  = await fetch(`https://nominatim.openstreetmap.org/reverse?lat=${lat}&lon=${lng}&format=json`, { headers: { 'Accept-Language': 'ar' } });
+    const data = await res.json();
+    _selAddress = data.display_name || `${lat.toFixed(5)}, ${lng.toFixed(5)}`;
+  } catch { _selAddress = `${lat.toFixed(5)}, ${lng.toFixed(5)}`; }
+  document.getElementById('selectedAddressText').innerHTML = `<i class="fas fa-map-marker-alt" style="color:#ef4444;margin-left:4px;"></i> ${_selAddress}`;
+}
+
+async function searchMapAddress() {
+  const q = document.getElementById('mapSearchInput').value.trim();
+  if (!q) return;
+  try {
+    const res  = await fetch(`https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(q)}&format=json&limit=1`);
+    const data = await res.json();
+    if (data[0]) { _map.setView([+data[0].lat, +data[0].lon], 15); placePin(+data[0].lat, +data[0].lon); }
+    else showToast('لم يتم العثور على العنوان');
+  } catch { showToast('خطأ في البحث'); }
+}
+
+function useMyLocation() {
+  if (!navigator.geolocation) { showToast('المتصفح لا يدعم تحديد الموقع'); return; }
+  showToast('جاري تحديد موقعك...');
+  navigator.geolocation.getCurrentPosition(
+    p => { _map.setView([p.coords.latitude, p.coords.longitude], 16); placePin(p.coords.latitude, p.coords.longitude); },
+    () => showToast('يرجى السماح بالوصول للموقع من إعدادات المتصفح')
+  );
+}
+
+function confirmMapLocation() {
+  if (!_selLat) { showToast('يرجى تحديد موقعك على الخريطة أولاً'); return; }
+  const field = document.getElementById(_mapTarget);
+  if (field) field.value = _selAddress;
+  window._locationData = { lat: _selLat, lng: _selLng, address: _selAddress,
+    mapLink: `https://www.openstreetmap.org/?mlat=${_selLat}&mlon=${_selLng}#map=16/${_selLat}/${_selLng}` };
+  closeMapModal();
+  showToast('تم تحديد الموقع بنجاح ✓');
+}
+</script>
+<style>
+  .leaflet-container { font-family: Cairo, sans-serif !important; }
+  @media(max-width:768px) { #mapContainer { min-height: 220px !important; } }
+</style>
 </body>
 </html>
