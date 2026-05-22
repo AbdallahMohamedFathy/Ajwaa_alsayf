@@ -558,8 +558,27 @@ function initMobileBottomNav() {
       <i class="fas fa-tools"></i>
       <span>الخدمات</span>
     </a>
+    <a href="login.html" class="mobile-bottom-nav-item" id="mobileProfileBtn">
+      <i class="fas fa-user"></i>
+      <span>دخول</span>
+    </a>
   `;
   document.body.appendChild(bottomBar);
+
+  // Update profile button after Firebase auth resolves
+  onAuthReady((user) => {
+    const btn = document.getElementById('mobileProfileBtn');
+    if (!btn) return;
+    if (user) {
+      const firstName = user.name ? user.name.split(' ')[0] : 'حسابي';
+      btn.href = 'profile.html';
+      btn.classList.toggle('active', window.location.pathname.endsWith('profile.html'));
+      btn.innerHTML = `<i class="fas fa-user-circle"></i><span>${firstName}</span>`;
+    } else {
+      btn.href = 'login.html';
+      btn.innerHTML = `<i class="fas fa-user"></i><span>دخول</span>`;
+    }
+  });
 
   // Add the Floating emergency button for Desktop as well
   const emergencyFloat = document.createElement('a');
@@ -716,7 +735,7 @@ function removeCompareItem(id) {
 
 function renderCompareFloatBar() {
   let bar = document.querySelector('.compare-float-bar');
-  if (compareList.length === 0) {
+  if (compareList.length === 0 || window.location.pathname.includes('product-details')) {
     bar?.classList.remove('active');
     return;
   }
