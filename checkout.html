@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
   <meta charset="UTF-8">
@@ -33,6 +33,33 @@
   <div class="breadcrumb"><a href="index.html">الرئيسية</a><span>/</span><a href="products.html">المنتجات</a><span>/</span><span>الدفع</span></div>
 </div>
 
+<!-- Auth Gate Overlay -->
+<div id="authGateOverlay" style="display:none;position:fixed;inset:0;z-index:9999;background:rgba(10,30,80,0.72);backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px);align-items:center;justify-content:center;">
+  <div style="background:#fff;border-radius:20px;box-shadow:0 20px 60px rgba(0,0,0,0.25);padding:44px 36px;max-width:440px;width:90%;text-align:center;animation:fadeInUp 0.4s ease;">
+    <div style="width:72px;height:72px;background:linear-gradient(135deg,#007bff,#00d4ff);border-radius:50%;display:flex;align-items:center;justify-content:center;margin:0 auto 20px;box-shadow:0 8px 24px rgba(0,123,255,0.3);">
+      <i class="fas fa-lock" style="font-size:1.8rem;color:#fff;"></i>
+    </div>
+    <h2 style="font-size:1.4rem;font-weight:800;color:#1a2744;margin-bottom:10px;">يجب تسجيل الدخول أولاً</h2>
+    <p style="color:#6b7280;font-size:0.92rem;line-height:1.7;margin-bottom:28px;">
+      لإتمام عملية الشراء يرجى تسجيل الدخول أو إنشاء حساب جديد.<br>
+      بياناتك ستُملأ تلقائياً بعد التسجيل.
+    </p>
+    <div style="display:flex;gap:12px;justify-content:center;flex-wrap:wrap;">
+      <a href="login.html?redirect=checkout" class="btn btn-primary" style="min-width:140px;">
+        <i class="fas fa-sign-in-alt"></i> تسجيل الدخول
+      </a>
+      <a href="login.html?tab=register&redirect=checkout" class="btn btn-outline" style="min-width:140px;">
+        <i class="fas fa-user-plus"></i> حساب جديد
+      </a>
+    </div>
+    <div style="margin-top:20px;">
+      <a href="products.html" style="font-size:0.82rem;color:#9ca3af;text-decoration:none;">
+        <i class="fas fa-arrow-right"></i> العودة للتسوق
+      </a>
+    </div>
+  </div>
+</div>
+
 <section style="padding:40px 0 80px;">
   <div class="container">
     <div style="display:grid;grid-template-columns:1.4fr 1fr;gap:30px;" id="checkoutGrid">
@@ -43,16 +70,16 @@
           <div class="form-row">
             <div class="form-group">
               <label>الاسم الكامل *</label>
-              <input type="text" class="form-control" placeholder="الاسم" required>
+              <input type="text" id="checkoutName" class="form-control" placeholder="الاسم" required>
             </div>
             <div class="form-group">
               <label>رقم الهاتف *</label>
-              <input type="tel" class="form-control" placeholder="01xxxxxxxxx" required>
+              <input type="tel" id="checkoutPhone" class="form-control" placeholder="01xxxxxxxxx" required>
             </div>
           </div>
           <div class="form-group">
             <label>البريد الإلكتروني</label>
-            <input type="email" class="form-control" placeholder="email@example.com">
+            <input type="email" id="checkoutEmail" class="form-control" placeholder="email@example.com">
           </div>
           <div class="form-row">
             <div class="form-group">
@@ -122,9 +149,29 @@
         <div class="booking-form-card" style="position:sticky;top:100px;">
           <h2 style="font-size:1.2rem;font-weight:800;margin-bottom:16px;"><i class="fas fa-receipt" style="color:var(--primary);margin-left:8px;"></i> ملخص الطلب</h2>
           <div id="checkoutItems"></div>
+
+          <!-- Coupon Code Input -->
+          <div style="margin-top:16px;padding:14px;background:var(--gray-50);border-radius:var(--radius-md);border:1.5px dashed var(--gray-200);">
+            <label style="font-size:0.85rem;font-weight:700;color:var(--gray-700);margin-bottom:8px;display:block;">
+              <i class="fas fa-tag" style="color:var(--primary);margin-left:4px;"></i> هل لديك كوبون خصم؟
+            </label>
+            <div style="display:flex;gap:8px;">
+              <input type="text" class="form-control" id="couponInput" placeholder="أدخل كود الكوبون" style="flex:1;text-transform:uppercase;letter-spacing:1px;font-weight:700;font-size:0.9rem;">
+              <button class="btn btn-primary" id="applyCouponBtn" onclick="applyCoupon()" style="padding:8px 18px;white-space:nowrap;font-size:0.85rem;">
+                <i class="fas fa-check"></i> تطبيق
+              </button>
+            </div>
+            <div id="couponMessage" style="margin-top:8px;font-size:0.8rem;display:none;"></div>
+          </div>
+
           <div style="border-top:2px solid var(--gray-100);margin-top:16px;padding-top:16px;">
             <div style="display:flex;justify-content:space-between;font-size:0.9rem;color:var(--gray-500);margin-bottom:8px;">
               <span>المنتجات</span><span id="subtotal">0 ريال</span>
+            </div>
+            <!-- Discount Row (hidden by default) -->
+            <div id="discountRow" style="display:none;justify-content:space-between;font-size:0.9rem;margin-bottom:8px;">
+              <span style="color:var(--success);font-weight:600;"><i class="fas fa-percentage"></i> خصم الكوبون <span id="discountLabel"></span></span>
+              <span style="color:var(--success);font-weight:700;" id="discountAmount">0 ريال</span>
             </div>
             <div style="display:flex;justify-content:space-between;font-size:0.9rem;color:var(--gray-500);margin-bottom:8px;">
               <span>التوصيل</span><span style="color:var(--success);font-weight:600;">مجاني</span>
@@ -139,8 +186,34 @@
   </div>
 </section>
 
-<script src="assets/js/main.js"></script>
+  <!-- Firebase SDKs -->
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+  <script src="assets/js/firebase-config.js"></script>
+  <script src="assets/js/main.js"></script>
 <script>
+  // ═══ Auth Gate (Firebase async) ═══
+  onAuthReady(function(user) {
+    if (!user) {
+      const overlay = document.getElementById('authGateOverlay');
+      overlay.style.display = 'flex';
+      document.body.style.overflow = 'hidden';
+    } else {
+      // Auto-fill from Firebase user profile
+      const nameEl  = document.getElementById('checkoutName');
+      const phoneEl = document.getElementById('checkoutPhone');
+      const emailEl = document.getElementById('checkoutEmail');
+      if (nameEl  && user.name)  nameEl.value  = user.name;
+      if (phoneEl && user.phone) phoneEl.value = user.phone;
+      if (emailEl && user.email) emailEl.value = user.email;
+    }
+  });
+
+  // ═══ Coupon State ═══
+  let appliedCoupon = null;
+  let discountValue = 0;
+
   // Render checkout items
   const checkoutItems = document.getElementById('checkoutItems');
   if (checkoutItems) {
@@ -160,13 +233,90 @@
         </div>
       `).join('');
     }
-    document.getElementById('subtotal').textContent = getCartTotal().toLocaleString() + ' ريال';
-    document.getElementById('grandTotal').textContent = getCartTotal().toLocaleString() + ' ريال';
+    updateCheckoutTotals();
   }
 
-  function placeOrder() {
-    const nameInput = document.querySelector('input[placeholder="الاسم"]');
-    const phoneInput = document.querySelector('input[placeholder="01xxxxxxxxx"]');
+  function updateCheckoutTotals() {
+    const subtotal = getCartTotal();
+    document.getElementById('subtotal').textContent = subtotal.toLocaleString() + ' ريال';
+
+    if (appliedCoupon) {
+      discountValue = Math.round(subtotal * (appliedCoupon.discount / 100));
+      document.getElementById('discountRow').style.display = 'flex';
+      document.getElementById('discountLabel').textContent = '(' + appliedCoupon.discount + '%)';
+      document.getElementById('discountAmount').textContent = '- ' + discountValue.toLocaleString() + ' ريال';
+    } else {
+      discountValue = 0;
+      document.getElementById('discountRow').style.display = 'none';
+    }
+
+    const finalTotal = subtotal - discountValue;
+    document.getElementById('grandTotal').textContent = finalTotal.toLocaleString() + ' ريال';
+  }
+
+  // ═══ Apply Coupon (Firestore) ═══
+  async function applyCoupon() {
+    const input = document.getElementById('couponInput');
+    const msg   = document.getElementById('couponMessage');
+    const code  = input.value.trim().toUpperCase();
+    const btn   = document.getElementById('applyCouponBtn');
+
+    if (!code) {
+      msg.style.display = 'block';
+      msg.style.color = 'var(--danger)';
+      msg.innerHTML = '<i class="fas fa-exclamation-circle"></i> يرجى إدخال كود الكوبون';
+      return;
+    }
+
+    btn.disabled = true;
+    btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
+
+    const found = await getCouponByCode(code);
+    btn.disabled = false;
+    btn.innerHTML = '<i class="fas fa-check"></i> تطبيق';
+
+    if (!found) {
+      msg.style.display = 'block';
+      msg.style.color = 'var(--danger)';
+      msg.innerHTML = '<i class="fas fa-times-circle"></i> كود الكوبون غير صالح أو منتهي الصلاحية';
+      appliedCoupon = null;
+      updateCheckoutTotals();
+      return;
+    }
+
+    appliedCoupon = { code: found.code, discount: found.discount };
+    msg.style.display = 'block';
+    msg.style.color = 'var(--success)';
+    msg.innerHTML = '<i class="fas fa-check-circle"></i> تم تطبيق كوبون <strong>' + found.code + '</strong> بنجاح! خصم ' + found.discount + '%';
+
+    input.disabled = true;
+    input.style.background = 'var(--gray-100)';
+    btn.innerHTML = '<i class="fas fa-times"></i> إزالة';
+    btn.onclick = removeCoupon;
+
+    updateCheckoutTotals();
+    showToast('تم تطبيق الكوبون بنجاح! خصم ' + found.discount + '% 🎉');
+  }
+
+  function removeCoupon() {
+    appliedCoupon = null;
+    const input = document.getElementById('couponInput');
+    const msg = document.getElementById('couponMessage');
+    input.disabled = false;
+    input.value = '';
+    input.style.background = '';
+    msg.style.display = 'none';
+    document.getElementById('applyCouponBtn').innerHTML = '<i class="fas fa-check"></i> تطبيق';
+    document.getElementById('applyCouponBtn').onclick = applyCoupon;
+    updateCheckoutTotals();
+    showToast('تم إزالة الكوبون');
+  }
+
+  // ═══ Place Order → Firestore ═══
+  async function placeOrder() {
+    const nameInput  = document.getElementById('checkoutName');
+    const phoneInput = document.getElementById('checkoutPhone');
+    const emailInput = document.getElementById('checkoutEmail');
 
     if (!nameInput?.value.trim() || !phoneInput?.value.trim()) {
       showToast('يرجى ملء الاسم ورقم الهاتف على الأقل');
@@ -177,30 +327,42 @@
       return;
     }
 
-    const orderNum = 'AJW-' + Math.floor(Math.random() * 9000 + 1000);
-    const user = getCurrentUser();
-    const order = {
-      id: Date.now(),
+    const confirmBtn = document.querySelector('#checkoutForm .btn-primary[onclick]');
+    if (confirmBtn) { confirmBtn.disabled = true; confirmBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> جاري الإرسال...'; }
+
+    const subtotal   = getCartTotal();
+    const finalTotal = subtotal - discountValue;
+    const orderNum   = 'AJW-' + Math.floor(Math.random() * 9000 + 1000);
+    const user       = getCurrentUser();
+
+    const orderData = {
       orderNum,
-      items: [...cart],
-      total: getCartTotal(),
-      status: 'pending',
-      date: new Date().toISOString(),
-      userId: user ? user.id : null,
+      items:        [...cart],
+      subtotal,
+      discount:     discountValue,
+      coupon:       appliedCoupon ? appliedCoupon.code : null,
+      total:        finalTotal,
+      status:       'pending',
+      userId:       user ? user.uid : null,
       customerName: nameInput.value.trim(),
-      phone: phoneInput.value.trim(),
-      payment: document.querySelector('input[name="payment"]:checked')?.value || 'cash'
+      phone:        phoneInput.value.trim(),
+      email:        emailInput?.value.trim() || '',
+      payment:      document.querySelector('input[name="payment"]:checked')?.value || 'cash'
     };
 
-    const orders = JSON.parse(localStorage.getItem('ajwaa_orders')) || [];
-    orders.push(order);
-    localStorage.setItem('ajwaa_orders', JSON.stringify(orders));
+    try {
+      await createOrder(orderData);
+    } catch (e) {
+      if (confirmBtn) { confirmBtn.disabled = false; confirmBtn.innerHTML = '<i class="fas fa-check-circle"></i> تأكيد الطلب'; }
+      showToast('حدث خطأ، يرجى المحاولة مرة أخرى');
+      return;
+    }
 
     document.getElementById('confirmedOrderNum').textContent = '#' + orderNum;
     if (user) document.getElementById('viewOrderBtn').style.display = 'inline-flex';
 
-    document.getElementById('checkoutForm').style.display = 'none';
-    document.getElementById('orderSuccess').style.display = 'block';
+    document.getElementById('checkoutForm').style.display  = 'none';
+    document.getElementById('orderSuccess').style.display  = 'block';
     cart = [];
     saveCart();
     updateCartBadge();

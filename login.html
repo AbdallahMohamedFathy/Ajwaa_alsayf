@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
   <meta charset="UTF-8">
@@ -278,11 +278,23 @@
   </div>
 </div>
 
-<script src="assets/js/main.js"></script>
+  <!-- Firebase SDKs -->
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+  <script src="assets/js/firebase-config.js"></script>
+  <script src="assets/js/main.js"></script>
 <script>
-  if (isLoggedIn()) {
-    window.location.href = 'profile.html';
-  }
+  const _urlParams     = new URLSearchParams(window.location.search);
+  const _redirectTarget = _urlParams.get('redirect') === 'checkout' ? 'checkout.html' : 'profile.html';
+
+  // Redirect if already logged in (wait for Firebase auth)
+  onAuthReady((user) => {
+    if (user) window.location.href = _redirectTarget;
+  });
+
+  // Tab param
+  if (_urlParams.get('tab') === 'register') switchTab('register');
 
   function switchTab(tab) {
     document.getElementById('tabLogin').classList.toggle('active', tab === 'login');
@@ -295,14 +307,9 @@
 
   function togglePassword(inputId, btn) {
     const input = document.getElementById(inputId);
-    const icon = btn.querySelector('i');
-    if (input.type === 'password') {
-      input.type = 'text';
-      icon.className = 'far fa-eye-slash';
-    } else {
-      input.type = 'password';
-      icon.className = 'far fa-eye';
-    }
+    const icon  = btn.querySelector('i');
+    input.type      = input.type === 'password' ? 'text' : 'password';
+    icon.className  = input.type === 'text' ? 'far fa-eye-slash' : 'far fa-eye';
   }
 
   function showFormError(errorId, message) {
@@ -311,55 +318,47 @@
     el.classList.add('show');
   }
 
-  function handleLogin(e) {
+  async function handleLogin(e) {
     e.preventDefault();
     const btn = document.getElementById('loginBtn');
     btn.disabled = true;
     btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> جاري الدخول...';
 
-    setTimeout(() => {
-      const email = document.getElementById('loginEmail').value;
-      const password = document.getElementById('loginPassword').value;
-      const result = loginUser(email, password);
+    const email    = document.getElementById('loginEmail').value;
+    const password = document.getElementById('loginPassword').value;
+    const result   = await loginUser(email, password);
 
-      if (result.success) {
-        showToast('مرحباً بعودتك! تم تسجيل الدخول بنجاح ✓');
-        setTimeout(() => { window.location.href = 'profile.html'; }, 900);
-      } else {
-        showFormError('loginError', result.error);
-        btn.disabled = false;
-        btn.innerHTML = '<i class="fas fa-sign-in-alt"></i> تسجيل الدخول';
-      }
-    }, 600);
+    if (result.success) {
+      showToast('مرحباً بعودتك! تم تسجيل الدخول بنجاح ✓');
+      setTimeout(() => { window.location.href = _redirectTarget; }, 900);
+    } else {
+      showFormError('loginError', result.error);
+      btn.disabled = false;
+      btn.innerHTML = '<i class="fas fa-sign-in-alt"></i> تسجيل الدخول';
+    }
   }
 
-  function handleRegister(e) {
+  async function handleRegister(e) {
     e.preventDefault();
     const btn = document.getElementById('registerBtn');
     btn.disabled = true;
     btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> جاري إنشاء الحساب...';
 
-    setTimeout(() => {
-      const name = document.getElementById('regName').value;
-      const email = document.getElementById('regEmail').value;
-      const phone = document.getElementById('regPhone').value;
-      const password = document.getElementById('regPassword').value;
-      const result = registerUser(name, email, phone, password);
+    const name     = document.getElementById('regName').value;
+    const email    = document.getElementById('regEmail').value;
+    const phone    = document.getElementById('regPhone').value;
+    const password = document.getElementById('regPassword').value;
+    const result   = await registerUser(name, email, phone, password);
 
-      if (result.success) {
-        showToast('تم إنشاء حسابك بنجاح! مرحباً بك ✓');
-        setTimeout(() => { window.location.href = 'profile.html'; }, 900);
-      } else {
-        showFormError('registerError', result.error);
-        btn.disabled = false;
-        btn.innerHTML = '<i class="fas fa-user-plus"></i> إنشاء الحساب';
-      }
-    }, 600);
+    if (result.success) {
+      showToast('تم إنشاء حسابك بنجاح! مرحباً بك ✓');
+      setTimeout(() => { window.location.href = _redirectTarget; }, 900);
+    } else {
+      showFormError('registerError', result.error);
+      btn.disabled = false;
+      btn.innerHTML = '<i class="fas fa-user-plus"></i> إنشاء الحساب';
+    }
   }
-
-  // Check URL for tab param
-  const urlParams = new URLSearchParams(window.location.search);
-  if (urlParams.get('tab') === 'register') switchTab('register');
 </script>
 </body>
 </html>

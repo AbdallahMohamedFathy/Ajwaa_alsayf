@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
   <meta charset="UTF-8">
@@ -45,6 +45,14 @@
       </div>
       <div class="products-grid" id="related-products"></div>
     </div>
+
+    <!-- Recently Viewed Products -->
+    <div style="margin-top:60px; margin-bottom: 40px;">
+      <div class="section-header">
+        <h2 class="section-title">منتجات <span>شاهدتها مؤخراً</span></h2>
+      </div>
+      <div class="products-grid" id="recently-viewed-grid"></div>
+    </div>
   </div>
 </section>
 
@@ -65,7 +73,12 @@
 <a href="https://wa.me/966530656834" target="_blank" class="whatsapp-float"><i class="fab fa-whatsapp"></i></a>
 <button class="scroll-top"><i class="fas fa-chevron-up"></i></button>
 
-<script src="assets/js/main.js"></script>
+  <!-- Firebase SDKs -->
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+  <script src="assets/js/firebase-config.js"></script>
+  <script src="assets/js/main.js"></script>
 <script>
   const params = new URLSearchParams(window.location.search);
   const productId = parseInt(params.get('id')) || 1;
@@ -95,6 +108,19 @@
         ${product.discount ? `<span class="discount-badge">-${product.discount}%</span>` : ''}
         <div>${product.price.toLocaleString()} <span style="font-size:1rem;font-weight:500;">ريال</span></div>
       </div>
+
+      <!-- Tamara / Tabby Banners -->
+      <div class="installment-badge-container" style="margin: 15px 0;">
+        <div class="installment-badge tamara-badge" style="margin-bottom:8px;">
+          <img src="https://tamara.co/assets/svg/tamara-logo-ar.svg" alt="Tamara">
+          <span>قسّمها على 4 دفعات بقيمة ${Math.round(product.price / 4)} ريال بدون فوائد</span>
+        </div>
+        <div class="installment-badge tabby-badge">
+          <img src="https://tabby.ai/assets/logo.svg" alt="Tabby" style="filter: brightness(0) invert(1);">
+          <span>قسّمها على 4 دفعات بقيمة ${Math.round(product.price / 4)} ريال بدون فوائد</span>
+        </div>
+      </div>
+
       <p style="color:var(--gray-600);line-height:1.8;margin:16px 0;">
         تكييف ${product.brand} ${product.hp} حصان ${product.inverter ? 'انفرتر موفر للطاقة' : ''} بتقنية التبريد السريع وفلتر بلازما لتنقية الهواء. يأتي مع ضمان شامل وتركيب مجاني.
       </p>

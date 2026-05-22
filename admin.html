@@ -11,6 +11,11 @@
   <link rel="stylesheet" href="assets/css/admin.css">
   <link rel="icon" href="assets/images/logo.png">
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+  <!-- Firebase SDKs -->
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+  <script src="assets/js/firebase-config.js"></script>
 </head>
 <body>
 <div class="admin-layout">
@@ -25,12 +30,14 @@
       <a href="#" class="active" onclick="showSection('dashboard',this)"><i class="fas fa-th-large"></i> لوحة التحكم</a>
       <div class="sidebar-nav-label">الإدارة</div>
       <a href="#" onclick="showSection('products-mgmt',this)"><i class="fas fa-box"></i> المنتجات</a>
-      <a href="#" onclick="showSection('orders-mgmt',this)"><i class="fas fa-shopping-bag"></i> الطلبات <span class="nav-badge">5</span></a>
+      <a href="#" onclick="showSection('orders-mgmt',this)"><i class="fas fa-shopping-bag"></i> الطلبات <span class="nav-badge" id="pendingOrdersBadge">0</span></a>
+      <a href="#" onclick="showSection('bookings-mgmt',this)"><i class="fas fa-calendar-check"></i> حجوزات الصيانة <span class="nav-badge" id="pendingBookingsBadge">0</span></a>
+      <a href="#" onclick="showSection('coupons-mgmt',this)"><i class="fas fa-tag"></i> الكوبونات</a>
       <a href="#" onclick="showSection('customers-mgmt',this)"><i class="fas fa-users"></i> العملاء</a>
-      <a href="#" onclick="showSection('techs-mgmt',this)"><i class="fas fa-user-cog"></i> الفنيين</a>
       <div class="sidebar-nav-label">أخرى</div>
       <a href="#" onclick="showSection('analytics-sec',this)"><i class="fas fa-chart-line"></i> التحليلات</a>
       <a href="index.html"><i class="fas fa-globe"></i> الموقع</a>
+      <a href="#" onclick="logoutUser()" style="color:var(--danger);"><i class="fas fa-sign-out-alt"></i> تسجيل الخروج</a>
     </nav>
   </aside>
 
@@ -43,108 +50,107 @@
       </div>
       <div class="topbar-actions">
         <div class="theme-toggle" id="themeToggle" onclick="toggleDarkMode()"></div>
-        <div class="topbar-icon"><i class="fas fa-bell"></i><div class="notif-dot"></div></div>
-        <div class="topbar-profile"><div class="avatar">أ</div><span>المدير</span></div>
+        <div class="topbar-icon" onclick="toggleAdminNotifications()"><i class="fas fa-bell"></i><div class="notif-dot" id="notifDot"></div></div>
+        <div class="topbar-profile"><div class="avatar">أ</div><span id="adminName">المدير</span></div>
       </div>
     </div>
 
     <div class="admin-content">
-      <!-- Dashboard Section -->
+      <!-- ═══ Dashboard ═══ -->
       <div id="dashboard">
         <h1 class="admin-page-title">👋 مرحباً بك في لوحة التحكم</h1>
         <div class="stats-grid">
-          <div class="stat-card"><div class="stat-icon blue"><i class="fas fa-shopping-bag"></i></div><div class="stat-info"><h4>إجمالي الطلبات</h4><div class="stat-val">156</div><span class="stat-change up"><i class="fas fa-arrow-up"></i> +12%</span></div></div>
-          <div class="stat-card"><div class="stat-icon green"><i class="fas fa-money-bill-wave"></i></div><div class="stat-info"><h4>الأرباح</h4><div class="stat-val">285,400</div><span class="stat-change up"><i class="fas fa-arrow-up"></i> +8%</span></div></div>
-          <div class="stat-card"><div class="stat-icon orange"><i class="fas fa-users"></i></div><div class="stat-info"><h4>العملاء</h4><div class="stat-val">1,240</div><span class="stat-change up"><i class="fas fa-arrow-up"></i> +15%</span></div></div>
-          <div class="stat-card"><div class="stat-icon purple"><i class="fas fa-user-cog"></i></div><div class="stat-info"><h4>الفنيين</h4><div class="stat-val">18</div><span class="stat-change up"><i class="fas fa-arrow-up"></i> +2</span></div></div>
+          <div class="stat-card"><div class="stat-icon blue"><i class="fas fa-shopping-bag"></i></div><div class="stat-info"><h4>إجمالي الطلبات</h4><div class="stat-val" id="statOrders">-</div></div></div>
+          <div class="stat-card"><div class="stat-icon green"><i class="fas fa-money-bill-wave"></i></div><div class="stat-info"><h4>إجمالي الإيرادات</h4><div class="stat-val" id="statRevenue">-</div></div></div>
+          <div class="stat-card"><div class="stat-icon orange"><i class="fas fa-users"></i></div><div class="stat-info"><h4>العملاء</h4><div class="stat-val" id="statCustomers">-</div></div></div>
+          <div class="stat-card"><div class="stat-icon purple"><i class="fas fa-calendar-check"></i></div><div class="stat-info"><h4>حجوزات الصيانة</h4><div class="stat-val" id="statBookings">-</div></div></div>
         </div>
         <div class="charts-grid">
           <div class="chart-card"><div class="chart-card-header"><h3>المبيعات الشهرية</h3></div><canvas id="salesChart"></canvas></div>
-          <div class="chart-card"><div class="chart-card-header"><h3>توزيع الماركات</h3></div><canvas id="brandsChart"></canvas></div>
+          <div class="chart-card"><div class="chart-card-header"><h3>توزيع حالات الطلبات</h3></div><canvas id="ordersStatusChart"></canvas></div>
         </div>
         <div class="data-table-card">
-          <div class="table-header"><h3>أحدث الطلبات</h3><button class="btn btn-primary btn-sm"><i class="fas fa-eye"></i> عرض الكل</button></div>
+          <div class="table-header"><h3>أحدث الطلبات</h3><button class="btn btn-primary btn-sm" onclick="showSection('orders-mgmt', document.querySelector('[onclick*=orders-mgmt]'))"><i class="fas fa-eye"></i> عرض الكل</button></div>
           <table class="data-table">
-            <thead><tr><th>#</th><th>العميل</th><th>المنتج</th><th>المبلغ</th><th>الحالة</th><th>التاريخ</th></tr></thead>
-            <tbody>
-              <tr><td>#1021</td><td>أحمد محمد</td><td>كاريير 1.5 حصان</td><td>22,999 ريال</td><td><span class="status-badge completed">مكتمل</span></td><td>10/5/2026</td></tr>
-              <tr><td>#1020</td><td>سارة أحمد</td><td>شارب 1.5 حصان</td><td>21,500 ريال</td><td><span class="status-badge processing">قيد التنفيذ</span></td><td>9/5/2026</td></tr>
-              <tr><td>#1019</td><td>محمد علي</td><td>LG 2.25 حصان</td><td>32,999 ريال</td><td><span class="status-badge pending">في الانتظار</span></td><td>9/5/2026</td></tr>
-              <tr><td>#1018</td><td>فاطمة حسن</td><td>تورنيدو 1.5 حصان</td><td>15,999 ريال</td><td><span class="status-badge completed">مكتمل</span></td><td>8/5/2026</td></tr>
-              <tr><td>#1017</td><td>عمر خالد</td><td>صيانة دورية</td><td>450 ريال</td><td><span class="status-badge cancelled">ملغي</span></td><td>8/5/2026</td></tr>
-            </tbody>
+            <thead><tr><th>رقم الطلب</th><th>العميل</th><th>المبلغ</th><th>الحالة</th><th>التاريخ</th></tr></thead>
+            <tbody id="dashboardOrdersBody"><tr><td colspan="5" style="text-align:center;color:var(--gray-400);">جاري التحميل...</td></tr></tbody>
           </table>
         </div>
       </div>
 
-      <!-- Products Management -->
+      <!-- ═══ Products Management ═══ -->
       <div id="products-mgmt" style="display:none;">
-        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;flex-wrap:wrap;gap:12px;">
           <h1 class="admin-page-title" style="margin:0;">📦 إدارة المنتجات</h1>
-          <button class="btn btn-primary" onclick="document.getElementById('productModal').classList.add('active')"><i class="fas fa-plus"></i> إضافة منتج</button>
+          <button class="btn btn-primary" onclick="openProductModal()"><i class="fas fa-plus"></i> إضافة منتج</button>
         </div>
         <div class="data-table-card">
           <table class="data-table">
-            <thead><tr><th>المنتج</th><th>الماركة</th><th>السعر</th><th>المخزون</th><th>الحالة</th><th>إجراءات</th></tr></thead>
-            <tbody>
-              <tr><td>كاريير انفرتر 1.5 حصان</td><td>Carrier</td><td>22,999</td><td>25</td><td><span class="status-badge completed">متوفر</span></td><td><button class="btn btn-sm btn-outline" style="padding:4px 10px;font-size:0.75rem;"><i class="fas fa-edit"></i></button> <button class="btn btn-sm" style="padding:4px 10px;font-size:0.75rem;background:var(--danger);color:#fff;border-radius:6px;"><i class="fas fa-trash"></i></button></td></tr>
-              <tr><td>شارب انفرتر 1.5 حصان</td><td>Sharp</td><td>21,500</td><td>18</td><td><span class="status-badge completed">متوفر</span></td><td><button class="btn btn-sm btn-outline" style="padding:4px 10px;font-size:0.75rem;"><i class="fas fa-edit"></i></button> <button class="btn btn-sm" style="padding:4px 10px;font-size:0.75rem;background:var(--danger);color:#fff;border-radius:6px;"><i class="fas fa-trash"></i></button></td></tr>
-              <tr><td>LG دوال كول 2.25 حصان</td><td>LG</td><td>32,999</td><td>0</td><td><span class="status-badge cancelled">نفذ</span></td><td><button class="btn btn-sm btn-outline" style="padding:4px 10px;font-size:0.75rem;"><i class="fas fa-edit"></i></button> <button class="btn btn-sm" style="padding:4px 10px;font-size:0.75rem;background:var(--danger);color:#fff;border-radius:6px;"><i class="fas fa-trash"></i></button></td></tr>
-            </tbody>
+            <thead><tr><th>المنتج</th><th>الماركة</th><th>السعر</th><th>القدرة</th><th>الحالة</th><th>إجراءات</th></tr></thead>
+            <tbody id="productsTableBody"><tr><td colspan="6" style="text-align:center;color:var(--gray-400);">جاري التحميل...</td></tr></tbody>
           </table>
         </div>
       </div>
 
-      <!-- Orders Management -->
+      <!-- ═══ Orders Management ═══ -->
       <div id="orders-mgmt" style="display:none;">
         <h1 class="admin-page-title">🛒 إدارة الطلبات</h1>
         <div class="stats-grid" style="margin-bottom:20px;">
-          <div class="stat-card"><div class="stat-icon orange"><i class="fas fa-clock"></i></div><div class="stat-info"><h4>في الانتظار</h4><div class="stat-val">12</div></div></div>
-          <div class="stat-card"><div class="stat-icon blue"><i class="fas fa-spinner"></i></div><div class="stat-info"><h4>قيد التنفيذ</h4><div class="stat-val">8</div></div></div>
-          <div class="stat-card"><div class="stat-icon green"><i class="fas fa-check"></i></div><div class="stat-info"><h4>مكتمل</h4><div class="stat-val">136</div></div></div>
+          <div class="stat-card"><div class="stat-icon orange"><i class="fas fa-clock"></i></div><div class="stat-info"><h4>في الانتظار</h4><div class="stat-val" id="oStatPending">-</div></div></div>
+          <div class="stat-card"><div class="stat-icon blue"><i class="fas fa-spinner"></i></div><div class="stat-info"><h4>قيد التنفيذ</h4><div class="stat-val" id="oStatProcessing">-</div></div></div>
+          <div class="stat-card"><div class="stat-icon green"><i class="fas fa-check"></i></div><div class="stat-info"><h4>مكتمل</h4><div class="stat-val" id="oStatDone">-</div></div></div>
+          <div class="stat-card"><div class="stat-icon red"><i class="fas fa-times"></i></div><div class="stat-info"><h4>ملغي</h4><div class="stat-val" id="oStatCancelled">-</div></div></div>
         </div>
         <div class="data-table-card">
           <table class="data-table">
-            <thead><tr><th>#</th><th>العميل</th><th>الهاتف</th><th>المنتج</th><th>المبلغ</th><th>الحالة</th><th>الفني</th></tr></thead>
-            <tbody>
-              <tr><td>#1021</td><td>أحمد محمد</td><td>01012345678</td><td>كاريير 1.5 حصان</td><td>22,999</td><td><select class="form-control" style="padding:4px 8px;font-size:0.8rem;width:auto;"><option>في الانتظار</option><option selected>قيد التنفيذ</option><option>مكتمل</option><option>ملغي</option></select></td><td><select class="form-control" style="padding:4px 8px;font-size:0.8rem;width:auto;"><option>اختر فني</option><option>محمود أحمد</option><option selected>خالد علي</option></select></td></tr>
-              <tr><td>#1020</td><td>سارة أحمد</td><td>01098765432</td><td>شارب 1.5 حصان</td><td>21,500</td><td><select class="form-control" style="padding:4px 8px;font-size:0.8rem;width:auto;"><option selected>في الانتظار</option><option>قيد التنفيذ</option><option>مكتمل</option></select></td><td><select class="form-control" style="padding:4px 8px;font-size:0.8rem;width:auto;"><option selected>اختر فني</option><option>محمود أحمد</option><option>خالد علي</option></select></td></tr>
-            </tbody>
+            <thead><tr><th>#</th><th>العميل</th><th>الهاتف</th><th>المبلغ</th><th>الدفع</th><th>الحالة</th><th>التاريخ</th></tr></thead>
+            <tbody id="ordersTableBody"><tr><td colspan="7" style="text-align:center;color:var(--gray-400);">جاري التحميل...</td></tr></tbody>
           </table>
         </div>
       </div>
 
-      <!-- Customers -->
+      <!-- ═══ Bookings Management ═══ -->
+      <div id="bookings-mgmt" style="display:none;">
+        <h1 class="admin-page-title">📅 حجوزات الصيانة</h1>
+        <div class="stats-grid" style="margin-bottom:20px;">
+          <div class="stat-card"><div class="stat-icon orange"><i class="fas fa-clock"></i></div><div class="stat-info"><h4>في الانتظار</h4><div class="stat-val" id="bStatPending">-</div></div></div>
+          <div class="stat-card"><div class="stat-icon blue"><i class="fas fa-check-circle"></i></div><div class="stat-info"><h4>تم التأكيد</h4><div class="stat-val" id="bStatConfirmed">-</div></div></div>
+          <div class="stat-card"><div class="stat-icon green"><i class="fas fa-check-double"></i></div><div class="stat-info"><h4>مكتمل</h4><div class="stat-val" id="bStatDone">-</div></div></div>
+        </div>
+        <div class="data-table-card">
+          <table class="data-table">
+            <thead><tr><th>العميل</th><th>الهاتف</th><th>العنوان</th><th>نوع التكييف</th><th>الموعد</th><th>الحالة</th></tr></thead>
+            <tbody id="bookingsTableBody"><tr><td colspan="6" style="text-align:center;color:var(--gray-400);">جاري التحميل...</td></tr></tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- ═══ Coupons Management ═══ -->
+      <div id="coupons-mgmt" style="display:none;">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;flex-wrap:wrap;gap:12px;">
+          <h1 class="admin-page-title" style="margin:0;">🏷️ إدارة الكوبونات</h1>
+          <button class="btn btn-primary" onclick="document.getElementById('couponModal').classList.add('active')"><i class="fas fa-plus"></i> إضافة كوبون</button>
+        </div>
+        <div class="data-table-card">
+          <table class="data-table">
+            <thead><tr><th>الكود</th><th>نسبة الخصم</th><th>الحالة</th><th>إجراءات</th></tr></thead>
+            <tbody id="couponsTableBody"><tr><td colspan="4" style="text-align:center;color:var(--gray-400);">جاري التحميل...</td></tr></tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- ═══ Customers Management ═══ -->
       <div id="customers-mgmt" style="display:none;">
         <h1 class="admin-page-title">👥 إدارة العملاء</h1>
         <div class="data-table-card">
           <table class="data-table">
-            <thead><tr><th>العميل</th><th>الهاتف</th><th>الطلبات</th><th>إجمالي المشتريات</th><th>تاريخ التسجيل</th></tr></thead>
-            <tbody>
-              <tr><td>أحمد محمد</td><td>01012345678</td><td>5</td><td>85,000 ريال</td><td>15/1/2026</td></tr>
-              <tr><td>سارة أحمد</td><td>01098765432</td><td>3</td><td>64,500 ريال</td><td>20/2/2026</td></tr>
-              <tr><td>محمد علي</td><td>01155555555</td><td>2</td><td>48,998 ريال</td><td>1/3/2026</td></tr>
-            </tbody>
+            <thead><tr><th>الاسم</th><th>البريد الإلكتروني</th><th>الهاتف</th><th>تاريخ التسجيل</th></tr></thead>
+            <tbody id="customersTableBody"><tr><td colspan="4" style="text-align:center;color:var(--gray-400);">جاري التحميل...</td></tr></tbody>
           </table>
         </div>
       </div>
 
-      <!-- Technicians -->
-      <div id="techs-mgmt" style="display:none;">
-        <h1 class="admin-page-title">🔧 إدارة الفنيين</h1>
-        <div class="data-table-card">
-          <table class="data-table">
-            <thead><tr><th>الاسم</th><th>الهاتف</th><th>التخصص</th><th>المهام النشطة</th><th>التقييم</th></tr></thead>
-            <tbody>
-              <tr><td>محمود أحمد</td><td>01011111111</td><td>تركيب + صيانة</td><td>3</td><td>⭐ 4.9</td></tr>
-              <tr><td>خالد علي</td><td>01022222222</td><td>صيانة + فريون</td><td>2</td><td>⭐ 4.7</td></tr>
-              <tr><td>حسن محمد</td><td>01033333333</td><td>كشف أعطال</td><td>1</td><td>⭐ 4.8</td></tr>
-            </tbody>
-          </table>
-        </div>
-      </div>
-
-      <!-- Analytics -->
+      <!-- ═══ Analytics ═══ -->
       <div id="analytics-sec" style="display:none;">
         <h1 class="admin-page-title">📊 التحليلات</h1>
         <div class="charts-grid" style="grid-template-columns:1fr 1fr;">
@@ -156,34 +162,168 @@
   </main>
 </div>
 
-<!-- Product Modal -->
+<!-- ═══ Product Modal ═══ -->
 <div class="modal-overlay" id="productModal">
-  <div class="modal">
-    <div class="modal-header"><h3>إضافة منتج جديد</h3><button onclick="document.getElementById('productModal').classList.remove('active')" style="background:none;font-size:1.2rem;color:var(--gray-500);"><i class="fas fa-times"></i></button></div>
-    <div class="modal-body">
-      <div class="form-group"><label>اسم المنتج</label><input type="text" class="form-control" placeholder="اسم المنتج"></div>
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
-        <div class="form-group"><label>الماركة</label><select class="form-control"><option>Carrier</option><option>Sharp</option><option>LG</option><option>Tornado</option><option>Fresh</option><option>Midea</option></select></div>
-        <div class="form-group"><label>القدرة</label><select class="form-control"><option>1.5 حصان</option><option>2.25 حصان</option><option>3 حصان</option></select></div>
-      </div>
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
-        <div class="form-group"><label>السعر</label><input type="number" class="form-control" placeholder="السعر"></div>
-        <div class="form-group"><label>المخزون</label><input type="number" class="form-control" placeholder="الكمية"></div>
-      </div>
-      <div class="form-group"><label>صورة المنتج</label><div class="file-upload" style="padding:20px;"><i class="fas fa-image" style="font-size:1.5rem;color:var(--gray-400);display:block;margin-bottom:4px;"></i><p style="font-size:0.8rem;color:var(--gray-500);">اسحب الصورة أو اضغط للرفع</p></div></div>
+  <div class="modal" style="max-width:560px;">
+    <div class="modal-header">
+      <h3 id="productModalTitle">إضافة منتج جديد</h3>
+      <button onclick="closeProductModal()" style="background:none;font-size:1.2rem;color:var(--gray-500);"><i class="fas fa-times"></i></button>
     </div>
-    <div class="modal-footer"><button class="btn btn-primary" onclick="document.getElementById('productModal').classList.remove('active')"><i class="fas fa-save"></i> حفظ</button><button class="btn btn-outline" onclick="document.getElementById('productModal').classList.remove('active')">إلغاء</button></div>
+    <div class="modal-body">
+      <input type="hidden" id="editProductId">
+      <div class="form-group"><label>اسم المنتج *</label><input type="text" class="form-control" id="pName" placeholder="اسم المنتج"></div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+        <div class="form-group">
+          <label>الماركة *</label>
+          <select class="form-control" id="pBrand">
+            <option value="">اختر الماركة</option>
+            <option>Carrier</option><option>Sharp</option><option>LG</option>
+            <option>Tornado</option><option>Fresh</option><option>Midea</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>القدرة *</label>
+          <select class="form-control" id="pHp">
+            <option value="1">1 حصان</option>
+            <option value="1.5" selected>1.5 حصان</option>
+            <option value="2">2 حصان</option>
+            <option value="2.25">2.25 حصان</option>
+            <option value="3">3 حصان</option>
+          </select>
+        </div>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+        <div class="form-group"><label>السعر الحالي *</label><input type="number" class="form-control" id="pPrice" placeholder="22999"></div>
+        <div class="form-group"><label>السعر القديم</label><input type="number" class="form-control" id="pOldPrice" placeholder="27000"></div>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+        <div class="form-group">
+          <label>الشارة</label>
+          <select class="form-control" id="pBadge">
+            <option value="">بدون</option>
+            <option>الأكثر مبيعاً</option><option>جديد</option><option>خصم</option><option>premium</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>انفرتر؟</label>
+          <select class="form-control" id="pInverter">
+            <option value="true">نعم - انفرتر</option>
+            <option value="false">لا - عادي</option>
+          </select>
+        </div>
+      </div>
+      <div class="form-group">
+        <label>رابط الصورة (Cloudinary) *</label>
+        <input type="text" class="form-control" id="pImage" placeholder="https://res.cloudinary.com/...">
+        <small style="color:var(--gray-400);font-size:0.75rem;">ارفع الصورة على Cloudinary ثم الصق الرابط هنا</small>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-primary" onclick="saveProduct()"><i class="fas fa-save"></i> حفظ المنتج</button>
+      <button class="btn btn-outline" onclick="closeProductModal()">إلغاء</button>
+    </div>
   </div>
 </div>
 
+<!-- ═══ Coupon Modal ═══ -->
+<div class="modal-overlay" id="couponModal">
+  <div class="modal" style="max-width:420px;">
+    <div class="modal-header">
+      <h3>إضافة كوبون خصم</h3>
+      <button onclick="document.getElementById('couponModal').classList.remove('active')" style="background:none;font-size:1.2rem;color:var(--gray-500);"><i class="fas fa-times"></i></button>
+    </div>
+    <div class="modal-body">
+      <div class="form-group"><label>كود الكوبون *</label><input type="text" class="form-control" id="couponCode" placeholder="SUMMER20" style="text-transform:uppercase;letter-spacing:2px;font-weight:700;"></div>
+      <div class="form-group"><label>نسبة الخصم % *</label><input type="number" class="form-control" id="couponDiscount" placeholder="20" min="1" max="100"></div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-primary" onclick="saveCoupon()"><i class="fas fa-save"></i> إضافة الكوبون</button>
+      <button class="btn btn-outline" onclick="document.getElementById('couponModal').classList.remove('active')">إلغاء</button>
+    </div>
+  </div>
+</div>
+
+<!-- ═══ Order Details Modal ═══ -->
+<div class="modal-overlay" id="orderModal">
+  <div class="modal" style="max-width:560px;">
+    <div class="modal-header">
+      <h3>تفاصيل الطلب</h3>
+      <button onclick="document.getElementById('orderModal').classList.remove('active')" style="background:none;font-size:1.2rem;color:var(--gray-500);"><i class="fas fa-times"></i></button>
+    </div>
+    <div class="modal-body" id="orderModalBody"></div>
+  </div>
+</div>
+
+<!-- Notifications Drawer -->
+<div class="admin-notif-drawer" id="adminNotifDrawer">
+  <div class="drawer-header" style="display:flex;justify-content:space-between;align-items:center;padding:16px 20px;border-bottom:1.5px solid var(--gray-100);">
+    <h3 style="font-size:1.05rem;font-weight:800;color:var(--gray-900);margin:0;"><i class="fas fa-bell" style="color:var(--primary);"></i> الإشعارات</h3>
+    <button onclick="toggleAdminNotifications()" style="background:none;border:none;font-size:1.1rem;color:var(--gray-500);cursor:pointer;"><i class="fas fa-times"></i></button>
+  </div>
+  <div class="drawer-body" id="notifDrawerBody" style="padding:10px;"></div>
+</div>
+
 <script>
+/* ═══════════════════════════════════════
+   Admin Dashboard - Firebase Connected
+   ═══════════════════════════════════════ */
+
+// ─── Auth Protection ───
+onAuthReady(async (user) => {
+  if (!user) { window.location.href = 'login.html'; return; }
+  if (!isAdmin()) { window.location.href = 'index.html'; return; }
+
+  const firstName = user.name ? user.name.split(' ')[0] : 'المدير';
+  document.getElementById('adminName').textContent = firstName;
+
+  await loadDashboard();
+});
+
+// ─── Helpers ───
+function showToast(msg) {
+  let t = document.querySelector('.toast');
+  if (!t) { t = document.createElement('div'); t.className = 'toast'; document.body.appendChild(t); }
+  t.innerHTML = `<i class="fas fa-check-circle" style="color:var(--success);font-size:1.2rem;"></i><span>${msg}</span>`;
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 3000);
+}
+
+function fmtDate(ts) {
+  if (!ts) return '-';
+  const d = ts.toDate ? ts.toDate() : new Date(ts);
+  return d.toLocaleDateString('ar-EG');
+}
+
+function statusBadge(status) {
+  const map = {
+    pending:   ['في الانتظار', 'pending'],
+    confirmed: ['تم التأكيد',  'processing'],
+    shipping:  ['جاري التوصيل','processing'],
+    delivered: ['تم التوصيل',  'completed'],
+    completed: ['مكتمل',       'completed'],
+    cancelled: ['ملغي',        'cancelled']
+  };
+  const [label, cls] = map[status] || ['في الانتظار', 'pending'];
+  return `<span class="status-badge ${cls}">${label}</span>`;
+}
+
+// ─── Section Navigation ───
 function showSection(id, el) {
   document.querySelectorAll('.admin-content > div').forEach(d => d.style.display = 'none');
   document.getElementById(id).style.display = 'block';
   document.querySelectorAll('.sidebar-nav a').forEach(a => a.classList.remove('active'));
-  el.classList.add('active');
+  if (el) el.classList.add('active');
   document.getElementById('adminSidebar').classList.remove('active');
-  if (id === 'analytics-sec') initAnalyticsCharts();
+
+  const loaders = {
+    'products-mgmt':  loadProducts,
+    'orders-mgmt':    loadOrders,
+    'bookings-mgmt':  loadBookings,
+    'coupons-mgmt':   loadCoupons,
+    'customers-mgmt': loadCustomers,
+    'analytics-sec':  initAnalyticsCharts
+  };
+  if (loaders[id]) loaders[id]();
 }
 
 function toggleDarkMode() {
@@ -191,40 +331,410 @@ function toggleDarkMode() {
   document.getElementById('themeToggle').classList.toggle('dark');
 }
 
-// Sales Chart
-const salesCtx = document.getElementById('salesChart')?.getContext('2d');
-if (salesCtx) new Chart(salesCtx, {
-  type: 'line',
-  data: { labels: ['يناير','فبراير','مارس','أبريل','مايو','يونيو'], datasets: [{ label: 'المبيعات', data: [32000,45000,38000,52000,61000,72000], borderColor: '#007BFF', backgroundColor: 'rgba(0,123,255,0.08)', fill: true, tension: 0.4, pointBackgroundColor: '#007BFF', pointRadius: 5 }] },
-  options: { responsive: true, plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true, ticks: { callback: v => v/1000+'K' } } } }
-});
+function toggleAdminNotifications() {
+  document.getElementById('adminNotifDrawer').classList.toggle('active');
+}
 
-// Brands Chart
-const brandsCtx = document.getElementById('brandsChart')?.getContext('2d');
-if (brandsCtx) new Chart(brandsCtx, {
-  type: 'doughnut',
-  data: { labels: ['Carrier','Sharp','LG','Tornado','Fresh','Midea'], datasets: [{ data: [35,22,18,12,8,5], backgroundColor: ['#007BFF','#00D4FF','#004AAD','#10b981','#f59e0b','#8b5cf6'] }] },
-  options: { responsive: true, plugins: { legend: { position: 'bottom', labels: { font: { family: 'Cairo' } } } } }
-});
+// ─── Dashboard ───
+async function loadDashboard() {
+  try {
+    const [orders, users, bookings] = await Promise.all([getOrders(), getAllUsers(), getBookings()]);
 
+    const revenue = orders.filter(o => o.status !== 'cancelled').reduce((s, o) => s + (o.total || 0), 0);
+    document.getElementById('statOrders').textContent    = orders.length;
+    document.getElementById('statRevenue').textContent   = revenue.toLocaleString() + ' ر.س';
+    document.getElementById('statCustomers').textContent = users.length;
+    document.getElementById('statBookings').textContent  = bookings.length;
+
+    const pending  = orders.filter(o => o.status === 'pending').length;
+    const bPending = bookings.filter(b => b.status === 'pending').length;
+    document.getElementById('pendingOrdersBadge').textContent  = pending;
+    document.getElementById('pendingBookingsBadge').textContent = bPending;
+    if (pending + bPending > 0) document.getElementById('notifDot').style.display = 'block';
+
+    // Recent orders table
+    const recent = orders.slice(0, 5);
+    document.getElementById('dashboardOrdersBody').innerHTML = recent.length
+      ? recent.map(o => `
+          <tr>
+            <td>#${o.orderNum}</td>
+            <td>${o.customerName}</td>
+            <td style="font-weight:700;color:var(--primary-dark);">${(o.total||0).toLocaleString()} ر.س</td>
+            <td>${statusBadge(o.status)}</td>
+            <td>${fmtDate(o.createdAt)}</td>
+          </tr>`).join('')
+      : '<tr><td colspan="5" style="text-align:center;color:var(--gray-400);">لا توجد طلبات بعد</td></tr>';
+
+    // Sales chart (group by month)
+    renderSalesChart(orders);
+
+    // Orders status doughnut
+    const statusCounts = {
+      pending:   orders.filter(o => o.status === 'pending').length,
+      shipping:  orders.filter(o => o.status === 'shipping').length,
+      completed: orders.filter(o => o.status === 'completed' || o.status === 'delivered').length,
+      cancelled: orders.filter(o => o.status === 'cancelled').length
+    };
+    renderStatusChart(statusCounts);
+
+    // Notifications drawer
+    const notifs = [
+      ...orders.filter(o => o.status === 'pending').slice(0, 3).map(o => ({
+        icon: 'fa-shopping-bag', color: 'var(--primary)', time: fmtDate(o.createdAt),
+        title: `طلب جديد #${o.orderNum}`, body: `من ${o.customerName} بقيمة ${(o.total||0).toLocaleString()} ر.س`
+      })),
+      ...bookings.filter(b => b.status === 'pending').slice(0, 3).map(b => ({
+        icon: 'fa-calendar-check', color: 'var(--warning)', time: fmtDate(b.createdAt),
+        title: 'حجز صيانة جديد', body: `من ${b.customerName} - ${b.date}`
+      }))
+    ];
+    document.getElementById('notifDrawerBody').innerHTML = notifs.length
+      ? notifs.map(n => `
+          <div style="padding:12px;border-radius:8px;margin-bottom:8px;background:var(--gray-50);border-right:3px solid ${n.color};">
+            <div style="display:flex;justify-content:space-between;font-size:0.7rem;font-weight:700;color:${n.color};margin-bottom:4px;">
+              <span><i class="fas ${n.icon}"></i> ${n.title}</span><span>${n.time}</span>
+            </div>
+            <p style="font-size:0.8rem;color:var(--gray-800);line-height:1.5;margin:0;">${n.body}</p>
+          </div>`).join('')
+      : '<p style="text-align:center;color:var(--gray-400);padding:20px;">لا توجد إشعارات جديدة</p>';
+
+  } catch (e) { console.error('Dashboard error:', e); }
+}
+
+function renderSalesChart(orders) {
+  const ctx = document.getElementById('salesChart')?.getContext('2d');
+  if (!ctx) return;
+  const months = ['يناير','فبراير','مارس','أبريل','مايو','يونيو','يوليو','أغسطس','سبتمبر','أكتوبر','نوفمبر','ديسمبر'];
+  const data   = new Array(12).fill(0);
+  orders.filter(o => o.status !== 'cancelled').forEach(o => {
+    const d = o.createdAt?.toDate ? o.createdAt.toDate() : new Date();
+    data[d.getMonth()] += o.total || 0;
+  });
+  new Chart(ctx, {
+    type: 'line',
+    data: { labels: months, datasets: [{ label: 'المبيعات', data, borderColor: '#007BFF', backgroundColor: 'rgba(0,123,255,0.08)', fill: true, tension: 0.4, pointBackgroundColor: '#007BFF', pointRadius: 4 }] },
+    options: { responsive: true, plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true, ticks: { callback: v => (v/1000)+'K' } } } }
+  });
+}
+
+function renderStatusChart(counts) {
+  const ctx = document.getElementById('ordersStatusChart')?.getContext('2d');
+  if (!ctx) return;
+  new Chart(ctx, {
+    type: 'doughnut',
+    data: {
+      labels: ['في الانتظار','قيد الشحن','مكتمل','ملغي'],
+      datasets: [{ data: [counts.pending, counts.shipping, counts.completed, counts.cancelled], backgroundColor: ['#f59e0b','#007BFF','#10b981','#ef4444'] }]
+    },
+    options: { responsive: true, plugins: { legend: { position: 'bottom', labels: { font: { family: 'Cairo' } } } } }
+  });
+}
+
+// ─── Products ───
+async function loadProducts() {
+  const tbody = document.getElementById('productsTableBody');
+  tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;"><i class="fas fa-spinner fa-spin"></i> جاري التحميل...</td></tr>';
+  try {
+    const products = await getAllProductsAdmin();
+    tbody.innerHTML = products.length
+      ? products.map(p => `
+          <tr>
+            <td>
+              <div style="display:flex;align-items:center;gap:10px;">
+                <img src="${p.image || 'assets/images/product-1.png'}" style="width:40px;height:40px;object-fit:contain;background:var(--gray-50);border-radius:6px;padding:2px;">
+                <span style="font-weight:600;">${p.name}</span>
+              </div>
+            </td>
+            <td>${p.brand}</td>
+            <td style="font-weight:700;color:var(--primary);">${(p.price||0).toLocaleString()} ر.س</td>
+            <td>${p.hp} حصان</td>
+            <td><span class="status-badge ${p.active ? 'completed' : 'cancelled'}">${p.active ? 'نشط' : 'مخفي'}</span></td>
+            <td>
+              <button class="btn btn-sm btn-outline" style="padding:4px 10px;font-size:0.75rem;" onclick="editProduct('${p.firestoreId}')"><i class="fas fa-edit"></i></button>
+              <button class="btn btn-sm" style="padding:4px 10px;font-size:0.75rem;background:var(--danger);color:#fff;border-radius:6px;margin-right:4px;" onclick="removeProduct('${p.firestoreId}','${p.name}')"><i class="fas fa-trash"></i></button>
+            </td>
+          </tr>`).join('')
+      : '<tr><td colspan="6" style="text-align:center;color:var(--gray-400);">لا توجد منتجات بعد</td></tr>';
+  } catch (e) { tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;color:var(--danger);">خطأ في التحميل</td></tr>'; }
+}
+
+function openProductModal(id) {
+  document.getElementById('editProductId').value = '';
+  document.getElementById('productModalTitle').textContent = 'إضافة منتج جديد';
+  ['pName','pImage'].forEach(id => document.getElementById(id).value = '');
+  ['pPrice','pOldPrice'].forEach(id => document.getElementById(id).value = '');
+  document.getElementById('pBrand').value   = '';
+  document.getElementById('pHp').value      = '1.5';
+  document.getElementById('pBadge').value   = '';
+  document.getElementById('pInverter').value = 'true';
+  document.getElementById('productModal').classList.add('active');
+}
+
+async function editProduct(firestoreId) {
+  try {
+    const doc = await db.collection('products').doc(firestoreId).get();
+    if (!doc.exists) return;
+    const p = doc.data();
+    document.getElementById('editProductId').value = firestoreId;
+    document.getElementById('productModalTitle').textContent = 'تعديل المنتج';
+    document.getElementById('pName').value     = p.name || '';
+    document.getElementById('pBrand').value    = p.brand || '';
+    document.getElementById('pHp').value       = p.hp || '1.5';
+    document.getElementById('pPrice').value    = p.price || '';
+    document.getElementById('pOldPrice').value = p.oldPrice || '';
+    document.getElementById('pBadge').value    = p.badge || '';
+    document.getElementById('pInverter').value = p.inverter ? 'true' : 'false';
+    document.getElementById('pImage').value    = p.image || '';
+    document.getElementById('productModal').classList.add('active');
+  } catch (e) { showToast('خطأ في تحميل بيانات المنتج'); }
+}
+
+function closeProductModal() {
+  document.getElementById('productModal').classList.remove('active');
+}
+
+async function saveProduct() {
+  const name     = document.getElementById('pName').value.trim();
+  const brand    = document.getElementById('pBrand').value;
+  const hp       = document.getElementById('pHp').value;
+  const price    = parseFloat(document.getElementById('pPrice').value);
+  const oldPrice = parseFloat(document.getElementById('pOldPrice').value) || 0;
+  const badge    = document.getElementById('pBadge').value;
+  const inverter = document.getElementById('pInverter').value === 'true';
+  const image    = document.getElementById('pImage').value.trim();
+  const editId   = document.getElementById('editProductId').value;
+
+  if (!name || !brand || !price || !image) { showToast('يرجى تعبئة جميع الحقول المطلوبة ⚠️'); return; }
+
+  const saveBtn = document.querySelector('#productModal .btn-primary');
+  saveBtn.disabled = true;
+  saveBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> جاري الحفظ...';
+
+  const data = { name, brand, hp, price, oldPrice, badge, inverter, image, active: true,
+    discount: oldPrice > price ? Math.round((1 - price/oldPrice) * 100) : 0 };
+
+  try {
+    if (editId) {
+      await updateProduct(editId, data);
+      showToast('تم تحديث المنتج بنجاح ✓');
+    } else {
+      await addProduct(data);
+      showToast('تمت إضافة المنتج بنجاح 🎉');
+    }
+    closeProductModal();
+    loadProducts();
+  } catch (e) { showToast('خطأ في الحفظ: ' + e.message); }
+  finally { saveBtn.disabled = false; saveBtn.innerHTML = '<i class="fas fa-save"></i> حفظ المنتج'; }
+}
+
+async function removeProduct(firestoreId, name) {
+  if (!confirm(`هل أنت متأكد من حذف "${name}"؟`)) return;
+  try {
+    await deleteProduct(firestoreId);
+    showToast('تم حذف المنتج بنجاح 🗑️');
+    loadProducts();
+  } catch (e) { showToast('خطأ في الحذف'); }
+}
+
+// ─── Orders ───
+async function loadOrders() {
+  const tbody = document.getElementById('ordersTableBody');
+  tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;"><i class="fas fa-spinner fa-spin"></i> جاري التحميل...</td></tr>';
+  try {
+    const orders = await getOrders();
+
+    document.getElementById('oStatPending').textContent   = orders.filter(o => o.status === 'pending').length;
+    document.getElementById('oStatProcessing').textContent = orders.filter(o => o.status === 'shipping').length;
+    document.getElementById('oStatDone').textContent      = orders.filter(o => ['completed','delivered'].includes(o.status)).length;
+    document.getElementById('oStatCancelled').textContent = orders.filter(o => o.status === 'cancelled').length;
+
+    tbody.innerHTML = orders.length
+      ? orders.map(o => `
+          <tr style="cursor:pointer;" onclick="viewOrder('${o.firestoreId}')">
+            <td style="font-weight:700;color:var(--primary);">#${o.orderNum}</td>
+            <td>${o.customerName}</td>
+            <td>${o.phone}</td>
+            <td style="font-weight:700;">${(o.total||0).toLocaleString()} ر.س</td>
+            <td>${o.payment === 'cash' ? 'عند الاستلام' : o.payment === 'mada' ? 'مدى' : 'Apple Pay'}</td>
+            <td onclick="event.stopPropagation()">
+              <select class="form-control" style="padding:4px 8px;font-size:0.8rem;width:auto;" onchange="changeOrderStatus('${o.firestoreId}', this.value)">
+                <option value="pending"   ${o.status==='pending'   ? 'selected':''}>في الانتظار</option>
+                <option value="shipping"  ${o.status==='shipping'  ? 'selected':''}>جاري التوصيل</option>
+                <option value="completed" ${o.status==='completed' ? 'selected':''}>مكتمل</option>
+                <option value="cancelled" ${o.status==='cancelled' ? 'selected':''}>ملغي</option>
+              </select>
+            </td>
+            <td>${fmtDate(o.createdAt)}</td>
+          </tr>`).join('')
+      : '<tr><td colspan="7" style="text-align:center;color:var(--gray-400);">لا توجد طلبات بعد</td></tr>';
+  } catch (e) { tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;color:var(--danger);">خطأ في التحميل</td></tr>'; }
+}
+
+async function changeOrderStatus(firestoreId, status) {
+  try {
+    await updateOrderStatus(firestoreId, status);
+    showToast('تم تحديث حالة الطلب ✓');
+  } catch (e) { showToast('خطأ في التحديث'); }
+}
+
+async function viewOrder(firestoreId) {
+  try {
+    const doc = await db.collection('orders').doc(firestoreId).get();
+    if (!doc.exists) return;
+    const o = doc.data();
+    const items = (o.items || []).map(i => `
+      <div style="display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--gray-100);">
+        <span>${i.name} × ${i.qty}</span>
+        <span style="font-weight:700;">${(i.price * i.qty).toLocaleString()} ر.س</span>
+      </div>`).join('');
+    document.getElementById('orderModalBody').innerHTML = `
+      <div style="display:grid;gap:8px;font-size:0.9rem;">
+        <div style="display:flex;justify-content:space-between;"><strong>رقم الطلب</strong><span>#${o.orderNum}</span></div>
+        <div style="display:flex;justify-content:space-between;"><strong>العميل</strong><span>${o.customerName}</span></div>
+        <div style="display:flex;justify-content:space-between;"><strong>الهاتف</strong><span dir="ltr">${o.phone}</span></div>
+        <div style="display:flex;justify-content:space-between;"><strong>الإيميل</strong><span>${o.email||'-'}</span></div>
+        <div style="display:flex;justify-content:space-between;"><strong>الدفع</strong><span>${o.payment}</span></div>
+        <div style="display:flex;justify-content:space-between;"><strong>الحالة</strong>${statusBadge(o.status)}</div>
+        <hr style="border:none;border-top:1px solid var(--gray-100);">
+        ${items}
+        <div style="display:flex;justify-content:space-between;margin-top:8px;"><strong>المجموع</strong><span>${(o.subtotal||0).toLocaleString()} ر.س</span></div>
+        ${o.discount ? `<div style="display:flex;justify-content:space-between;color:var(--success);"><strong>خصم (${o.coupon})</strong><span>- ${(o.discount).toLocaleString()} ر.س</span></div>` : ''}
+        <div style="display:flex;justify-content:space-between;font-size:1.1rem;font-weight:800;"><strong>الإجمالي</strong><span style="color:var(--primary-dark);">${(o.total||0).toLocaleString()} ر.س</span></div>
+      </div>`;
+    document.getElementById('orderModal').classList.add('active');
+  } catch (e) { showToast('خطأ في تحميل الطلب'); }
+}
+
+// ─── Bookings ───
+async function loadBookings() {
+  const tbody = document.getElementById('bookingsTableBody');
+  tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;"><i class="fas fa-spinner fa-spin"></i> جاري التحميل...</td></tr>';
+  try {
+    const bookings = await getBookings();
+
+    document.getElementById('bStatPending').textContent   = bookings.filter(b => b.status === 'pending').length;
+    document.getElementById('bStatConfirmed').textContent = bookings.filter(b => b.status === 'confirmed').length;
+    document.getElementById('bStatDone').textContent      = bookings.filter(b => b.status === 'completed').length;
+
+    tbody.innerHTML = bookings.length
+      ? bookings.map(b => `
+          <tr>
+            <td style="font-weight:600;">${b.customerName}</td>
+            <td dir="ltr">${b.phone}</td>
+            <td style="font-size:0.8rem;">${b.address || '-'}</td>
+            <td>${b.acType || '-'}</td>
+            <td>${b.date || '-'} ${b.time ? '@ ' + b.time : ''}</td>
+            <td>
+              <select class="form-control" style="padding:4px 8px;font-size:0.8rem;width:auto;" onchange="changeBookingStatus('${b.firestoreId}', this.value)">
+                <option value="pending"   ${b.status==='pending'   ? 'selected':''}>في الانتظار</option>
+                <option value="confirmed" ${b.status==='confirmed' ? 'selected':''}>تم التأكيد</option>
+                <option value="completed" ${b.status==='completed' ? 'selected':''}>مكتمل</option>
+                <option value="cancelled" ${b.status==='cancelled' ? 'selected':''}>ملغي</option>
+              </select>
+            </td>
+          </tr>`).join('')
+      : '<tr><td colspan="6" style="text-align:center;color:var(--gray-400);">لا توجد حجوزات بعد</td></tr>';
+  } catch (e) { tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;color:var(--danger);">خطأ في التحميل</td></tr>'; }
+}
+
+async function changeBookingStatus(firestoreId, status) {
+  try {
+    await updateBookingStatus(firestoreId, status);
+    showToast('تم تحديث حالة الحجز ✓');
+  } catch (e) { showToast('خطأ في التحديث'); }
+}
+
+// ─── Coupons ───
+async function loadCoupons() {
+  const tbody = document.getElementById('couponsTableBody');
+  tbody.innerHTML = '<tr><td colspan="4" style="text-align:center;"><i class="fas fa-spinner fa-spin"></i> جاري التحميل...</td></tr>';
+  try {
+    const coupons = await getCoupons();
+    tbody.innerHTML = coupons.length
+      ? coupons.map(c => `
+          <tr>
+            <td><code style="background:var(--gray-100);padding:4px 10px;border-radius:6px;font-size:0.9rem;font-weight:700;letter-spacing:2px;">${c.code}</code></td>
+            <td style="font-weight:700;color:var(--success);">${c.discount}%</td>
+            <td>
+              <label style="display:flex;align-items:center;gap:8px;cursor:pointer;">
+                <input type="checkbox" ${c.active ? 'checked' : ''} onchange="toggleCoupon('${c.firestoreId}', this.checked)">
+                <span class="status-badge ${c.active ? 'completed' : 'cancelled'}">${c.active ? 'نشط' : 'معطل'}</span>
+              </label>
+            </td>
+            <td>
+              <button class="btn btn-sm" style="padding:4px 10px;font-size:0.75rem;background:var(--danger);color:#fff;border-radius:6px;" onclick="removeCoupon('${c.firestoreId}','${c.code}')"><i class="fas fa-trash"></i></button>
+            </td>
+          </tr>`).join('')
+      : '<tr><td colspan="4" style="text-align:center;color:var(--gray-400);">لا توجد كوبونات بعد</td></tr>';
+  } catch (e) { tbody.innerHTML = '<tr><td colspan="4" style="text-align:center;color:var(--danger);">خطأ في التحميل</td></tr>'; }
+}
+
+async function saveCoupon() {
+  const code     = document.getElementById('couponCode').value.trim().toUpperCase();
+  const discount = parseInt(document.getElementById('couponDiscount').value);
+  if (!code || !discount || discount < 1 || discount > 100) { showToast('يرجى إدخال كود ونسبة خصم صحيحة ⚠️'); return; }
+  try {
+    await addCoupon({ code, discount });
+    showToast('تمت إضافة الكوبون بنجاح 🎉');
+    document.getElementById('couponCode').value     = '';
+    document.getElementById('couponDiscount').value = '';
+    document.getElementById('couponModal').classList.remove('active');
+    loadCoupons();
+  } catch (e) { showToast('خطأ في الحفظ'); }
+}
+
+async function removeCoupon(firestoreId, code) {
+  if (!confirm(`حذف كوبون "${code}"؟`)) return;
+  try {
+    await deleteCoupon(firestoreId);
+    showToast('تم حذف الكوبون ✓');
+    loadCoupons();
+  } catch (e) { showToast('خطأ في الحذف'); }
+}
+
+// ─── Customers ───
+async function loadCustomers() {
+  const tbody = document.getElementById('customersTableBody');
+  tbody.innerHTML = '<tr><td colspan="4" style="text-align:center;"><i class="fas fa-spinner fa-spin"></i> جاري التحميل...</td></tr>';
+  try {
+    const users = await getAllUsers();
+    tbody.innerHTML = users.length
+      ? users.map(u => `
+          <tr>
+            <td style="font-weight:600;">${u.name || '-'}</td>
+            <td>${u.email}</td>
+            <td dir="ltr">${u.phone || '-'}</td>
+            <td>${fmtDate(u.createdAt)}</td>
+          </tr>`).join('')
+      : '<tr><td colspan="4" style="text-align:center;color:var(--gray-400);">لا يوجد عملاء بعد</td></tr>';
+  } catch (e) { tbody.innerHTML = '<tr><td colspan="4" style="text-align:center;color:var(--danger);">خطأ في التحميل</td></tr>'; }
+}
+
+// ─── Analytics Charts ───
 function initAnalyticsCharts() {
   const rc = document.getElementById('revenueChart')?.getContext('2d');
-  if (rc && !rc.chart) {
-    rc.chart = new Chart(rc, {
-      type: 'bar', data: { labels: ['سبت','أحد','اثنين','ثلاثاء','أربعاء','خميس','جمعة'], datasets: [{ label: 'الإيرادات', data: [12000,18000,15000,22000,28000,35000,19000], backgroundColor: 'rgba(0,123,255,0.7)', borderRadius: 8 }] },
+  if (rc && !rc._chartCreated) {
+    rc._chartCreated = true;
+    new Chart(rc, {
+      type: 'bar',
+      data: { labels: ['سبت','أحد','اثنين','ثلاثاء','أربعاء','خميس','جمعة'],
+              datasets: [{ label: 'الإيرادات', data: [12000,18000,15000,22000,28000,35000,19000], backgroundColor: 'rgba(0,123,255,0.7)', borderRadius: 8 }] },
       options: { responsive: true, plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true } } }
     });
   }
   const sc = document.getElementById('servicesChart')?.getContext('2d');
-  if (sc && !sc.chart) {
-    sc.chart = new Chart(sc, {
-      type: 'pie', data: { labels: ['تركيب','صيانة','غسيل','فريون','كشف أعطال'], datasets: [{ data: [30,25,20,15,10], backgroundColor: ['#007BFF','#00D4FF','#10b981','#f59e0b','#8b5cf6'] }] },
+  if (sc && !sc._chartCreated) {
+    sc._chartCreated = true;
+    new Chart(sc, {
+      type: 'pie',
+      data: { labels: ['تركيب','صيانة','غسيل','فريون','كشف أعطال'],
+              datasets: [{ data: [30,25,20,15,10], backgroundColor: ['#007BFF','#00D4FF','#10b981','#f59e0b','#8b5cf6'] }] },
       options: { responsive: true, plugins: { legend: { position: 'bottom', labels: { font: { family: 'Cairo' } } } } }
     });
   }
 }
 
-// Responsive sidebar toggle
+// Responsive sidebar
 const sidebarToggleBtn = document.querySelector('.sidebar-toggle-btn');
 if (window.innerWidth <= 768 && sidebarToggleBtn) sidebarToggleBtn.style.display = 'block';
 window.addEventListener('resize', () => { if (sidebarToggleBtn) sidebarToggleBtn.style.display = window.innerWidth <= 768 ? 'block' : 'none'; });

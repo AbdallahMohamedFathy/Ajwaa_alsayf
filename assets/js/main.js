@@ -28,8 +28,19 @@ document.addEventListener('DOMContentLoaded', () => {
   updateCartBadge();
   initChatbot();
   initScrollTop();
-  updateNavbarAuth();
   initWorkStrip();
+  
+  // Business Platform Upgrades Initializers
+  initMobileBottomNav();
+  initBeforeAfterSliders();
+  initCompareSystem();
+  initQuickViewModal();
+  initBookingSystemUpgrades();
+  initRecentlyViewed();
+  initSaaSAdminInterface();
+
+  // Auth-dependent navbar (waits for Firebase)
+  onAuthReady(() => updateNavbarAuth());
 
   // AOS Init
   if (typeof AOS !== 'undefined') {
@@ -409,55 +420,7 @@ if (document.getElementById('featured-products')) {
   renderProducts('featured-products', productsData.slice(0, 4));
 }
 
-// ═══ Auth System ═══
-function getUsers() {
-  return JSON.parse(localStorage.getItem('ajwaa_users')) || [];
-}
-
-function getCurrentUser() {
-  return JSON.parse(localStorage.getItem('ajwaa_current_user')) || null;
-}
-
-function isLoggedIn() {
-  return !!getCurrentUser();
-}
-
-function loginUser(email, password) {
-  const users = getUsers();
-  const user = users.find(u => u.email.toLowerCase() === email.toLowerCase() && u.password === password);
-  if (user) {
-    const { password: _p, ...safeUser } = user;
-    localStorage.setItem('ajwaa_current_user', JSON.stringify(safeUser));
-    return { success: true };
-  }
-  return { success: false, error: 'البريد الإلكتروني أو كلمة المرور غير صحيحة' };
-}
-
-function registerUser(name, email, phone, password) {
-  const users = getUsers();
-  if (users.find(u => u.email.toLowerCase() === email.toLowerCase())) {
-    return { success: false, error: 'هذا البريد الإلكتروني مسجل مسبقاً' };
-  }
-  const newUser = {
-    id: Date.now(),
-    name: name.trim(),
-    email: email.toLowerCase().trim(),
-    phone: phone.trim(),
-    password,
-    createdAt: new Date().toISOString()
-  };
-  users.push(newUser);
-  localStorage.setItem('ajwaa_users', JSON.stringify(users));
-  const { password: _p, ...safeUser } = newUser;
-  localStorage.setItem('ajwaa_current_user', JSON.stringify(safeUser));
-  return { success: true };
-}
-
-function logoutUser() {
-  localStorage.removeItem('ajwaa_current_user');
-  window.location.href = 'index.html';
-}
-
+// ═══ Navbar Auth UI (data comes from firebase-config.js) ═══
 function updateNavbarAuth() {
   const container = document.getElementById('navbarAuth');
   if (!container) return;
@@ -565,3 +528,678 @@ function getStatusLabel(status) {
   };
   return map[status] || map.pending;
 }
+
+/* ═══════════════════════════════════════
+   أجواء الصيف - Business Platform Upgrades Code
+   ═══════════════════════════════════════ */
+
+// 1. Mobile Bottom Nav Bar & Sticky CTA
+function initMobileBottomNav() {
+  const bottomBar = document.createElement('div');
+  bottomBar.className = 'mobile-bottom-nav';
+  bottomBar.innerHTML = `
+    <a href="index.html" class="mobile-bottom-nav-item ${window.location.pathname.endsWith('index.html') || window.location.pathname.endsWith('/') ? 'active' : ''}">
+      <i class="fas fa-home"></i>
+      <span>الرئيسية</span>
+    </a>
+    <a href="products.html" class="mobile-bottom-nav-item ${window.location.pathname.endsWith('products.html') ? 'active' : ''}">
+      <i class="fas fa-shopping-bag"></i>
+      <span>المتجر</span>
+    </a>
+    <a href="#" class="mobile-bottom-nav-item emergency-nav-item" onclick="triggerEmergencyCTA(event)">
+      <i class="fas fa-bolt"></i>
+      <span>طوارئ</span>
+    </a>
+    <a href="booking.html" class="mobile-bottom-nav-item ${window.location.pathname.endsWith('booking.html') ? 'active' : ''}">
+      <i class="fas fa-calendar-check"></i>
+      <span>حجز صيانة</span>
+    </a>
+    <a href="#" class="mobile-bottom-nav-item" id="mobileCartBtn" onclick="event.preventDefault(); document.querySelector('.cart-icon').click();">
+      <i class="fas fa-shopping-cart"></i>
+      <span>السلة</span>
+    </a>
+  `;
+  document.body.appendChild(bottomBar);
+
+  // Add the Floating emergency button for Desktop as well
+  const emergencyFloat = document.createElement('a');
+  emergencyFloat.href = '#';
+  emergencyFloat.className = 'emergency-fixed-btn';
+  emergencyFloat.onclick = function(e) { triggerEmergencyCTA(e); };
+  emergencyFloat.innerHTML = `<i class="fas fa-phone-alt"></i><span>صيانة فورية الآن 🚨</span>`;
+  document.body.appendChild(emergencyFloat);
+
+  // Add dynamic coupon code to copy anywhere
+  const couponContainer = document.querySelector('.coupon-copy-btn');
+  if (couponContainer) {
+    couponContainer.addEventListener('click', () => {
+      const codeText = document.querySelector('.coupon-code').textContent.trim();
+      navigator.clipboard.writeText(codeText).then(() => {
+        showToast('تم نسخ كوبون الخصم: ' + codeText + ' 🏷️');
+      });
+    });
+  }
+}
+
+// Trigger Emergency Options Modal
+function triggerEmergencyCTA(e) {
+  if (e) e.preventDefault();
+  let overlay = document.querySelector('.emergency-modal-overlay');
+  if (!overlay) {
+    overlay = document.createElement('div');
+    overlay.className = 'emergency-modal-overlay';
+    overlay.innerHTML = `
+      <div class="emergency-modal-card">
+        <div class="emergency-modal-header">
+          <button class="emergency-close-btn" onclick="closeEmergencyCTA()"><i class="fas fa-times"></i></button>
+          <h3><i class="fas fa-shield-alt"></i> صيانة فورية وطوارئ</h3>
+          <p>خدمة طوارئ سريعة على مدار 24 ساعة بالرياض</p>
+        </div>
+        <div class="emergency-modal-body">
+          <a href="https://wa.me/966530656834?text=أحتاج%20صيانة%20عاجلة%20لتكييف" target="_blank" class="emergency-option-card whatsapp-opt">
+            <div class="opt-icon"><i class="fab fa-whatsapp"></i></div>
+            <div class="opt-info">
+              <h4>تواصل سريع عبر واتساب</h4>
+              <p>متصلون الآن - استجابة خلال 5 دقائق</p>
+            </div>
+          </a>
+          <a href="tel:0530656834" class="emergency-option-card call-opt">
+            <div class="opt-icon"><i class="fas fa-phone-alt"></i></div>
+            <div class="opt-info">
+              <h4>اتصال هاتفي مباشر</h4>
+              <p>تحدث مع مهندس الصيانة فوراً</p>
+            </div>
+          </a>
+          <div class="emergency-option-card form-opt" onclick="closeEmergencyCTA(); window.location.href='booking.html?emergency=true';">
+            <div class="opt-icon"><i class="fas fa-calendar-plus"></i></div>
+            <div class="opt-info">
+              <h4>نموذج صيانة سريع</h4>
+              <p>احجز فني صيانة طوارئ خلال ساعة</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    `;
+    document.body.appendChild(overlay);
+  }
+  overlay.classList.add('active');
+}
+
+function closeEmergencyCTA() {
+  document.querySelector('.emergency-modal-overlay')?.classList.remove('active');
+}
+
+// 2. Before / After Sliders logic
+function initBeforeAfterSliders() {
+  const container = document.querySelector('.comparison-slider-container');
+  if (!container) return;
+
+  const handle = container.querySelector('.comparison-handle');
+  const imgAfter = container.querySelector('.comparison-img-after');
+
+  function move(x) {
+    const rect = container.getBoundingClientRect();
+    let pos = (x - rect.left) / rect.width;
+    if (pos < 0) pos = 0;
+    if (pos > 1) pos = 1;
+    handle.style.left = pos * 100 + '%';
+    imgAfter.style.clipPath = `polygon(0 0, ${pos * 100}% 0, ${pos * 100}% 100%, 0 100%)`;
+  }
+
+  container.addEventListener('mousemove', (e) => move(e.clientX));
+  container.addEventListener('touchmove', (e) => {
+    if (e.touches && e.touches[0]) {
+      move(e.touches[0].clientX);
+    }
+  }, { passive: true });
+}
+
+// 3. E-commerce Upgrades: Comparison Engine
+let compareList = JSON.parse(localStorage.getItem('ajwaa_compare')) || [];
+
+function initCompareSystem() {
+  renderCompareFloatBar();
+  
+  // Inject compare button to all rendered product cards dynamically
+  document.querySelectorAll('.product-card').forEach(card => {
+    const id = parseInt(card.querySelector('.product-wishlist')?.dataset.id);
+    if (id && !card.querySelector('.btn-compare-card')) {
+      const btn = document.createElement('button');
+      btn.className = `btn-compare-card ${compareList.includes(id) ? 'active' : ''}`;
+      btn.innerHTML = `<i class="fas fa-exchange-alt"></i>`;
+      btn.title = 'قارن المنتج';
+      btn.onclick = (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        toggleCompare(id);
+      };
+      card.querySelector('.product-image').appendChild(btn);
+    }
+  });
+}
+
+function toggleCompare(id) {
+  const idx = compareList.indexOf(id);
+  if (idx > -1) {
+    compareList.splice(idx, 1);
+    showToast('تمت إزالة المنتج من المقارنة');
+  } else {
+    if (compareList.length >= 3) {
+      showToast('يمكنك مقارنة 3 منتجات بحد أقصى ⚠️');
+      return;
+    }
+    compareList.push(id);
+    showToast('تمت إضافة المنتج للمقارنة');
+  }
+  localStorage.setItem('ajwaa_compare', JSON.stringify(compareList));
+  
+  // Update UI states
+  document.querySelectorAll(`.btn-compare-card`).forEach(btn => {
+    const btnId = parseInt(btn.parentElement.querySelector('.product-wishlist')?.dataset.id);
+    if (btnId === id) {
+      btn.classList.toggle('active', compareList.includes(id));
+    }
+  });
+
+  renderCompareFloatBar();
+}
+
+function removeCompareItem(id) {
+  compareList = compareList.filter(item => item !== id);
+  localStorage.setItem('ajwaa_compare', JSON.stringify(compareList));
+  document.querySelectorAll(`.btn-compare-card`).forEach(btn => {
+    const btnId = parseInt(btn.parentElement.querySelector('.product-wishlist')?.dataset.id);
+    if (btnId === id) btn.classList.remove('active');
+  });
+  renderCompareFloatBar();
+}
+
+function renderCompareFloatBar() {
+  let bar = document.querySelector('.compare-float-bar');
+  if (compareList.length === 0) {
+    bar?.classList.remove('active');
+    return;
+  }
+
+  if (!bar) {
+    bar = document.createElement('div');
+    bar.className = 'compare-float-bar';
+    document.body.appendChild(bar);
+  }
+
+  const itemsHTML = compareList.map(id => {
+    const prod = productsData.find(p => p.id === id);
+    if (!prod) return '';
+    return `
+      <div class="compare-tray-thumb">
+        <img src="${prod.image}" alt="">
+        <div class="compare-tray-remove" onclick="removeCompareItem(${id})"><i class="fas fa-times"></i></div>
+      </div>
+    `;
+  }).join('');
+
+  bar.innerHTML = `
+    <div style="display:flex;align-items:center;gap:12px;">
+      <div style="font-size:0.8rem;font-weight:700;color:var(--gray-700);">المقارنة (${compareList.length}/3)</div>
+      <div class="compare-tray-items">${itemsHTML}</div>
+      <button class="btn btn-primary btn-sm" onclick="showCompareModal()" style="padding:6px 14px;border-radius:6px;font-size:0.78rem;">قارن الآن</button>
+    </div>
+  `;
+  bar.classList.add('active');
+}
+
+function showCompareModal() {
+  let modal = document.querySelector('#compareModal');
+  if (!modal) {
+    modal = document.createElement('div');
+    modal.className = 'modal-overlay';
+    modal.id = 'compareModal';
+    document.body.appendChild(modal);
+  }
+
+  const items = compareList.map(id => productsData.find(p => p.id === id)).filter(Boolean);
+  if (!items.length) return;
+
+  const headers = items.map(p => `
+    <th>
+      <div class="compare-product-header">
+        <img src="${p.image}" alt="">
+        <h4>${p.name}</h4>
+        <div style="font-weight:800;color:var(--primary);margin-bottom:6px;">${p.price.toLocaleString()} ر.س</div>
+        <button class="btn btn-primary btn-sm" onclick="addToCart(${p.id}); document.getElementById('compareModal').classList.remove('active');" style="padding:4px 10px;font-size:0.7rem;border-radius:6px;width:100%;">أضف للسلة</button>
+      </div>
+    </th>
+  `).join('');
+
+  const brandRow = items.map(p => `<td>${p.brand}</td>`).join('');
+  const capacityRow = items.map(p => `<td>${p.hp} حصان</td>`).join('');
+  const inverterRow = items.map(p => `<td>${p.inverter ? 'انفرتر موفر للطاقة ⚡' : 'تكييف قياسي عالي الكفاءة'}</td>`).join('');
+  const warrantyRow = items.map(p => `<td>5 سنوات ضمان شامل</td>`).join('');
+  const ratingRow = items.map(p => `<td>⭐ ${p.rating} (${p.reviews} تقييم)</td>`).join('');
+
+  modal.innerHTML = `
+    <div class="modal compare-modal-card">
+      <div class="modal-header">
+        <h3><i class="fas fa-exchange-alt"></i> مقارنة مواصفات التكييفات</h3>
+        <button onclick="document.getElementById('compareModal').classList.remove('active')" style="background:none;font-size:1.2rem;color:var(--gray-500);"><i class="fas fa-times"></i></button>
+      </div>
+      <div class="modal-body" style="padding:14px;overflow-x:auto;">
+        <table class="compare-table">
+          <thead>
+            <tr>
+              <th style="width:140px;background:var(--white);">الخصائص</th>
+              ${headers}
+            </tr>
+          </thead>
+          <tbody>
+            <tr><td class="product-col">الماركة</td>${brandRow}</tr>
+            <tr><td class="product-col">القدرة بالحصان</td>${capacityRow}</tr>
+            <tr><td class="product-col">تقنية توفير الكهرباء</td>${inverterRow}</tr>
+            <tr><td class="product-col">فترة الضمان</td>${warrantyRow}</tr>
+            <tr><td class="product-col">تقييم العملاء</td>${ratingRow}</tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  `;
+  modal.classList.add('active');
+}
+
+// 4. E-commerce Upgrades: Premium Quick View Modal
+function initQuickViewModal() {
+  window.showQuickView = function(productId) {
+    const product = productsData.find(p => p.id === productId);
+    if (!product) return;
+
+    let qvModal = document.querySelector('#quickViewModal');
+    if (!qvModal) {
+      qvModal = document.createElement('div');
+      qvModal.className = 'modal-overlay';
+      qvModal.id = 'quickViewModal';
+      document.body.appendChild(qvModal);
+    }
+
+    const tamaraSplit = Math.round(product.price / 4);
+    const tabbySplit = Math.round(product.price / 4);
+
+    qvModal.innerHTML = `
+      <div class="modal" style="max-width:700px;width:95%;">
+        <div class="modal-header">
+          <h3><i class="fas fa-eye"></i> نظرة سريعة للمنتج</h3>
+          <button onclick="closeQuickViewModal()" style="background:none;font-size:1.2rem;color:var(--gray-500);"><i class="fas fa-times"></i></button>
+        </div>
+        <div class="modal-body">
+          <div class="qv-modal-grid">
+            <div style="background:linear-gradient(135deg,#f0f8ff,#e8f4fd);border-radius:12px;padding:20px;display:flex;align-items:center;justify-content:center;height:240px;">
+              <img src="${product.image}" alt="" style="max-height:100%;max-width:100%;object-fit:contain;">
+            </div>
+            <div>
+              <span style="font-size:0.75rem;color:var(--primary);font-weight:700;text-transform:uppercase;">${product.brand}</span>
+              <h2 style="font-size:1.2rem;font-weight:800;color:var(--gray-900);margin:4px 0 10px;">${product.name}</h2>
+              
+              <div style="display:flex;align-items:center;gap:12px;margin-bottom:12px;">
+                <div style="font-size:1.5rem;font-weight:900;color:var(--primary-dark);">${product.price.toLocaleString()} ر.س</div>
+                ${product.oldPrice ? `<div style="font-size:0.9rem;color:var(--gray-400);text-decoration:line-through;">${product.oldPrice.toLocaleString()} ر.س</div>` : ''}
+              </div>
+
+              <!-- Tamara / Tabby Banners -->
+              <div class="installment-badge-container" style="margin-bottom:14px;">
+                <div class="installment-badge tamara-badge">
+                  <img src="https://tamara.co/assets/svg/tamara-logo-ar.svg" alt="Tamara">
+                  <span>قسّمها على 4 دفعات بقيمة ${tamaraSplit} ر.س بدون فوائد</span>
+                </div>
+              </div>
+
+              <div style="font-size:0.8rem;color:var(--gray-600);line-height:1.6;margin-bottom:14px;">
+                تكييف سبليت ${product.hp} حصان ${product.inverter ? 'بتقنية الانفرتر الموفرة للطاقة حتى 60%' : ''} مع تبريد ذكي سريع، فلاتر حماية متطورة وضمان شامل لمدة 5 سنوات.
+              </div>
+
+              <div style="margin-bottom:18px;background:var(--gray-50);padding:8px 12px;border-radius:8px;font-size:0.75rem;color:var(--success);font-weight:700;display:inline-flex;align-items:center;gap:6px;">
+                <i class="fas fa-truck"></i> توصيل وتركيب مجاني خلال 24 ساعة بالرياض
+              </div>
+
+              <div style="display:flex;gap:10px;">
+                <button class="btn btn-primary" onclick="addToCart(${product.id}); closeQuickViewModal();" style="flex:1;"><i class="fas fa-shopping-cart"></i> أضف للسلة</button>
+                <a href="product-details.html?id=${product.id}" class="btn btn-outline" style="padding:10px 18px;"><i class="fas fa-info-circle"></i> التفاصيل</a>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    `;
+    qvModal.classList.add('active');
+  };
+
+  window.closeQuickViewModal = function() {
+    document.querySelector('#quickViewModal')?.classList.remove('active');
+  };
+}
+
+// 5. Smart Booking Page Wizard Improvements & Simulated Riyadh Map
+let bookingRegion = 'الوسطى';
+function initBookingSystemUpgrades() {
+  const uploadInput = document.getElementById('bookImage');
+  if (uploadInput) {
+    uploadInput.addEventListener('change', previewACImage);
+  }
+
+  // Inject Map in step 2 of booking
+  const step2Card = document.getElementById('step2');
+  if (step2Card && !document.getElementById('riyadhMapBlock')) {
+    const mapBlock = document.createElement('div');
+    mapBlock.id = 'riyadhMapBlock';
+    mapBlock.className = 'riyadh-map-simulation';
+    mapBlock.innerHTML = `
+      <div class="map-header">
+        <h4><i class="fas fa-map-marked-alt"></i> تحديد موقع العميل بالرياض (تغطية فورية)</h4>
+        <span class="selected-region" id="selectedRegionLabel">منطقة التغطية: الوسطى</span>
+      </div>
+      <div class="map-vector-graphic">
+        <div class="map-region-zone north" onclick="selectRiyadhMapRegion('شمال الرياض', this)">
+          <i class="fas fa-map-pin"></i>
+          <span class="map-region-name">شمال الرياض</span>
+          <span class="map-region-meta">فني متاح</span>
+        </div>
+        <div class="map-region-zone south" onclick="selectRiyadhMapRegion('جنوب الرياض', this)">
+          <i class="fas fa-map-pin"></i>
+          <span class="map-region-name">جنوب الرياض</span>
+          <span class="map-region-meta">فني متاح</span>
+        </div>
+        <div class="map-region-zone center active" onclick="selectRiyadhMapRegion('وسط الرياض', this)">
+          <i class="fas fa-map-pin"></i>
+          <span class="map-region-name">وسط الرياض</span>
+          <span class="map-region-meta">3 فنيين</span>
+        </div>
+        <div class="map-region-zone east" onclick="selectRiyadhMapRegion('شرق الرياض', this)">
+          <i class="fas fa-map-pin"></i>
+          <span class="map-region-name">شرق الرياض</span>
+          <span class="map-region-meta">فني متاح</span>
+        </div>
+        <div class="map-region-zone west" onclick="selectRiyadhMapRegion('غرب الرياض', this)">
+          <i class="fas fa-map-pin"></i>
+          <span class="map-region-name">غرب الرياض</span>
+          <span class="map-region-meta">فني متاح</span>
+        </div>
+      </div>
+    `;
+    const acDesc = document.getElementById('bookDesc').parentElement;
+    acDesc.insertAdjacentElement('afterend', mapBlock);
+  }
+
+  // Intercept normal booking success to show tracker
+  window.submitBooking = function() {
+    const date = document.getElementById('bookDate').value;
+    const time = document.getElementById('bookTime').value;
+    if (!date || !time) { showToast('يرجى اختيار التاريخ والوقت'); return; }
+
+    const trackId = 'AJW-' + Math.floor(100000 + Math.random() * 900000);
+    localStorage.setItem('last_booking_track', trackId);
+
+    document.querySelectorAll('.booking-form-card').forEach(c => c.style.display = 'none');
+    
+    // Create gorgeous Tracking screen
+    const successCard = document.getElementById('stepSuccess');
+    successCard.innerHTML = `
+      <div class="tracking-overlay-box">
+        <div class="success-icon"><i class="fas fa-check"></i></div>
+        <h2 style="font-size:1.5rem;font-weight:800;color:var(--success);margin-bottom:8px;text-align:center;">تم إرسال طلب الحجز بنجاح! 🎉</h2>
+        <p style="color:var(--gray-500);margin-bottom:24px;text-align:center;">تابع حالة طلب الصيانة الخاص بك أدناه في الوقت الحقيقي</p>
+        
+        <div class="tracking-header">
+          <div class="tracking-id-text">رقم تتبع الحجز: <span>${trackId}</span></div>
+          <button class="btn btn-outline btn-sm" onclick="navigator.clipboard.writeText('${trackId}').then(()=>showToast('تم نسخ رقم التتبع!'))"><i class="far fa-copy"></i> نسخ</button>
+        </div>
+
+        <div class="tracking-timeline">
+          <div class="tracking-timeline-bar-active" style="width: 25%;"></div>
+          <div class="tracking-node completed">
+            <div class="tracking-node-dot"><i class="fas fa-file-invoice"></i></div>
+            <div class="tracking-node-label">تم الاستلام</div>
+          </div>
+          <div class="tracking-node active">
+            <div class="tracking-node-dot"><i class="fas fa-user-check"></i></div>
+            <div class="tracking-node-label">تعيين الفني</div>
+          </div>
+          <div class="tracking-node">
+            <div class="tracking-node-dot"><i class="fas fa-truck"></i></div>
+            <div class="tracking-node-label">فني في الطريق</div>
+          </div>
+          <div class="tracking-node">
+            <div class="tracking-node-dot"><i class="fas fa-check-double"></i></div>
+            <div class="tracking-node-label">اكتمل العمل</div>
+          </div>
+        </div>
+
+        <div class="technician-assigned-card" style="margin-top:20px;">
+          <div class="tech-photo">م</div>
+          <div class="tech-info-row">
+            <h4>الفني المعين: مهندس محمود علي</h4>
+            <p>خبير صيانة أنظمة التكييف والتبريد بالرياض</p>
+            <div class="tech-rating-stars">⭐⭐⭐⭐⭐ <span>(4.9)</span></div>
+          </div>
+          <a href="tel:0530656834" class="btn btn-primary btn-sm" style="padding:8px 14px;"><i class="fas fa-phone-alt"></i> اتصال</a>
+        </div>
+
+        <div style="display:flex;gap:12px;justify-content:center;margin-top:28px;flex-wrap:wrap;">
+          <a href="index.html" class="btn btn-outline"><i class="fas fa-home"></i> الرئيسية</a>
+          <a href="https://wa.me/966530656834?text=تحديث%20بخصوص%20طلب%20التتبع%20${trackId}" target="_blank" class="btn btn-primary" style="background:#25d366;"><i class="fab fa-whatsapp"></i> إشعار بالواتساب</a>
+        </div>
+      </div>
+    `;
+    successCard.style.display = 'block';
+    document.querySelectorAll('.booking-step').forEach(s => s.classList.add('completed'));
+    showToast('تم إرسال حجز الصيانة بنجاح! ✅');
+  };
+}
+
+function previewACImage(event) {
+  const input = event.target;
+  const label = document.getElementById('fileLabel');
+  if (input.files && input.files[0]) {
+    const file = input.files[0];
+    label.innerHTML = `<i class="fas fa-check-circle" style="color:var(--success);font-size:1.5rem;display:block;margin-bottom:6px;"></i>تم رفع: ${file.name}`;
+  }
+}
+
+function selectRiyadhMapRegion(region, element) {
+  bookingRegion = region;
+  document.getElementById('selectedRegionLabel').textContent = 'منطقة التغطية: ' + region;
+  document.querySelectorAll('.map-region-zone').forEach(z => z.classList.remove('active'));
+  element.classList.add('active');
+  showToast('تم تحديد منطقة: ' + region);
+}
+
+// 6. E-commerce Upgrades: Recently Viewed Items
+function initRecentlyViewed() {
+  const currentIdPage = new URLSearchParams(window.location.search).get('id');
+  if (currentIdPage && window.location.pathname.includes('product-details.html')) {
+    let recent = JSON.parse(localStorage.getItem('ajwaa_recent')) || [];
+    const prodId = parseInt(currentIdPage);
+    if (prodId) {
+      recent = recent.filter(id => id !== prodId);
+      recent.unshift(prodId);
+      recent = recent.slice(0, 4); // Keep top 4
+      localStorage.setItem('ajwaa_recent', JSON.stringify(recent));
+    }
+  }
+
+  // If there's a recently viewed section container, render it
+  const rVContainer = document.getElementById('recently-viewed-grid');
+  if (rVContainer) {
+    const recentIds = JSON.parse(localStorage.getItem('ajwaa_recent')) || [];
+    const items = recentIds.map(id => productsData.find(p => p.id === id)).filter(Boolean);
+    if (items.length === 0) {
+      rVContainer.parentElement.style.display = 'none';
+      return;
+    }
+    rVContainer.innerHTML = items.map(p => `
+      <div class="product-card" style="box-shadow:none;border-color:var(--gray-200);">
+        <div class="product-image" style="height:150px;padding:10px;">
+          <a href="product-details.html?id=${p.id}"><img src="${p.image}" alt="" style="max-height:110px;"></a>
+        </div>
+        <div class="product-info" style="padding:10px;">
+          <h3 class="product-name" style="font-size:0.82rem;"><a href="product-details.html?id=${p.id}">${p.name}</a></h3>
+          <div style="font-weight:800;color:var(--primary-dark);font-size:0.92rem;margin-top:6px;">${p.price.toLocaleString()} ر.س</div>
+        </div>
+      </div>
+    `).join('');
+  }
+}
+
+// 7. SaaS Admin Control Dashboard Logic
+let localAdminProducts = JSON.parse(localStorage.getItem('admin_products')) || [...productsData];
+
+function initSaaSAdminInterface() {
+  if (!window.location.pathname.includes('admin.html')) return;
+
+  // Overwrite local products array in local storage
+  localStorage.setItem('admin_products', JSON.stringify(localAdminProducts));
+  renderAdminProductsTable();
+
+  // Custom Chart modifications if dashboard is open
+  const timelineContainer = document.querySelector('#dashboard');
+  if (timelineContainer && !document.getElementById('adminTimelineBlock')) {
+    const timeline = document.createElement('div');
+    timeline.id = 'adminTimelineBlock';
+    timeline.className = 'data-table-card';
+    timeline.style.padding = '24px';
+    timeline.style.marginTop = '24px';
+    timeline.innerHTML = `
+      <div class="table-header" style="padding:0 0 16px;border-bottom:1.5px solid var(--gray-100);">
+        <h3><i class="fas fa-history"></i> سجل الأنشطة والعمليات الفنية</h3>
+        <button class="btn btn-outline btn-sm" onclick="triggerReportExport('PDF')"><i class="fas fa-file-pdf"></i> تصدير تقرير PDF</button>
+      </div>
+      <div class="activity-timeline" style="margin-top:20px;">
+        <div class="activity-item completed">
+          <div class="activity-time">منذ 5 دقائق</div>
+          <div class="activity-desc">أرسل العميل <strong>سعود العنزي</strong> طلب صيانة طوارئ بوسط الرياض. تم توجيه الفني.</div>
+        </div>
+        <div class="activity-item warning">
+          <div class="activity-time">منذ ساعة</div>
+          <div class="activity-desc">تم تحديث حالة الطلب <strong>#1021</strong> إلى "قيد التنفيذ" بواسطة الفني خالد علي.</div>
+        </div>
+        <div class="activity-item completed">
+          <div class="activity-time">منذ 4 ساعات</div>
+          <div class="activity-desc">قام المشرف بإضافة المنتج <strong>تكييف شارب انفرتر 1.5 حصان</strong> لتسويق العروض الكبرى.</div>
+        </div>
+      </div>
+    `;
+    timelineContainer.appendChild(timeline);
+  }
+
+  // Intercept form saves in admin
+  const modalSaveBtn = document.querySelector('.modal-footer .btn-primary');
+  if (modalSaveBtn) {
+    modalSaveBtn.onclick = function() { saveAdminProduct(); };
+  }
+}
+
+function renderAdminProductsTable() {
+  const tbody = document.querySelector('#products-mgmt tbody');
+  if (!tbody) return;
+
+  tbody.innerHTML = localAdminProducts.map(p => `
+    <tr>
+      <td>
+        <div style="display:flex;align-items:center;gap:10px;">
+          <img src="${p.image}" alt="" style="width:36px;height:36px;object-fit:contain;background:var(--gray-50);border-radius:6px;padding:2px;">
+          <span>${p.name}</span>
+        </div>
+      </td>
+      <td>${p.brand}</td>
+      <td style="font-weight:700;color:var(--primary);">${p.price.toLocaleString()} ر.س</td>
+      <td>${p.hp} حصان</td>
+      <td><span class="status-badge completed">متوفر</span></td>
+      <td>
+        <button class="btn btn-sm btn-outline" style="padding:4px 10px;font-size:0.75rem;" onclick="editAdminProduct(${p.id})"><i class="fas fa-edit"></i></button>
+        <button class="btn btn-sm" style="padding:4px 10px;font-size:0.75rem;background:var(--danger);color:#fff;border-radius:6px;" onclick="deleteAdminProduct(${p.id})"><i class="fas fa-trash"></i></button>
+      </td>
+    </tr>
+  `).join('');
+}
+
+function deleteAdminProduct(id) {
+  if (confirm('هل أنت متأكد من حذف هذا المنتج نهائياً؟')) {
+    localAdminProducts = localAdminProducts.filter(p => p.id !== id);
+    localStorage.setItem('admin_products', JSON.stringify(localAdminProducts));
+    renderAdminProductsTable();
+    showToast('تم حذف المنتج بنجاح 🗑️');
+  }
+}
+
+function saveAdminProduct() {
+  const modal = document.getElementById('productModal');
+  const name = modal.querySelector('input[placeholder="اسم المنتج"]').value.trim();
+  const price = parseFloat(modal.querySelector('input[placeholder="السعر"]').value);
+  const brand = modal.querySelector('select').value;
+  const hp = modal.querySelectorAll('select')[1].value;
+
+  if (!name || !price) {
+    showToast('يرجى تعبئة كافة الحقول المطلوبة ⚠️');
+    return;
+  }
+
+  const newProd = {
+    id: Date.now(),
+    name: name,
+    brand: brand,
+    hp: hp.replace(' حصان', ''),
+    price: price,
+    oldPrice: price + 400,
+    rating: 4.8,
+    reviews: 1,
+    image: 'assets/images/product-1.png',
+    inverter: true,
+    badge: 'جديد'
+  };
+
+  localAdminProducts.unshift(newProd);
+  localStorage.setItem('admin_products', JSON.stringify(localAdminProducts));
+  renderAdminProductsTable();
+  
+  modal.classList.remove('active');
+  showToast('تمت إضافة المنتج بنجاح إلى المنصة 🎉');
+
+  // Reset inputs
+  modal.querySelector('input[placeholder="اسم المنتج"]').value = '';
+  modal.querySelector('input[placeholder="السعر"]').value = '';
+}
+
+function triggerReportExport(type) {
+  let loader = document.querySelector('.export-loader-overlay');
+  if (!loader) {
+    loader = document.createElement('div');
+    loader.className = 'export-loader-overlay';
+    loader.innerHTML = `
+      <div class="export-progress-card">
+        <h3><i class="fas fa-cloud-download-alt" style="color:var(--primary);font-size:2rem;margin-bottom:10px;display:block;"></i> جاري تصدير الملف كـ ${type}</h3>
+        <p style="font-size:0.8rem;color:var(--gray-500);">تحضير البيانات والتحليلات الفنية لمكثفات التبريد</p>
+        <div class="export-progress-bar-outer">
+          <div class="export-progress-bar-inner"></div>
+        </div>
+        <span class="export-percent" style="font-weight:700;font-size:0.9rem;color:var(--primary-dark);">0%</span>
+      </div>
+    `;
+    document.body.appendChild(loader);
+  }
+
+  loader.classList.add('active');
+  const bar = loader.querySelector('.export-progress-bar-inner');
+  const percentText = loader.querySelector('.export-percent');
+  
+  let percent = 0;
+  const interval = setInterval(() => {
+    percent += 5;
+    bar.style.width = percent + '%';
+    percentText.textContent = percent + '%';
+    
+    if (percent >= 100) {
+      clearInterval(interval);
+      setTimeout(() => {
+        loader.classList.remove('active');
+        showToast(`تم تصدير تقرير ${type} بنجاح وحفظه بالتنزيلات 📊`);
+      }, 500);
+    }
+  }, 100);
+}
+
