@@ -27,10 +27,15 @@ const _readyCBs   = [];   // one-time "ready" callbacks
 auth.onAuthStateChanged(async (fbUser) => {
   if (fbUser) {
     try {
-      const doc = await db.collection('users').doc(fbUser.uid).get();
-      _currentUser = doc.exists
-        ? { uid: fbUser.uid, ...doc.data() }
-        : { uid: fbUser.uid, email: fbUser.email, name: '', phone: '', role: 'customer' };
+      const docRef = db.collection('users').doc(fbUser.uid);
+      const doc    = await docRef.get();
+      if (doc.exists) {
+        _currentUser = { uid: fbUser.uid, ...doc.data() };
+      } else {
+        const fallback = { uid: fbUser.uid, email: fbUser.email, name: fbUser.displayName || '', phone: '', role: 'customer', createdAt: firebase.firestore.FieldValue.serverTimestamp() };
+        await docRef.set(fallback);
+        _currentUser = fallback;
+      }
     } catch {
       _currentUser = { uid: fbUser.uid, email: fbUser.email, name: '', phone: '', role: 'customer' };
     }
@@ -215,6 +220,6 @@ async function getAllUsers() {
 }
 
 async function updateUserProfile(uid, data) {
-  await db.collection('users').doc(uid).update(data);
+  await db.collection('users').doc(uid).set(data, { merge: true });
   if (_currentUser?.uid === uid) _currentUser = { ..._currentUser, ...data };
 }
