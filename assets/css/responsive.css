@@ -149,3 +149,33 @@
   .container { max-width: 1400px; }
   .hero-panel-content { padding: 100px 72px 80px; }
 }
+
+/* ═══ Mobile Bottom Nav — Floating Elements Fix ═══ */
+@media (max-width: 768px) {
+  /* Chatbot toggle: فوق الشريط بـ 16px */
+  .chatbot-toggle {
+    bottom: 84px !important;
+    right: 16px !important;
+  }
+
+  /* Chatbot window: يفتح فوق الزرار */
+  .chatbot-window {
+    bottom: 154px !important;
+    right: 12px !important;
+    left: 12px !important;
+    width: auto !important;
+    max-height: calc(100vh - 220px) !important;
+  }
+
+  /* WhatsApp: فوق الشريط بـ 16px */
+  .whatsapp-float {
+    bottom: 84px !important;
+    left: 16px !important;
+  }
+
+  /* Scroll to top: فوق الشريط */
+  .scroll-top {
+    bottom: 84px !important;
+    left: 16px !important;
+  }
+}
