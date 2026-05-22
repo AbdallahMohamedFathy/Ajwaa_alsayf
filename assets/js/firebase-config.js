@@ -145,9 +145,10 @@ async function getOrders() {
 async function getUserOrders(uid) {
   const snap = await db.collection('orders')
     .where('userId', '==', uid)
-    .orderBy('createdAt', 'desc')
     .get();
-  return snap.docs.map(d => ({ firestoreId: d.id, ...d.data() }));
+  return snap.docs
+    .map(d => ({ firestoreId: d.id, ...d.data() }))
+    .sort((a, b) => (b.createdAt?.seconds || 0) - (a.createdAt?.seconds || 0));
 }
 
 async function updateOrderStatus(firestoreId, status) {
