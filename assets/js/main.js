@@ -75,14 +75,25 @@ function initNavbar() {
   });
 
   // Mobile menu
-  toggle?.addEventListener('click', () => {
-    menu?.classList.toggle('active');
-    overlay?.classList.toggle('active');
-  });
-
-  overlay?.addEventListener('click', () => {
+  function openMenu() {
+    menu?.classList.add('active');
+    overlay?.classList.add('active');
+    if (menu) menu.style.right = '0';
+  }
+  function closeMenu() {
     menu?.classList.remove('active');
     overlay?.classList.remove('active');
+    if (menu) menu.style.right = '-100%';
+  }
+
+  toggle?.addEventListener('click', () => {
+    menu?.classList.contains('active') ? closeMenu() : openMenu();
+  });
+  overlay?.addEventListener('click', closeMenu);
+
+  // Close menu on link click
+  menu?.querySelectorAll('a').forEach(link => {
+    link.addEventListener('click', closeMenu);
   });
 
   // Active link
@@ -422,29 +433,52 @@ if (document.getElementById('featured-products')) {
 
 // ═══ Navbar Auth UI (data comes from firebase-config.js) ═══
 function updateNavbarAuth() {
-  const container = document.getElementById('navbarAuth');
-  if (!container) return;
   const user = getCurrentUser();
-  if (user) {
-    const firstName = user.name.split(' ')[0];
-    container.innerHTML = `
-      <div style="display:flex;align-items:center;gap:6px;">
-        <a href="profile.html" class="btn btn-primary btn-sm" style="gap:6px;">
-          <i class="fas fa-user-circle"></i><span>${firstName}</span>
-        </a>
-        <button onclick="logoutUser()" class="btn btn-outline btn-sm" style="padding:8px 12px;" title="تسجيل الخروج">
-          <i class="fas fa-sign-out-alt"></i>
-        </button>
-      </div>
-    `;
-  } else {
-    container.innerHTML = `
-      <a href="login.html" class="btn btn-primary btn-sm">
-        <i class="fas fa-user"></i> دخول
-      </a>
-    `;
+
+  // Desktop: navbarAuth container (exists on some pages)
+  const container = document.getElementById('navbarAuth');
+  if (container) {
+    if (user) {
+      const firstName = user.name ? user.name.split(' ')[0] : 'حسابي';
+      container.innerHTML = `
+        <div style="display:flex;align-items:center;gap:6px;">
+          <a href="profile.html" class="btn btn-primary btn-sm" style="gap:6px;">
+            <i class="fas fa-user-circle"></i><span>${firstName}</span>
+          </a>
+          <button onclick="logoutUser()" class="btn btn-outline btn-sm" style="padding:8px 12px;" title="تسجيل الخروج">
+            <i class="fas fa-sign-out-alt"></i>
+          </button>
+        </div>
+      `;
+    } else {
+      container.innerHTML = `<a href="login.html" class="btn btn-primary btn-sm"><i class="fas fa-user"></i> دخول</a>`;
+    }
+  }
+
+  // Mobile: inject small icon button next to cart in navbar-actions
+  let mobileBtn = document.getElementById('navMobileAuth');
+  if (!mobileBtn) {
+    const actions = document.querySelector('.navbar-actions');
+    if (actions) {
+      mobileBtn = document.createElement('a');
+      mobileBtn.id = 'navMobileAuth';
+      mobileBtn.style.cssText = 'display:none;width:38px;height:38px;border-radius:50%;background:var(--primary);color:#fff;align-items:center;justify-content:center;font-size:1rem;flex-shrink:0;';
+      const cartIcon = actions.querySelector('.cart-icon');
+      if (cartIcon) actions.insertBefore(mobileBtn, cartIcon);
+      else actions.prepend(mobileBtn);
+    }
+  }
+  if (mobileBtn) {
+    mobileBtn.href = user ? 'profile.html' : 'login.html';
+    mobileBtn.innerHTML = user ? '<i class="fas fa-user-circle"></i>' : '<i class="fas fa-user"></i>';
+    mobileBtn.style.display = window.innerWidth <= 768 ? 'flex' : 'none';
   }
 }
+
+window.addEventListener('resize', () => {
+  const btn = document.getElementById('navMobileAuth');
+  if (btn) btn.style.display = window.innerWidth <= 768 ? 'flex' : 'none';
+});
 
 // ═══ Work Strip: Auto-scroll + Drag ═══
 function initWorkStrip() {
@@ -558,27 +592,7 @@ function initMobileBottomNav() {
       <i class="fas fa-tools"></i>
       <span>الخدمات</span>
     </a>
-    <a href="login.html" class="mobile-bottom-nav-item" id="mobileProfileBtn">
-      <i class="fas fa-user"></i>
-      <span>دخول</span>
-    </a>
   `;
-  document.body.appendChild(bottomBar);
-
-  // Update profile button after Firebase auth resolves
-  onAuthReady((user) => {
-    const btn = document.getElementById('mobileProfileBtn');
-    if (!btn) return;
-    if (user) {
-      const firstName = user.name ? user.name.split(' ')[0] : 'حسابي';
-      btn.href = 'profile.html';
-      btn.classList.toggle('active', window.location.pathname.endsWith('profile.html'));
-      btn.innerHTML = `<i class="fas fa-user-circle"></i><span>${firstName}</span>`;
-    } else {
-      btn.href = 'login.html';
-      btn.innerHTML = `<i class="fas fa-user"></i><span>دخول</span>`;
-    }
-  });
 
   // Add the Floating emergency button for Desktop as well
   const emergencyFloat = document.createElement('a');

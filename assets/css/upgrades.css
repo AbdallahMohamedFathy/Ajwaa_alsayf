@@ -65,12 +65,9 @@
 }
 
 .mobile-bottom-nav-item i {
-  font-size: 1.1rem;
+  font-size: 1.25rem;
   margin-bottom: 3px;
   transition: transform 0.2s ease;
-}
-.mobile-bottom-nav-item span {
-  font-size: 0.6rem;
 }
 
 .mobile-bottom-nav-item.active,
