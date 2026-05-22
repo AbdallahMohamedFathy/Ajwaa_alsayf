@@ -242,7 +242,26 @@
 </script>
 <style>
   @media(max-width:768px) {
-    .service-detail-grid { grid-template-columns: 1fr !important; }
+    .service-detail-grid > div:first-child,
+    .service-detail-grid > div:last-child { padding: 16px 14px !important; }
+
+    .service-detail-grid > div[style*="min-height"] {
+      min-height: 130px !important;
+      padding: 16px !important;
+    }
+    .service-detail-grid > div[style*="min-height"] i {
+      font-size: 2.4rem !important;
+      margin-bottom: 8px !important;
+    }
+    .service-detail-grid > div[style*="min-height"] > div > div {
+      font-size: 1rem !important;
+    }
+
+    .service-detail-grid h2 { font-size: 1rem !important; margin-bottom: 8px !important; }
+    .service-detail-grid p  { font-size: 0.78rem !important; line-height: 1.6 !important; margin-bottom: 10px !important; }
+    .service-detail-grid li { font-size: 0.75rem !important; padding: 3px 0 !important; }
+    .service-detail-grid .btn { font-size: 0.78rem !important; padding: 8px 14px !important; }
+    .service-detail-grid span[style*="1.3rem"] { font-size: 0.9rem !important; }
   }
 </style>
 </body>
