@@ -167,15 +167,15 @@
     max-height: calc(100vh - 220px) !important;
   }
 
-  /* WhatsApp: فوق الشريط بـ 16px */
+  /* WhatsApp: فوق الشريط مباشرة */
   .whatsapp-float {
     bottom: 84px !important;
     left: 16px !important;
   }
 
-  /* Scroll to top: فوق الشريط */
+  /* Scroll to top: فوق الـ WhatsApp */
   .scroll-top {
-    bottom: 84px !important;
+    bottom: 152px !important;
     left: 16px !important;
   }
 }
