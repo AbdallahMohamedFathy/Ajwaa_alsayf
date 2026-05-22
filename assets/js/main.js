@@ -554,9 +554,9 @@ function initMobileBottomNav() {
       <i class="fas fa-calendar-check"></i>
       <span>حجز صيانة</span>
     </a>
-    <a href="#" class="mobile-bottom-nav-item" id="mobileCartBtn" onclick="event.preventDefault(); document.querySelector('.cart-icon').click();">
-      <i class="fas fa-shopping-cart"></i>
-      <span>السلة</span>
+    <a href="services.html" class="mobile-bottom-nav-item ${window.location.pathname.endsWith('services.html') ? 'active' : ''}">
+      <i class="fas fa-tools"></i>
+      <span>الخدمات</span>
     </a>
   `;
   document.body.appendChild(bottomBar);
