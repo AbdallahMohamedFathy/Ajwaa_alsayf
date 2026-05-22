@@ -470,7 +470,14 @@ function updateNavbarAuth() {
   }
   if (mobileBtn) {
     mobileBtn.href = user ? 'profile.html' : 'login.html';
-    mobileBtn.innerHTML = user ? '<i class="fas fa-user-circle"></i>' : '<i class="fas fa-user"></i>';
+    if (user) {
+      const firstName = user.name ? user.name.split(' ')[0] : 'حسابي';
+      mobileBtn.innerHTML = `<i class="fas fa-user-circle"></i><span style="font-size:0.7rem;font-weight:700;margin-right:4px;font-family:Cairo,sans-serif;">${firstName}</span>`;
+      mobileBtn.style.cssText = 'display:none;align-items:center;gap:4px;background:var(--primary);color:#fff;padding:6px 12px;border-radius:20px;font-size:0.95rem;flex-shrink:0;text-decoration:none;white-space:nowrap;';
+    } else {
+      mobileBtn.innerHTML = `<i class="fas fa-user"></i>`;
+      mobileBtn.style.cssText = 'display:none;width:38px;height:38px;border-radius:50%;background:var(--primary);color:#fff;align-items:center;justify-content:center;font-size:1rem;flex-shrink:0;text-decoration:none;';
+    }
     mobileBtn.style.display = window.innerWidth <= 768 ? 'flex' : 'none';
   }
 }
@@ -593,6 +600,7 @@ function initMobileBottomNav() {
       <span>الخدمات</span>
     </a>
   `;
+  document.body.appendChild(bottomBar);
 
   // Add the Floating emergency button for Desktop as well
   const emergencyFloat = document.createElement('a');
