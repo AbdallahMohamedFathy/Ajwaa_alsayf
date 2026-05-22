@@ -84,12 +84,15 @@
   color: var(--white) !important;
   width: 62px;
   height: 62px;
+  min-height: 62px;
+  aspect-ratio: 1 / 1;
   border-radius: 50%;
   margin-top: -20px;
   box-shadow: 0 6px 18px rgba(239, 68, 68, 0.45);
   border: 4px solid var(--white);
   flex-grow: 0;
   flex-shrink: 0;
+  align-self: flex-start;
   max-width: 62px;
 }
 
