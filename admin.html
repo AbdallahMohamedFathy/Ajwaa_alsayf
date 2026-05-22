@@ -595,6 +595,7 @@ async function viewOrder(firestoreId) {
         <div style="display:flex;justify-content:space-between;"><strong>الإيميل</strong><span>${o.email||'-'}</span></div>
         <div style="display:flex;justify-content:space-between;"><strong>الدفع</strong><span>${o.payment}</span></div>
         <div style="display:flex;justify-content:space-between;"><strong>الحالة</strong>${statusBadge(o.status)}</div>
+        ${o.location ? `<div style="display:flex;justify-content:space-between;align-items:center;"><strong>الموقع</strong><a href="${o.location.mapLink}" target="_blank" style="color:#007bff;font-size:0.82rem;display:flex;align-items:center;gap:4px;"><i class="fas fa-map-marker-alt"></i> عرض على الخريطة</a></div>` : ''}
         <hr style="border:none;border-top:1px solid var(--gray-100);">
         ${items}
         <div style="display:flex;justify-content:space-between;margin-top:8px;"><strong>المجموع</strong><span>${(o.subtotal||0).toLocaleString()} ر.س</span></div>
@@ -623,7 +624,7 @@ async function loadBookings() {
             <td dir="ltr">${b.phone}</td>
             <td style="font-size:0.8rem;">${b.address || '-'}</td>
             <td>${b.acType || '-'}</td>
-            <td>${b.date || '-'} ${b.time ? '@ ' + b.time : ''}</td>
+            <td>${b.date || '-'} ${b.time ? '@ ' + b.time : ''}${b.location ? ` <a href="${b.location.mapLink}" target="_blank" title="عرض الموقع" style="color:#007bff;margin-right:6px;"><i class="fas fa-map-marker-alt"></i></a>` : ''}</td>
             <td>
               <select class="form-control" style="padding:4px 8px;font-size:0.8rem;width:auto;" onchange="changeBookingStatus('${b.firestoreId}', this.value)">
                 <option value="pending"   ${b.status==='pending'   ? 'selected':''}>في الانتظار</option>
