@@ -286,7 +286,8 @@
   <script src="assets/js/main.js"></script>
 <script>
   const _urlParams     = new URLSearchParams(window.location.search);
-  const _redirectTarget = _urlParams.get('redirect') === 'checkout' ? 'checkout.html' : 'profile.html';
+  const _redirectMap = { checkout: 'checkout.html', booking: 'booking.html' };
+  const _redirectTarget = _redirectMap[_urlParams.get('redirect')] || 'profile.html';
 
   // Redirect if already logged in (wait for Firebase auth)
   onAuthReady((user) => {
