@@ -38,6 +38,7 @@ document.addEventListener('DOMContentLoaded', () => {
   initBookingSystemUpgrades();
   initRecentlyViewed();
   initSaaSAdminInterface();
+  initSecretAdminAccess();
 
   // Auth-dependent navbar (waits for Firebase)
   onAuthReady(() => updateNavbarAuth());
@@ -1244,3 +1245,99 @@ function triggerReportExport(type) {
   }, 100);
 }
 
+// ═══ Secret Admin Access (3 taps on logo) ═══
+function initSecretAdminAccess() {
+  if (window.location.pathname.includes('admin.html')) return;
+
+  // Inject hidden modal
+  const modal = document.createElement('div');
+  modal.id = 'adminSecretModal';
+  modal.style.cssText = 'display:none;position:fixed;inset:0;z-index:99999;background:rgba(0,0,0,0.88);align-items:center;justify-content:center;';
+  modal.innerHTML = `
+    <div style="background:#fff;border-radius:20px;padding:36px 32px;width:90%;max-width:380px;text-align:center;box-shadow:0 24px 60px rgba(0,0,0,0.5);animation:fadeInUp 0.3s ease;">
+      <div style="width:64px;height:64px;background:linear-gradient(135deg,#1a2744,#004aad);border-radius:16px;display:flex;align-items:center;justify-content:center;margin:0 auto 16px;">
+        <i class="fas fa-shield-alt" style="font-size:1.8rem;color:#fff;"></i>
+      </div>
+      <h3 style="font-size:1.2rem;font-weight:800;color:#1a2744;margin-bottom:4px;">لوحة التحكم</h3>
+      <p style="color:#9ca3af;font-size:0.8rem;margin-bottom:24px;">أدخل بيانات المدير للمتابعة</p>
+      <div id="adminLoginErr" style="background:#fef2f2;color:#ef4444;border:1px solid #fecaca;padding:10px;border-radius:8px;font-size:0.8rem;margin-bottom:14px;display:none;"></div>
+      <div style="margin-bottom:12px;text-align:right;">
+        <label style="font-size:0.78rem;font-weight:700;color:#374151;display:block;margin-bottom:5px;">البريد الإلكتروني</label>
+        <input type="email" id="adminSecretEmail" placeholder="admin@example.com" autocomplete="email"
+          style="width:100%;padding:10px 14px;border:1.5px solid #d1d5db;border-radius:10px;font-family:Cairo,sans-serif;font-size:0.9rem;box-sizing:border-box;direction:ltr;text-align:left;outline:none;"
+          onkeydown="if(event.key==='Enter')doAdminLogin()">
+      </div>
+      <div style="margin-bottom:22px;text-align:right;">
+        <label style="font-size:0.78rem;font-weight:700;color:#374151;display:block;margin-bottom:5px;">كلمة المرور</label>
+        <input type="password" id="adminSecretPass" placeholder="••••••••"
+          style="width:100%;padding:10px 14px;border:1.5px solid #d1d5db;border-radius:10px;font-family:Cairo,sans-serif;font-size:0.9rem;box-sizing:border-box;direction:ltr;text-align:left;outline:none;"
+          onkeydown="if(event.key==='Enter')doAdminLogin()">
+      </div>
+      <button id="adminSecretBtn" onclick="doAdminLogin()"
+        style="width:100%;background:linear-gradient(135deg,#1a2744,#004aad);color:#fff;border:none;border-radius:12px;padding:13px;font-family:Cairo,sans-serif;font-size:0.95rem;font-weight:800;cursor:pointer;margin-bottom:10px;">
+        <i class="fas fa-sign-in-alt"></i> دخول لوحة التحكم
+      </button>
+      <button onclick="document.getElementById('adminSecretModal').style.display='none'"
+        style="background:none;border:none;color:#9ca3af;font-family:Cairo,sans-serif;font-size:0.82rem;cursor:pointer;width:100%;padding:6px;">
+        إلغاء
+      </button>
+    </div>
+  `;
+  document.body.appendChild(modal);
+
+  // 3 taps on logo within 1.5s
+  let taps = 0, timer = null;
+  const logo = document.querySelector('.navbar-logo');
+  if (logo) {
+    logo.addEventListener('click', (e) => {
+      taps++;
+      clearTimeout(timer);
+      timer = setTimeout(() => { taps = 0; }, 1500);
+      if (taps >= 3) {
+        taps = 0;
+        clearTimeout(timer);
+        e.preventDefault();
+        modal.style.display = 'flex';
+        setTimeout(() => document.getElementById('adminSecretEmail')?.focus(), 100);
+      }
+    });
+  }
+}
+
+async function doAdminLogin() {
+  const email = document.getElementById('adminSecretEmail').value.trim();
+  const pass  = document.getElementById('adminSecretPass').value;
+  const errEl = document.getElementById('adminLoginErr');
+  const btn   = document.getElementById('adminSecretBtn');
+
+  errEl.style.display = 'none';
+  if (!email || !pass) {
+    errEl.textContent = 'يرجى إدخال البريد الإلكتروني وكلمة المرور';
+    errEl.style.display = 'block';
+    return;
+  }
+
+  btn.disabled = true;
+  btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> جاري التحقق...';
+
+  try {
+    const cred = await auth.signInWithEmailAndPassword(email, pass);
+    const doc  = await db.collection('users').doc(cred.user.uid).get();
+    const role = doc.exists ? doc.data().role : '';
+
+    if (role === 'admin' || email.toLowerCase() === ADMIN_EMAIL) {
+      window.location.href = 'admin.html';
+    } else {
+      errEl.textContent = 'ليس لديك صلاحيات الوصول للوحة التحكم';
+      errEl.style.display = 'block';
+      await auth.signOut();
+      btn.disabled = false;
+      btn.innerHTML = '<i class="fas fa-sign-in-alt"></i> دخول لوحة التحكم';
+    }
+  } catch {
+    errEl.textContent = 'البريد الإلكتروني أو كلمة المرور غير صحيحة';
+    errEl.style.display = 'block';
+    btn.disabled = false;
+    btn.innerHTML = '<i class="fas fa-sign-in-alt"></i> دخول لوحة التحكم';
+  }
+}

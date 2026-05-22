@@ -449,9 +449,10 @@ async function loadProducts() {
             <td style="font-weight:700;color:var(--primary);">${(p.price||0).toLocaleString()} ر.س</td>
             <td>${p.hp} حصان</td>
             <td><span class="status-badge ${p.active ? 'completed' : 'cancelled'}">${p.active ? 'نشط' : 'مخفي'}</span></td>
-            <td>
+            <td style="display:flex;gap:4px;flex-wrap:wrap;">
               <button class="btn btn-sm btn-outline" style="padding:4px 10px;font-size:0.75rem;" onclick="editProduct('${p.firestoreId}')"><i class="fas fa-edit"></i></button>
-              <button class="btn btn-sm" style="padding:4px 10px;font-size:0.75rem;background:var(--danger);color:#fff;border-radius:6px;margin-right:4px;" onclick="removeProduct('${p.firestoreId}','${p.name}')"><i class="fas fa-trash"></i></button>
+              <button class="btn btn-sm" style="padding:4px 10px;font-size:0.75rem;background:${p.active ? 'var(--success)' : 'var(--gray-400)'};color:#fff;border-radius:6px;" onclick="toggleProductActive('${p.firestoreId}',${p.active})" title="${p.active ? 'إخفاء' : 'إظهار'}"><i class="fas fa-eye${p.active ? '' : '-slash'}"></i></button>
+              <button class="btn btn-sm" style="padding:4px 10px;font-size:0.75rem;background:var(--danger);color:#fff;border-radius:6px;" onclick="removeProduct('${p.firestoreId}','${p.name}')"><i class="fas fa-trash"></i></button>
             </td>
           </tr>`).join('')
       : '<tr><td colspan="6" style="text-align:center;color:var(--gray-400);">لا توجد منتجات بعد</td></tr>';
@@ -527,6 +528,14 @@ async function saveProduct() {
   finally { saveBtn.disabled = false; saveBtn.innerHTML = '<i class="fas fa-save"></i> حفظ المنتج'; }
 }
 
+async function toggleProductActive(firestoreId, currentActive) {
+  try {
+    await updateProduct(firestoreId, { active: !currentActive });
+    showToast(currentActive ? 'تم إخفاء المنتج من المتجر' : 'تم إظهار المنتج في المتجر ✓');
+    loadProducts();
+  } catch { showToast('خطأ في التحديث'); }
+}
+
 async function removeProduct(firestoreId, name) {
   if (!confirm(`هل أنت متأكد من حذف "${name}"؟`)) return;
   try {
@@ -565,8 +574,13 @@ async function loadOrders() {
               </select>
             </td>
             <td>${fmtDate(o.createdAt)}</td>
+            <td onclick="event.stopPropagation()">
+              <a href="https://wa.me/${o.phone?.replace(/^0/,'966')}" target="_blank" class="btn btn-sm" style="padding:4px 10px;font-size:0.75rem;background:#25d366;color:#fff;border-radius:6px;" title="واتساب العميل">
+                <i class="fab fa-whatsapp"></i>
+              </a>
+            </td>
           </tr>`).join('')
-      : '<tr><td colspan="7" style="text-align:center;color:var(--gray-400);">لا توجد طلبات بعد</td></tr>';
+      : '<tr><td colspan="8" style="text-align:center;color:var(--gray-400);">لا توجد طلبات بعد</td></tr>';
   } catch (e) { tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;color:var(--danger);">خطأ في التحميل</td></tr>'; }
 }
 
@@ -632,6 +646,11 @@ async function loadBookings() {
                 <option value="completed" ${b.status==='completed' ? 'selected':''}>مكتمل</option>
                 <option value="cancelled" ${b.status==='cancelled' ? 'selected':''}>ملغي</option>
               </select>
+            </td>
+            <td>
+              <a href="https://wa.me/${b.phone?.replace(/^0/,'966')}" target="_blank" class="btn btn-sm" style="padding:4px 10px;font-size:0.75rem;background:#25d366;color:#fff;border-radius:6px;" title="واتساب">
+                <i class="fab fa-whatsapp"></i>
+              </a>
             </td>
           </tr>`).join('')
       : '<tr><td colspan="6" style="text-align:center;color:var(--gray-400);">لا توجد حجوزات بعد</td></tr>';
