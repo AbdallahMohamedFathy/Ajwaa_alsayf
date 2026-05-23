@@ -308,37 +308,6 @@
     }
   });
 
-  // Override submitBooking to save to Firestore before showing tracker
-  const _originalSubmitBooking = window.submitBooking;
-  window.submitBooking = async function() {
-    const date = document.getElementById('bookDate').value;
-    const time = document.getElementById('bookTime').value;
-    if (!date || !time) { showToast('يرجى اختيار التاريخ والوقت'); return; }
-
-    const user = getCurrentUser();
-    const bookingData = {
-      customerName: document.getElementById('bookName').value.trim(),
-      phone:        document.getElementById('bookPhone').value.trim(),
-      address:      document.getElementById('bookAddress').value.trim(),
-      acType:       document.getElementById('bookACType')?.value || '',
-      acBrand:      document.getElementById('bookACBrand')?.value || '',
-      description:  document.getElementById('bookDesc')?.value.trim() || '',
-      date,
-      time,
-      userId:       user ? user.uid : null,
-      email:        user ? user.email : '',
-      location:     window._locationData || null
-    };
-
-    try {
-      await createBooking(bookingData);
-    } catch (e) {
-      showToast('حدث خطأ أثناء الحفظ، يرجى المحاولة مرة أخرى');
-      return;
-    }
-
-    _originalSubmitBooking();
-  };
 </script>
 
 <!-- Map Picker Modal -->
