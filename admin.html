@@ -1,10 +1,12 @@
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
+
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>لوحة التحكم | أجواء الصيف</title>
-  <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;500;600;700;800;900&display=swap"
+    rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
   <link rel="stylesheet" href="assets/css/variables.css">
   <link rel="stylesheet" href="assets/css/components.css">
@@ -17,304 +19,860 @@
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
   <script src="assets/js/firebase-config.js"></script>
 </head>
+
 <body>
-<div class="admin-layout">
-  <!-- Sidebar -->
-  <aside class="admin-sidebar" id="adminSidebar">
-    <div class="sidebar-header">
-      <img src="assets/images/logo.png" alt="Logo">
-      <h2>أجواء الصيف</h2>
+  <div class="admin-layout">
+    <!-- Sidebar -->
+    <aside class="admin-sidebar" id="adminSidebar">
+      <div class="sidebar-header">
+        <img src="assets/images/logo.png" alt="Logo">
+        <h2>أجواء الصيف</h2>
+      </div>
+      <nav class="sidebar-nav">
+        <div class="sidebar-nav-label">الرئيسية</div>
+        <a href="#" class="active" onclick="showSection('dashboard',this)"><i class="fas fa-th-large"></i> لوحة
+          التحكم</a>
+        <div class="sidebar-nav-label">الإدارة</div>
+        <a href="#" onclick="showSection('products-mgmt',this)"><i class="fas fa-box"></i> المنتجات</a>
+        <a href="#" onclick="showSection('orders-mgmt',this)"><i class="fas fa-shopping-bag"></i> الطلبات <span
+            class="nav-badge" id="pendingOrdersBadge">0</span></a>
+        <a href="#" onclick="showSection('bookings-mgmt',this)"><i class="fas fa-calendar-check"></i> حجوزات الصيانة
+          <span class="nav-badge" id="pendingBookingsBadge">0</span></a>
+        <a href="#" onclick="showSection('coupons-mgmt',this)"><i class="fas fa-tag"></i> الكوبونات</a>
+        <a href="#" onclick="showSection('customers-mgmt',this)"><i class="fas fa-users"></i> العملاء</a>
+        <a href="#" onclick="showSection('portfolio-mgmt',this)"><i class="fas fa-images"></i> معرض الأعمال</a>
+        <a href="#" onclick="showSection('beforeafter-mgmt',this)"><i class="fas fa-columns"></i> قبل وبعد</a>
+        <div class="sidebar-nav-label">أخرى</div>
+        <a href="#" onclick="showSection('analytics-sec',this)"><i class="fas fa-chart-line"></i> التحليلات</a>
+        <a href="index.html"><i class="fas fa-globe"></i> الموقع</a>
+        <a href="#" onclick="logoutUser()" style="color:var(--danger);"><i class="fas fa-sign-out-alt"></i> تسجيل
+          الخروج</a>
+      </nav>
+    </aside>
+
+    <!-- Main -->
+    <main class="admin-main">
+      <div class="admin-topbar">
+        <div style="display:flex;align-items:center;gap:12px;">
+          <button onclick="document.getElementById('adminSidebar').classList.toggle('active')"
+            style="display:none;background:none;font-size:1.2rem;color:var(--gray-600);" class="sidebar-toggle-btn"><i
+              class="fas fa-bars"></i></button>
+          <div class="topbar-search"><i class="fas fa-search"></i><input type="text" placeholder="بحث..."></div>
+        </div>
+        <div class="topbar-actions">
+          <div class="theme-toggle" id="themeToggle" onclick="toggleDarkMode()"></div>
+          <div class="topbar-icon" onclick="toggleAdminNotifications()"><i class="fas fa-bell"></i>
+            <div class="notif-dot" id="notifDot"></div>
+          </div>
+          <div class="topbar-profile">
+            <div class="avatar">أ</div><span id="adminName">المدير</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="admin-content">
+        <!-- ═══ Dashboard ═══ -->
+        <div id="dashboard">
+          <h1 class="admin-page-title">👋 مرحباً بك في لوحة التحكم</h1>
+          <div class="stats-grid">
+            <div class="stat-card">
+              <div class="stat-icon blue"><i class="fas fa-shopping-bag"></i></div>
+              <div class="stat-info">
+                <h4>إجمالي الطلبات</h4>
+                <div class="stat-val" id="statOrders">-</div>
+              </div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-icon green"><i class="fas fa-money-bill-wave"></i></div>
+              <div class="stat-info">
+                <h4>إجمالي الإيرادات</h4>
+                <div class="stat-val" id="statRevenue">-</div>
+              </div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-icon orange"><i class="fas fa-users"></i></div>
+              <div class="stat-info">
+                <h4>العملاء</h4>
+                <div class="stat-val" id="statCustomers">-</div>
+              </div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-icon purple"><i class="fas fa-calendar-check"></i></div>
+              <div class="stat-info">
+                <h4>حجوزات الصيانة</h4>
+                <div class="stat-val" id="statBookings">-</div>
+              </div>
+            </div>
+          </div>
+          <div class="charts-grid">
+            <div class="chart-card">
+              <div class="chart-card-header">
+                <h3>المبيعات الشهرية</h3>
+              </div><canvas id="salesChart"></canvas>
+            </div>
+            <div class="chart-card">
+              <div class="chart-card-header">
+                <h3>توزيع حالات الطلبات</h3>
+              </div><canvas id="ordersStatusChart"></canvas>
+            </div>
+          </div>
+          <div class="data-table-card">
+            <div class="table-header">
+              <h3>أحدث الطلبات</h3><button class="btn btn-primary btn-sm"
+                onclick="showSection('orders-mgmt', document.querySelector('[onclick*=orders-mgmt]'))"><i
+                  class="fas fa-eye"></i> عرض الكل</button>
+            </div>
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th>رقم الطلب</th>
+                  <th>العميل</th>
+                  <th>المبلغ</th>
+                  <th>الحالة</th>
+                  <th>التاريخ</th>
+                </tr>
+              </thead>
+              <tbody id="dashboardOrdersBody">
+                <tr>
+                  <td colspan="5" style="text-align:center;color:var(--gray-400);">جاري التحميل...</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- ═══ Products Management ═══ -->
+        <div id="products-mgmt" style="display:none;">
+          <div
+            style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;flex-wrap:wrap;gap:12px;">
+            <h1 class="admin-page-title" style="margin:0;">📦 إدارة المنتجات</h1>
+            <button class="btn btn-primary" onclick="openProductModal()"><i class="fas fa-plus"></i> إضافة منتج</button>
+          </div>
+          <div class="data-table-card">
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th>المنتج</th>
+                  <th>الماركة</th>
+                  <th>السعر</th>
+                  <th>القدرة</th>
+                  <th>الحالة</th>
+                  <th>إجراءات</th>
+                </tr>
+              </thead>
+              <tbody id="productsTableBody">
+                <tr>
+                  <td colspan="6" style="text-align:center;color:var(--gray-400);">جاري التحميل...</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- ═══ Orders Management ═══ -->
+        <div id="orders-mgmt" style="display:none;">
+          <h1 class="admin-page-title">🛒 إدارة الطلبات</h1>
+          <div class="stats-grid" style="margin-bottom:20px;">
+            <div class="stat-card">
+              <div class="stat-icon orange"><i class="fas fa-clock"></i></div>
+              <div class="stat-info">
+                <h4>في الانتظار</h4>
+                <div class="stat-val" id="oStatPending">-</div>
+              </div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-icon blue"><i class="fas fa-spinner"></i></div>
+              <div class="stat-info">
+                <h4>قيد التنفيذ</h4>
+                <div class="stat-val" id="oStatProcessing">-</div>
+              </div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-icon green"><i class="fas fa-check"></i></div>
+              <div class="stat-info">
+                <h4>مكتمل</h4>
+                <div class="stat-val" id="oStatDone">-</div>
+              </div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-icon red"><i class="fas fa-times"></i></div>
+              <div class="stat-info">
+                <h4>ملغي</h4>
+                <div class="stat-val" id="oStatCancelled">-</div>
+              </div>
+            </div>
+          </div>
+          <div class="data-table-card">
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th>#</th>
+                  <th>العميل</th>
+                  <th>الهاتف</th>
+                  <th>المبلغ</th>
+                  <th>الدفع</th>
+                  <th>الحالة</th>
+                  <th>التاريخ</th>
+                </tr>
+              </thead>
+              <tbody id="ordersTableBody">
+                <tr>
+                  <td colspan="7" style="text-align:center;color:var(--gray-400);">جاري التحميل...</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- ═══ Bookings Management ═══ -->
+        <div id="bookings-mgmt" style="display:none;">
+          <h1 class="admin-page-title">📅 حجوزات الصيانة</h1>
+          <div class="stats-grid" style="margin-bottom:20px;">
+            <div class="stat-card">
+              <div class="stat-icon orange"><i class="fas fa-clock"></i></div>
+              <div class="stat-info">
+                <h4>في الانتظار</h4>
+                <div class="stat-val" id="bStatPending">-</div>
+              </div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-icon blue"><i class="fas fa-check-circle"></i></div>
+              <div class="stat-info">
+                <h4>تم التأكيد</h4>
+                <div class="stat-val" id="bStatConfirmed">-</div>
+              </div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-icon green"><i class="fas fa-check-double"></i></div>
+              <div class="stat-info">
+                <h4>مكتمل</h4>
+                <div class="stat-val" id="bStatDone">-</div>
+              </div>
+            </div>
+          </div>
+          <div class="data-table-card">
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th>العميل</th>
+                  <th>الهاتف</th>
+                  <th>العنوان</th>
+                  <th>نوع التكييف</th>
+                  <th>الموعد</th>
+                  <th>الحالة</th>
+                </tr>
+              </thead>
+              <tbody id="bookingsTableBody">
+                <tr>
+                  <td colspan="6" style="text-align:center;color:var(--gray-400);">جاري التحميل...</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- ═══ Coupons Management ═══ -->
+        <div id="coupons-mgmt" style="display:none;">
+          <div
+            style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;flex-wrap:wrap;gap:12px;">
+            <h1 class="admin-page-title" style="margin:0;">🏷️ إدارة الكوبونات</h1>
+            <button class="btn btn-primary" onclick="document.getElementById('couponModal').classList.add('active')"><i
+                class="fas fa-plus"></i> إضافة كوبون</button>
+          </div>
+          <div class="data-table-card">
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th>الكود</th>
+                  <th>نسبة الخصم</th>
+                  <th>الحالة</th>
+                  <th>إجراءات</th>
+                </tr>
+              </thead>
+              <tbody id="couponsTableBody">
+                <tr>
+                  <td colspan="4" style="text-align:center;color:var(--gray-400);">جاري التحميل...</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- ═══ Customers Management ═══ -->
+        <div id="customers-mgmt" style="display:none;">
+          <h1 class="admin-page-title">👥 إدارة العملاء</h1>
+          <div class="data-table-card">
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th>الاسم</th>
+                  <th>البريد الإلكتروني</th>
+                  <th>الهاتف</th>
+                  <th>تاريخ التسجيل</th>
+                </tr>
+              </thead>
+              <tbody id="customersTableBody">
+                <tr>
+                  <td colspan="4" style="text-align:center;color:var(--gray-400);">جاري التحميل...</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- ═══ Portfolio Management ═══ -->
+        <div id="portfolio-mgmt" style="display:none;">
+          <div
+            style="display:flex;justify-content:space-between;align-items:center;margin-bottom:24px;flex-wrap:wrap;gap:12px;">
+            <h1 class="admin-page-title" style="margin:0;">🖼️ معرض الأعمال</h1>
+            <button class="btn btn-primary" onclick="document.getElementById('portfolioModal').classList.add('active')">
+              <i class="fas fa-plus"></i> إضافة عمل جديد
+            </button>
+          </div>
+
+          <!-- Stats -->
+          <div class="stats-grid" style="margin-bottom:24px;">
+            <div class="stat-card">
+              <div class="stat-icon blue"><i class="fas fa-camera"></i></div>
+              <div class="stat-info">
+                <h4>الصور</h4>
+                <div class="stat-val" id="pStatPhotos">-</div>
+              </div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-icon green"><i class="fas fa-play-circle"></i></div>
+              <div class="stat-info">
+                <h4>الفيديوهات</h4>
+                <div class="stat-val" id="pStatVideos">-</div>
+              </div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-icon orange"><i class="fas fa-images"></i></div>
+              <div class="stat-info">
+                <h4>إجمالي الأعمال</h4>
+                <div class="stat-val" id="pStatTotal">-</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Filter -->
+          <div style="display:flex;gap:10px;margin-bottom:20px;flex-wrap:wrap;">
+            <button class="btn btn-outline btn-sm pf-filter active" data-type="all"
+              onclick="filterAdminPortfolio('all',this)"><i class="fas fa-th"></i> الكل</button>
+            <button class="btn btn-outline btn-sm pf-filter" data-type="photo"
+              onclick="filterAdminPortfolio('photo',this)"><i class="fas fa-camera"></i> صور</button>
+            <button class="btn btn-outline btn-sm pf-filter" data-type="video"
+              onclick="filterAdminPortfolio('video',this)"><i class="fas fa-play-circle"></i> فيديوهات</button>
+          </div>
+
+          <!-- Grid -->
+          <div id="portfolioAdminGrid"
+            style="display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:20px;">
+            <div style="grid-column:1/-1;text-align:center;color:var(--gray-400);padding:60px;">جاري التحميل...</div>
+          </div>
+        </div>
+
+        <!-- ═══ Analytics ═══ -->
+        <!-- ═══ Before & After Management ═══ -->
+        <div id="beforeafter-mgmt" style="display:none;">
+          <div
+            style="display:flex;justify-content:space-between;align-items:center;margin-bottom:24px;flex-wrap:wrap;gap:12px;">
+            <h1 class="admin-page-title" style="margin:0;">🔄 قبل وبعد</h1>
+            <button class="btn btn-primary" id="baAddBtn" onclick="document.getElementById('baModal').classList.add('active')">
+              <i class="fas fa-plus"></i> إضافة صورة جديدة
+            </button>
+          </div>
+          <p style="color:var(--gray-500);font-size:0.88rem;margin-bottom:20px;">كل إدخال يحتوي على صورة "قبل" وصورة
+            "بعد" — تظهر في السلايدر على الصفحة الرئيسية.</p>
+          <div id="baAdminGrid"
+            style="display:flex;justify-content:center;align-items:center;padding:20px;gap:20px;">
+            <div style="text-align:center;color:var(--gray-400);padding:60px;width:100%;">جاري التحميل...</div>
+          </div>
+        </div>
+
+        <div id="analytics-sec" style="display:none;">
+          <h1 class="admin-page-title">📊 التحليلات</h1>
+          <div class="charts-grid" style="grid-template-columns:1fr 1fr;">
+            <div class="chart-card">
+              <div class="chart-card-header">
+                <h3>الإيرادات الأسبوعية</h3>
+              </div><canvas id="revenueChart"></canvas>
+            </div>
+            <div class="chart-card">
+              <div class="chart-card-header">
+                <h3>توزيع الخدمات</h3>
+              </div><canvas id="servicesChart"></canvas>
+            </div>
+          </div>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <!-- ═══ Before & After Modal ═══ -->
+  <div class="modal-overlay" id="baModal">
+    <div class="modal" style="max-width:560px;">
+      <div class="modal-header">
+        <h3 id="baModalTitle">إضافة قبل وبعد</h3>
+        <button class="modal-close" onclick="closeBaModal()"><i class="fas fa-times"></i></button>
+      </div>
+      <div class="modal-body" style="display:flex;flex-direction:column;gap:16px;">
+        <input type="hidden" id="baEditId">
+
+        <div class="form-group" style="margin:0;">
+          <label>العنوان *</label>
+          <input type="text" class="form-control" id="baTitle" placeholder="مثال: غسيل التكييف بأحدث مضخات المياه">
+        </div>
+        <div class="form-group" style="margin:0;">
+          <label>النص الفرعي (اختياري)</label>
+          <input type="text" class="form-control" id="baSubtitle" placeholder="مثال: كفاءة تبريد +45%">
+        </div>
+
+        <!-- Before Image -->
+        <div style="border:1.5px dashed var(--gray-200);border-radius:var(--radius-lg);overflow:hidden;">
+          <div
+            style="background:var(--gray-50);padding:10px 14px;border-bottom:1px solid var(--gray-100);display:flex;justify-content:space-between;align-items:center;">
+            <span style="font-weight:700;font-size:0.88rem;color:var(--danger);"><i class="fas fa-circle"
+                style="font-size:0.5rem;margin-left:6px;"></i>صورة قبل</span>
+            <button type="button" class="btn btn-outline btn-sm"
+              onclick="document.getElementById('baBeforeFile').click()"><i class="fas fa-upload"></i> اختر صورة</button>
+          </div>
+          <div id="baBeforePreview"
+            style="height:140px;display:flex;align-items:center;justify-content:center;cursor:pointer;background:var(--gray-50);"
+            onclick="document.getElementById('baBeforeFile').click()">
+            <div style="text-align:center;color:var(--gray-400);">
+              <i class="fas fa-image" style="font-size:2rem;display:block;margin-bottom:8px;"></i>
+              <span style="font-size:0.8rem;">اضغط لاختيار صورة "قبل"</span>
+            </div>
+          </div>
+          <input type="file" id="baBeforeFile" accept="image/*" style="display:none;"
+            onchange="previewBaFile(this,'baBeforePreview','_baBeforeFile')">
+        </div>
+
+        <!-- After Image -->
+        <div style="border:1.5px dashed var(--gray-200);border-radius:var(--radius-lg);overflow:hidden;">
+          <div
+            style="background:var(--gray-50);padding:10px 14px;border-bottom:1px solid var(--gray-100);display:flex;justify-content:space-between;align-items:center;">
+            <span style="font-weight:700;font-size:0.88rem;color:var(--success);"><i class="fas fa-circle"
+                style="font-size:0.5rem;margin-left:6px;"></i>صورة بعد</span>
+            <button type="button" class="btn btn-outline btn-sm"
+              onclick="document.getElementById('baAfterFile').click()"><i class="fas fa-upload"></i> اختر صورة</button>
+          </div>
+          <div id="baAfterPreview"
+            style="height:140px;display:flex;align-items:center;justify-content:center;cursor:pointer;background:var(--gray-50);"
+            onclick="document.getElementById('baAfterFile').click()">
+            <div style="text-align:center;color:var(--gray-400);">
+              <i class="fas fa-image" style="font-size:2rem;display:block;margin-bottom:8px;"></i>
+              <span style="font-size:0.8rem;">اضغط لاختيار صورة "بعد"</span>
+            </div>
+          </div>
+          <input type="file" id="baAfterFile" accept="image/*" style="display:none;"
+            onchange="previewBaFile(this,'baAfterPreview','_baAfterFile')">
+        </div>
+
+        <!-- Upload Progress -->
+        <div id="baProgress" style="display:none;">
+          <div style="display:flex;justify-content:space-between;margin-bottom:6px;">
+            <span style="font-size:0.82rem;color:var(--gray-600);" id="baProgressLabel">جاري الرفع...</span>
+            <span style="font-size:0.82rem;font-weight:700;color:var(--primary);" id="baProgressPct">0%</span>
+          </div>
+          <div style="background:var(--gray-100);border-radius:999px;height:7px;overflow:hidden;">
+            <div id="baProgressBar"
+              style="height:100%;background:var(--gradient-primary);border-radius:999px;transition:width 0.3s;width:0%;">
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-outline" onclick="closeBaModal()">إلغاء</button>
+        <button class="btn btn-primary" id="baSaveBtn" onclick="saveBaItem()"><i class="fas fa-save"></i> حفظ</button>
+      </div>
     </div>
-    <nav class="sidebar-nav">
-      <div class="sidebar-nav-label">الرئيسية</div>
-      <a href="#" class="active" onclick="showSection('dashboard',this)"><i class="fas fa-th-large"></i> لوحة التحكم</a>
-      <div class="sidebar-nav-label">الإدارة</div>
-      <a href="#" onclick="showSection('products-mgmt',this)"><i class="fas fa-box"></i> المنتجات</a>
-      <a href="#" onclick="showSection('orders-mgmt',this)"><i class="fas fa-shopping-bag"></i> الطلبات <span class="nav-badge" id="pendingOrdersBadge">0</span></a>
-      <a href="#" onclick="showSection('bookings-mgmt',this)"><i class="fas fa-calendar-check"></i> حجوزات الصيانة <span class="nav-badge" id="pendingBookingsBadge">0</span></a>
-      <a href="#" onclick="showSection('coupons-mgmt',this)"><i class="fas fa-tag"></i> الكوبونات</a>
-      <a href="#" onclick="showSection('customers-mgmt',this)"><i class="fas fa-users"></i> العملاء</a>
-      <div class="sidebar-nav-label">أخرى</div>
-      <a href="#" onclick="showSection('analytics-sec',this)"><i class="fas fa-chart-line"></i> التحليلات</a>
-      <a href="index.html"><i class="fas fa-globe"></i> الموقع</a>
-      <a href="#" onclick="logoutUser()" style="color:var(--danger);"><i class="fas fa-sign-out-alt"></i> تسجيل الخروج</a>
-    </nav>
-  </aside>
+  </div>
 
-  <!-- Main -->
-  <main class="admin-main">
-    <div class="admin-topbar">
-      <div style="display:flex;align-items:center;gap:12px;">
-        <button onclick="document.getElementById('adminSidebar').classList.toggle('active')" style="display:none;background:none;font-size:1.2rem;color:var(--gray-600);" class="sidebar-toggle-btn"><i class="fas fa-bars"></i></button>
-        <div class="topbar-search"><i class="fas fa-search"></i><input type="text" placeholder="بحث..."></div>
+  <!-- ═══ Portfolio Modal ═══ -->
+  <div class="modal-overlay" id="portfolioModal">
+    <div class="modal" style="max-width:560px;">
+      <div class="modal-header">
+        <h3 id="portfolioModalTitle" style="font-size:1.2rem;font-weight:800;color:var(--gray-900);margin:0;">إضافة عمل
+          جديد</h3>
+        <button onclick="closePortfolioModal()"
+          style="background:none;border:none;font-size:1.2rem;color:var(--gray-500);cursor:pointer;"><i
+            class="fas fa-times"></i></button>
       </div>
-      <div class="topbar-actions">
-        <div class="theme-toggle" id="themeToggle" onclick="toggleDarkMode()"></div>
-        <div class="topbar-icon" onclick="toggleAdminNotifications()"><i class="fas fa-bell"></i><div class="notif-dot" id="notifDot"></div></div>
-        <div class="topbar-profile"><div class="avatar">أ</div><span id="adminName">المدير</span></div>
-      </div>
-    </div>
+      <div class="modal-body" style="display:flex;flex-direction:column;gap:16px;">
 
-    <div class="admin-content">
-      <!-- ═══ Dashboard ═══ -->
-      <div id="dashboard">
-        <h1 class="admin-page-title">👋 مرحباً بك في لوحة التحكم</h1>
-        <div class="stats-grid">
-          <div class="stat-card"><div class="stat-icon blue"><i class="fas fa-shopping-bag"></i></div><div class="stat-info"><h4>إجمالي الطلبات</h4><div class="stat-val" id="statOrders">-</div></div></div>
-          <div class="stat-card"><div class="stat-icon green"><i class="fas fa-money-bill-wave"></i></div><div class="stat-info"><h4>إجمالي الإيرادات</h4><div class="stat-val" id="statRevenue">-</div></div></div>
-          <div class="stat-card"><div class="stat-icon orange"><i class="fas fa-users"></i></div><div class="stat-info"><h4>العملاء</h4><div class="stat-val" id="statCustomers">-</div></div></div>
-          <div class="stat-card"><div class="stat-icon purple"><i class="fas fa-calendar-check"></i></div><div class="stat-info"><h4>حجوزات الصيانة</h4><div class="stat-val" id="statBookings">-</div></div></div>
+        <!-- Type Toggle -->
+        <div style="display:flex;gap:10px;">
+          <button type="button" class="btn btn-primary" id="typePhotoBtn" onclick="setPortfolioType('photo')"
+            style="flex:1;">
+            <i class="fas fa-camera"></i> صورة
+          </button>
+          <button type="button" class="btn btn-outline" id="typeVideoBtn" onclick="setPortfolioType('video')"
+            style="flex:1;">
+            <i class="fas fa-play-circle"></i> فيديو
+          </button>
         </div>
-        <div class="charts-grid">
-          <div class="chart-card"><div class="chart-card-header"><h3>المبيعات الشهرية</h3></div><canvas id="salesChart"></canvas></div>
-          <div class="chart-card"><div class="chart-card-header"><h3>توزيع حالات الطلبات</h3></div><canvas id="ordersStatusChart"></canvas></div>
-        </div>
-        <div class="data-table-card">
-          <div class="table-header"><h3>أحدث الطلبات</h3><button class="btn btn-primary btn-sm" onclick="showSection('orders-mgmt', document.querySelector('[onclick*=orders-mgmt]'))"><i class="fas fa-eye"></i> عرض الكل</button></div>
-          <table class="data-table">
-            <thead><tr><th>رقم الطلب</th><th>العميل</th><th>المبلغ</th><th>الحالة</th><th>التاريخ</th></tr></thead>
-            <tbody id="dashboardOrdersBody"><tr><td colspan="5" style="text-align:center;color:var(--gray-400);">جاري التحميل...</td></tr></tbody>
-          </table>
-        </div>
-      </div>
+        <input type="hidden" id="pfType" value="photo">
+        <input type="hidden" id="pfEditId" value="">
 
-      <!-- ═══ Products Management ═══ -->
-      <div id="products-mgmt" style="display:none;">
-        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;flex-wrap:wrap;gap:12px;">
-          <h1 class="admin-page-title" style="margin:0;">📦 إدارة المنتجات</h1>
-          <button class="btn btn-primary" onclick="openProductModal()"><i class="fas fa-plus"></i> إضافة منتج</button>
+        <!-- File Upload -->
+        <div id="pfUploadArea"
+          style="border:2px dashed var(--gray-200);border-radius:var(--radius-lg);padding:32px;text-align:center;cursor:pointer;transition:border-color 0.2s;"
+          onclick="document.getElementById('pfFile').click()"
+          ondragover="event.preventDefault();this.style.borderColor='var(--primary)'"
+          ondragleave="this.style.borderColor='var(--gray-200)'" ondrop="handlePortfolioDrop(event)">
+          <div id="pfUploadPreview">
+            <i class="fas fa-cloud-upload-alt"
+              style="font-size:2.5rem;color:var(--gray-300);margin-bottom:12px;display:block;"></i>
+            <p style="color:var(--gray-500);font-size:0.9rem;">اسحب الملف هنا أو <strong
+                style="color:var(--primary);">اضغط للاختيار</strong></p>
+            <p style="color:var(--gray-400);font-size:0.78rem;margin-top:6px;">JPG, PNG, MP4, MOV — حجم أقصى 50MB</p>
+          </div>
         </div>
-        <div class="data-table-card">
-          <table class="data-table">
-            <thead><tr><th>المنتج</th><th>الماركة</th><th>السعر</th><th>القدرة</th><th>الحالة</th><th>إجراءات</th></tr></thead>
-            <tbody id="productsTableBody"><tr><td colspan="6" style="text-align:center;color:var(--gray-400);">جاري التحميل...</td></tr></tbody>
-          </table>
-        </div>
-      </div>
+        <input type="file" id="pfFile" style="display:none;" accept="image/*,video/*"
+          onchange="previewPortfolioFile(this)">
 
-      <!-- ═══ Orders Management ═══ -->
-      <div id="orders-mgmt" style="display:none;">
-        <h1 class="admin-page-title">🛒 إدارة الطلبات</h1>
-        <div class="stats-grid" style="margin-bottom:20px;">
-          <div class="stat-card"><div class="stat-icon orange"><i class="fas fa-clock"></i></div><div class="stat-info"><h4>في الانتظار</h4><div class="stat-val" id="oStatPending">-</div></div></div>
-          <div class="stat-card"><div class="stat-icon blue"><i class="fas fa-spinner"></i></div><div class="stat-info"><h4>قيد التنفيذ</h4><div class="stat-val" id="oStatProcessing">-</div></div></div>
-          <div class="stat-card"><div class="stat-icon green"><i class="fas fa-check"></i></div><div class="stat-info"><h4>مكتمل</h4><div class="stat-val" id="oStatDone">-</div></div></div>
-          <div class="stat-card"><div class="stat-icon red"><i class="fas fa-times"></i></div><div class="stat-info"><h4>ملغي</h4><div class="stat-val" id="oStatCancelled">-</div></div></div>
+        <!-- Upload Progress -->
+        <div id="pfProgress" style="display:none;">
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px;">
+            <span style="font-size:0.85rem;color:var(--gray-600);" id="pfProgressLabel">جاري الرفع...</span>
+            <span style="font-size:0.85rem;font-weight:700;color:var(--primary);" id="pfProgressPct">0%</span>
+          </div>
+          <div style="background:var(--gray-100);border-radius:999px;height:8px;overflow:hidden;">
+            <div id="pfProgressBar"
+              style="height:100%;background:var(--gradient-primary);border-radius:999px;transition:width 0.3s ease;width:0%;">
+            </div>
+          </div>
         </div>
-        <div class="data-table-card">
-          <table class="data-table">
-            <thead><tr><th>#</th><th>العميل</th><th>الهاتف</th><th>المبلغ</th><th>الدفع</th><th>الحالة</th><th>التاريخ</th></tr></thead>
-            <tbody id="ordersTableBody"><tr><td colspan="7" style="text-align:center;color:var(--gray-400);">جاري التحميل...</td></tr></tbody>
-          </table>
-        </div>
-      </div>
 
-      <!-- ═══ Bookings Management ═══ -->
-      <div id="bookings-mgmt" style="display:none;">
-        <h1 class="admin-page-title">📅 حجوزات الصيانة</h1>
-        <div class="stats-grid" style="margin-bottom:20px;">
-          <div class="stat-card"><div class="stat-icon orange"><i class="fas fa-clock"></i></div><div class="stat-info"><h4>في الانتظار</h4><div class="stat-val" id="bStatPending">-</div></div></div>
-          <div class="stat-card"><div class="stat-icon blue"><i class="fas fa-check-circle"></i></div><div class="stat-info"><h4>تم التأكيد</h4><div class="stat-val" id="bStatConfirmed">-</div></div></div>
-          <div class="stat-card"><div class="stat-icon green"><i class="fas fa-check-double"></i></div><div class="stat-info"><h4>مكتمل</h4><div class="stat-val" id="bStatDone">-</div></div></div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+          <div class="form-group" style="margin:0;">
+            <label>العنوان *</label>
+            <input type="text" class="form-control" id="pfTitle" placeholder="عنوان العمل">
+          </div>
+          <div class="form-group" style="margin:0;">
+            <label>الموقع</label>
+            <input type="text" class="form-control" id="pfLocation" placeholder="مثال: الرياض - النخيل">
+          </div>
         </div>
-        <div class="data-table-card">
-          <table class="data-table">
-            <thead><tr><th>العميل</th><th>الهاتف</th><th>العنوان</th><th>نوع التكييف</th><th>الموعد</th><th>الحالة</th></tr></thead>
-            <tbody id="bookingsTableBody"><tr><td colspan="6" style="text-align:center;color:var(--gray-400);">جاري التحميل...</td></tr></tbody>
-          </table>
-        </div>
-      </div>
 
-      <!-- ═══ Coupons Management ═══ -->
-      <div id="coupons-mgmt" style="display:none;">
-        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;flex-wrap:wrap;gap:12px;">
-          <h1 class="admin-page-title" style="margin:0;">🏷️ إدارة الكوبونات</h1>
-          <button class="btn btn-primary" onclick="document.getElementById('couponModal').classList.add('active')"><i class="fas fa-plus"></i> إضافة كوبون</button>
+        <div class="form-group" style="margin:0;">
+          <label>الوصف</label>
+          <textarea class="form-control" id="pfDesc" rows="2" placeholder="وصف مختصر للعمل"></textarea>
         </div>
-        <div class="data-table-card">
-          <table class="data-table">
-            <thead><tr><th>الكود</th><th>نسبة الخصم</th><th>الحالة</th><th>إجراءات</th></tr></thead>
-            <tbody id="couponsTableBody"><tr><td colspan="4" style="text-align:center;color:var(--gray-400);">جاري التحميل...</td></tr></tbody>
-          </table>
-        </div>
-      </div>
 
-      <!-- ═══ Customers Management ═══ -->
-      <div id="customers-mgmt" style="display:none;">
-        <h1 class="admin-page-title">👥 إدارة العملاء</h1>
-        <div class="data-table-card">
-          <table class="data-table">
-            <thead><tr><th>الاسم</th><th>البريد الإلكتروني</th><th>الهاتف</th><th>تاريخ التسجيل</th></tr></thead>
-            <tbody id="customersTableBody"><tr><td colspan="4" style="text-align:center;color:var(--gray-400);">جاري التحميل...</td></tr></tbody>
-          </table>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+          <div class="form-group" style="margin:0;">
+            <label>التصنيف / البادج</label>
+            <input type="text" class="form-control" id="pfBadge" placeholder="مثال: تركيب، صيانة، غسيل">
+          </div>
+          <div class="form-group" style="margin:0;">
+            <label>لون البادج</label>
+            <div style="display:flex;gap:8px;align-items:center;margin-top:6px;flex-wrap:wrap;">
+              <div class="color-swatch" style="background:#007BFF;" onclick="selectBadgeColor('#007BFF',this)"></div>
+              <div class="color-swatch" style="background:#10b981;" onclick="selectBadgeColor('#10b981',this)"></div>
+              <div class="color-swatch" style="background:#f59e0b;" onclick="selectBadgeColor('#f59e0b',this)"></div>
+              <div class="color-swatch" style="background:#ef4444;" onclick="selectBadgeColor('#ef4444',this)"></div>
+              <div class="color-swatch" style="background:#8b5cf6;" onclick="selectBadgeColor('#8b5cf6',this)"></div>
+              <div class="color-swatch" style="background:#ec4899;" onclick="selectBadgeColor('#ec4899',this)"></div>
+              <input type="color" id="pfBadgeColor" value="#007BFF"
+                style="width:32px;height:32px;border:none;border-radius:50%;cursor:pointer;padding:0;">
+            </div>
+          </div>
         </div>
-      </div>
 
-      <!-- ═══ Analytics ═══ -->
-      <div id="analytics-sec" style="display:none;">
-        <h1 class="admin-page-title">📊 التحليلات</h1>
-        <div class="charts-grid" style="grid-template-columns:1fr 1fr;">
-          <div class="chart-card"><div class="chart-card-header"><h3>الإيرادات الأسبوعية</h3></div><canvas id="revenueChart"></canvas></div>
-          <div class="chart-card"><div class="chart-card-header"><h3>توزيع الخدمات</h3></div><canvas id="servicesChart"></canvas></div>
-        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-outline" onclick="closePortfolioModal()">إلغاء</button>
+        <button class="btn btn-primary" id="pfSaveBtn" onclick="savePortfolioItem()">
+          <i class="fas fa-save"></i> حفظ
+        </button>
       </div>
     </div>
-  </main>
-</div>
+  </div>
 
-<!-- ═══ Product Modal ═══ -->
-<div class="modal-overlay" id="productModal">
-  <div class="modal" style="max-width:560px;">
-    <div class="modal-header">
-      <h3 id="productModalTitle">إضافة منتج جديد</h3>
-      <button onclick="closeProductModal()" style="background:none;font-size:1.2rem;color:var(--gray-500);"><i class="fas fa-times"></i></button>
-    </div>
-    <div class="modal-body">
-      <input type="hidden" id="editProductId">
-      <div class="form-group"><label>اسم المنتج *</label><input type="text" class="form-control" id="pName" placeholder="اسم المنتج"></div>
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+  <style>
+    .color-swatch {
+      width: 28px;
+      height: 28px;
+      border-radius: 50%;
+      cursor: pointer;
+      border: 2px solid transparent;
+      transition: transform 0.2s, border-color 0.2s;
+    }
+
+    .color-swatch:hover {
+      transform: scale(1.2);
+    }
+
+    .color-swatch.selected {
+      border-color: var(--gray-800);
+      transform: scale(1.15);
+    }
+
+    .portfolio-admin-card {
+      background: var(--white);
+      border-radius: var(--radius-lg);
+      overflow: hidden;
+      box-shadow: var(--shadow-sm);
+      border: 1px solid var(--gray-100);
+      transition: transform 0.2s, box-shadow 0.2s;
+    }
+
+    .portfolio-admin-card:hover {
+      transform: translateY(-3px);
+      box-shadow: var(--shadow-md);
+    }
+
+    .portfolio-admin-thumb {
+      height: 180px;
+      position: relative;
+      background: var(--gray-100);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+    }
+
+    .portfolio-admin-thumb img,
+    .portfolio-admin-thumb video {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
+    .portfolio-admin-thumb .no-media {
+      font-size: 2.5rem;
+      color: var(--gray-300);
+    }
+
+    .pa-badge {
+      position: absolute;
+      top: 8px;
+      right: 8px;
+      padding: 3px 10px;
+      border-radius: 20px;
+      font-size: 0.7rem;
+      font-weight: 700;
+      color: #fff;
+    }
+
+    .pa-type-icon {
+      position: absolute;
+      bottom: 8px;
+      left: 8px;
+      background: rgba(0, 0, 0, 0.6);
+      color: #fff;
+      width: 28px;
+      height: 28px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.75rem;
+    }
+
+    .portfolio-admin-body {
+      padding: 12px 14px;
+    }
+
+    .portfolio-admin-body h4 {
+      font-size: 0.9rem;
+      font-weight: 700;
+      color: var(--gray-900);
+      margin-bottom: 4px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .portfolio-admin-body p {
+      font-size: 0.78rem;
+      color: var(--gray-500);
+    }
+
+    .portfolio-admin-actions {
+      display: flex;
+      gap: 8px;
+      padding: 0 14px 14px;
+    }
+  </style>
+
+  <!-- ═══ Product Modal ═══ -->
+  <div class="modal-overlay" id="productModal">
+    <div class="modal" style="max-width:560px;">
+      <div class="modal-header">
+        <h3 id="productModalTitle">إضافة منتج جديد</h3>
+        <button onclick="closeProductModal()" style="background:none;font-size:1.2rem;color:var(--gray-500);"><i
+            class="fas fa-times"></i></button>
+      </div>
+      <div class="modal-body">
+        <input type="hidden" id="editProductId">
+        <div class="form-group"><label>اسم المنتج *</label><input type="text" class="form-control" id="pName"
+            placeholder="اسم المنتج"></div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+          <div class="form-group">
+            <label>الماركة *</label>
+            <select class="form-control" id="pBrand">
+              <option value="">اختر الماركة</option>
+              <option>Carrier</option>
+              <option>Sharp</option>
+              <option>LG</option>
+              <option>Tornado</option>
+              <option>Fresh</option>
+              <option>Midea</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>القدرة *</label>
+            <select class="form-control" id="pHp">
+              <option value="1">1 حصان</option>
+              <option value="1.5" selected>1.5 حصان</option>
+              <option value="2">2 حصان</option>
+              <option value="2.25">2.25 حصان</option>
+              <option value="3">3 حصان</option>
+            </select>
+          </div>
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+          <div class="form-group"><label>السعر الحالي *</label><input type="number" class="form-control" id="pPrice"
+              placeholder="22999"></div>
+          <div class="form-group"><label>السعر القديم</label><input type="number" class="form-control" id="pOldPrice"
+              placeholder="27000"></div>
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+          <div class="form-group">
+            <label>الشارة</label>
+            <select class="form-control" id="pBadge">
+              <option value="">بدون</option>
+              <option>الأكثر مبيعاً</option>
+              <option>جديد</option>
+              <option>خصم</option>
+              <option>premium</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>انفرتر؟</label>
+            <select class="form-control" id="pInverter">
+              <option value="true">نعم - انفرتر</option>
+              <option value="false">لا - عادي</option>
+            </select>
+          </div>
+        </div>
         <div class="form-group">
-          <label>الماركة *</label>
-          <select class="form-control" id="pBrand">
-            <option value="">اختر الماركة</option>
-            <option>Carrier</option><option>Sharp</option><option>LG</option>
-            <option>Tornado</option><option>Fresh</option><option>Midea</option>
-          </select>
-        </div>
-        <div class="form-group">
-          <label>القدرة *</label>
-          <select class="form-control" id="pHp">
-            <option value="1">1 حصان</option>
-            <option value="1.5" selected>1.5 حصان</option>
-            <option value="2">2 حصان</option>
-            <option value="2.25">2.25 حصان</option>
-            <option value="3">3 حصان</option>
-          </select>
+          <label>رابط الصورة (Cloudinary) *</label>
+          <input type="text" class="form-control" id="pImage" placeholder="https://res.cloudinary.com/...">
+          <small style="color:var(--gray-400);font-size:0.75rem;">ارفع الصورة على Cloudinary ثم الصق الرابط هنا</small>
         </div>
       </div>
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
-        <div class="form-group"><label>السعر الحالي *</label><input type="number" class="form-control" id="pPrice" placeholder="22999"></div>
-        <div class="form-group"><label>السعر القديم</label><input type="number" class="form-control" id="pOldPrice" placeholder="27000"></div>
-      </div>
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
-        <div class="form-group">
-          <label>الشارة</label>
-          <select class="form-control" id="pBadge">
-            <option value="">بدون</option>
-            <option>الأكثر مبيعاً</option><option>جديد</option><option>خصم</option><option>premium</option>
-          </select>
-        </div>
-        <div class="form-group">
-          <label>انفرتر؟</label>
-          <select class="form-control" id="pInverter">
-            <option value="true">نعم - انفرتر</option>
-            <option value="false">لا - عادي</option>
-          </select>
-        </div>
-      </div>
-      <div class="form-group">
-        <label>رابط الصورة (Cloudinary) *</label>
-        <input type="text" class="form-control" id="pImage" placeholder="https://res.cloudinary.com/...">
-        <small style="color:var(--gray-400);font-size:0.75rem;">ارفع الصورة على Cloudinary ثم الصق الرابط هنا</small>
+      <div class="modal-footer">
+        <button class="btn btn-primary" onclick="saveProduct()"><i class="fas fa-save"></i> حفظ المنتج</button>
+        <button class="btn btn-outline" onclick="closeProductModal()">إلغاء</button>
       </div>
     </div>
-    <div class="modal-footer">
-      <button class="btn btn-primary" onclick="saveProduct()"><i class="fas fa-save"></i> حفظ المنتج</button>
-      <button class="btn btn-outline" onclick="closeProductModal()">إلغاء</button>
+  </div>
+
+  <!-- ═══ Coupon Modal ═══ -->
+  <div class="modal-overlay" id="couponModal">
+    <div class="modal" style="max-width:420px;">
+      <div class="modal-header">
+        <h3>إضافة كوبون خصم</h3>
+        <button onclick="document.getElementById('couponModal').classList.remove('active')"
+          style="background:none;font-size:1.2rem;color:var(--gray-500);"><i class="fas fa-times"></i></button>
+      </div>
+      <div class="modal-body">
+        <div class="form-group"><label>كود الكوبون *</label><input type="text" class="form-control" id="couponCode"
+            placeholder="SUMMER20" style="text-transform:uppercase;letter-spacing:2px;font-weight:700;"></div>
+        <div class="form-group"><label>نسبة الخصم % *</label><input type="number" class="form-control"
+            id="couponDiscount" placeholder="20" min="1" max="100"></div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-primary" onclick="saveCoupon()"><i class="fas fa-save"></i> إضافة الكوبون</button>
+        <button class="btn btn-outline"
+          onclick="document.getElementById('couponModal').classList.remove('active')">إلغاء</button>
+      </div>
     </div>
   </div>
-</div>
 
-<!-- ═══ Coupon Modal ═══ -->
-<div class="modal-overlay" id="couponModal">
-  <div class="modal" style="max-width:420px;">
-    <div class="modal-header">
-      <h3>إضافة كوبون خصم</h3>
-      <button onclick="document.getElementById('couponModal').classList.remove('active')" style="background:none;font-size:1.2rem;color:var(--gray-500);"><i class="fas fa-times"></i></button>
-    </div>
-    <div class="modal-body">
-      <div class="form-group"><label>كود الكوبون *</label><input type="text" class="form-control" id="couponCode" placeholder="SUMMER20" style="text-transform:uppercase;letter-spacing:2px;font-weight:700;"></div>
-      <div class="form-group"><label>نسبة الخصم % *</label><input type="number" class="form-control" id="couponDiscount" placeholder="20" min="1" max="100"></div>
-    </div>
-    <div class="modal-footer">
-      <button class="btn btn-primary" onclick="saveCoupon()"><i class="fas fa-save"></i> إضافة الكوبون</button>
-      <button class="btn btn-outline" onclick="document.getElementById('couponModal').classList.remove('active')">إلغاء</button>
+  <!-- ═══ Order Details Modal ═══ -->
+  <div class="modal-overlay" id="orderModal">
+    <div class="modal" style="max-width:560px;">
+      <div class="modal-header">
+        <h3>تفاصيل الطلب</h3>
+        <button onclick="document.getElementById('orderModal').classList.remove('active')"
+          style="background:none;font-size:1.2rem;color:var(--gray-500);"><i class="fas fa-times"></i></button>
+      </div>
+      <div class="modal-body" id="orderModalBody"></div>
     </div>
   </div>
-</div>
 
-<!-- ═══ Order Details Modal ═══ -->
-<div class="modal-overlay" id="orderModal">
-  <div class="modal" style="max-width:560px;">
-    <div class="modal-header">
-      <h3>تفاصيل الطلب</h3>
-      <button onclick="document.getElementById('orderModal').classList.remove('active')" style="background:none;font-size:1.2rem;color:var(--gray-500);"><i class="fas fa-times"></i></button>
+  <!-- ═══ Booking Details Modal ═══ -->
+  <div class="modal-overlay" id="bookingModal">
+    <div class="modal" style="max-width:560px;">
+      <div class="modal-header">
+        <h3>تفاصيل الحجز</h3>
+        <button onclick="document.getElementById('bookingModal').classList.remove('active')"
+          style="background:none;font-size:1.2rem;color:var(--gray-500);"><i class="fas fa-times"></i></button>
+      </div>
+      <div class="modal-body" id="bookingModalBody"></div>
     </div>
-    <div class="modal-body" id="orderModalBody"></div>
   </div>
-</div>
 
-<!-- ═══ Booking Details Modal ═══ -->
-<div class="modal-overlay" id="bookingModal">
-  <div class="modal" style="max-width:560px;">
-    <div class="modal-header">
-      <h3>تفاصيل الحجز</h3>
-      <button onclick="document.getElementById('bookingModal').classList.remove('active')" style="background:none;font-size:1.2rem;color:var(--gray-500);"><i class="fas fa-times"></i></button>
+  <!-- Notifications Drawer -->
+  <div class="admin-notif-drawer" id="adminNotifDrawer">
+    <div class="drawer-header"
+      style="display:flex;justify-content:space-between;align-items:center;padding:16px 20px;border-bottom:1.5px solid var(--gray-100);">
+      <h3 style="font-size:1.05rem;font-weight:800;color:var(--gray-900);margin:0;"><i class="fas fa-bell"
+          style="color:var(--primary);"></i> الإشعارات</h3>
+      <button onclick="toggleAdminNotifications()"
+        style="background:none;border:none;font-size:1.1rem;color:var(--gray-500);cursor:pointer;"><i
+          class="fas fa-times"></i></button>
     </div>
-    <div class="modal-body" id="bookingModalBody"></div>
+    <div class="drawer-body" id="notifDrawerBody" style="padding:10px;"></div>
   </div>
-</div>
 
-<!-- Notifications Drawer -->
-<div class="admin-notif-drawer" id="adminNotifDrawer">
-  <div class="drawer-header" style="display:flex;justify-content:space-between;align-items:center;padding:16px 20px;border-bottom:1.5px solid var(--gray-100);">
-    <h3 style="font-size:1.05rem;font-weight:800;color:var(--gray-900);margin:0;"><i class="fas fa-bell" style="color:var(--primary);"></i> الإشعارات</h3>
-    <button onclick="toggleAdminNotifications()" style="background:none;border:none;font-size:1.1rem;color:var(--gray-500);cursor:pointer;"><i class="fas fa-times"></i></button>
-  </div>
-  <div class="drawer-body" id="notifDrawerBody" style="padding:10px;"></div>
-</div>
+  <script>
+    /* ═══════════════════════════════════════
+       Admin Dashboard - Firebase Connected
+       ═══════════════════════════════════════ */
 
-<script>
-/* ═══════════════════════════════════════
-   Admin Dashboard - Firebase Connected
-   ═══════════════════════════════════════ */
+    // ─── Auth Protection ───
+    onAuthReady(async (user) => {
+      if (!user) { window.location.href = 'login.html'; return; }
+      if (!isAdmin()) { window.location.href = 'index.html'; return; }
 
-// ─── Auth Protection ───
-onAuthReady(async (user) => {
-  if (!user) { window.location.href = 'login.html'; return; }
-  if (!isAdmin()) { window.location.href = 'index.html'; return; }
+      const firstName = user.name ? user.name.split(' ')[0] : 'المدير';
+      document.getElementById('adminName').textContent = firstName;
 
-  const firstName = user.name ? user.name.split(' ')[0] : 'المدير';
-  document.getElementById('adminName').textContent = firstName;
+      await loadDashboard();
+      initRealtimeNotifications(); // Start listening for new orders/bookings
+    });
 
-  await loadDashboard();
-  initRealtimeNotifications(); // Start listening for new orders/bookings
-});
+    // ─── Realtime Notifications ───
+    let isFirstLoadNotif = true;
+    let allNotifs = [];
 
-// ─── Realtime Notifications ───
-let isFirstLoadNotif = true;
-let allNotifs = [];
+    function initRealtimeNotifications() {
+      const drawerBody = document.getElementById('notifDrawerBody');
+      const dot = document.getElementById('notifDot');
 
-function initRealtimeNotifications() {
-  const drawerBody = document.getElementById('notifDrawerBody');
-  const dot = document.getElementById('notifDot');
+      const updateDrawer = () => {
+        // Sort by most recent
+        allNotifs.sort((a, b) => b.ts - a.ts);
 
-  const updateDrawer = () => {
-    // Sort by most recent
-    allNotifs.sort((a, b) => b.ts - a.ts);
-    
-    // Update badge numbers on sidebar
-    const pendingOrdersCount = allNotifs.filter(n => n.type === 'order').length;
-    const pendingBookingsCount = allNotifs.filter(n => n.type === 'booking').length;
-    
-    const oBadge = document.getElementById('pendingOrdersBadge');
-    const bBadge = document.getElementById('pendingBookingsBadge');
-    if (oBadge) oBadge.textContent = pendingOrdersCount;
-    if (bBadge) bBadge.textContent = pendingBookingsCount;
+        // Update badge numbers on sidebar
+        const pendingOrdersCount = allNotifs.filter(n => n.type === 'order').length;
+        const pendingBookingsCount = allNotifs.filter(n => n.type === 'booking').length;
 
-    if (allNotifs.length > 0) {
-      dot.style.display = 'block';
-      drawerBody.innerHTML = allNotifs.slice(0, 10).map(n => `
+        const oBadge = document.getElementById('pendingOrdersBadge');
+        const bBadge = document.getElementById('pendingBookingsBadge');
+        if (oBadge) oBadge.textContent = pendingOrdersCount;
+        if (bBadge) bBadge.textContent = pendingBookingsCount;
+
+        if (allNotifs.length > 0) {
+          dot.style.display = 'block';
+          drawerBody.innerHTML = allNotifs.slice(0, 10).map(n => `
         <div onclick="handleNotifClick('${n.type}', '${n.id}')" style="padding:14px;border-radius:10px;margin-bottom:10px;background:#fff;border:1px solid var(--gray-100);border-right:4px solid ${n.color}; transition: all 0.2s; cursor:pointer; animation: fadeInUp 0.4s ease; box-shadow:0 2px 8px rgba(0,0,0,0.03);" onmouseover="this.style.transform='translateY(-2px)';this.style.boxShadow='0 4px 12px rgba(0,0,0,0.08)';" onmouseout="this.style.transform='none';this.style.boxShadow='0 2px 8px rgba(0,0,0,0.03)';">
           <div style="display:flex;justify-content:space-between;font-size:0.75rem;font-weight:800;color:${n.color};margin-bottom:6px;">
             <span><i class="fas ${n.icon}"></i> ${n.title}</span><span style="color:var(--gray-400);font-weight:600;">${n.time}</span>
@@ -322,227 +880,229 @@ function initRealtimeNotifications() {
           <p style="font-size:0.85rem;color:var(--gray-700);line-height:1.6;margin:0;font-weight:600;">${n.body}</p>
         </div>
       `).join('');
-    } else {
-      dot.style.display = 'none';
-      drawerBody.innerHTML = '<p style="text-align:center;color:var(--gray-400);padding:20px;">لا توجد إشعارات جديدة</p>';
+        } else {
+          dot.style.display = 'none';
+          drawerBody.innerHTML = '<p style="text-align:center;color:var(--gray-400);padding:20px;">لا توجد إشعارات جديدة</p>';
+        }
+      };
+
+      // Listen for Orders
+      db.collection('orders').where('status', '==', 'pending')
+        .onSnapshot((snapshot) => {
+          snapshot.docChanges().forEach((change) => {
+            const o = change.doc.data();
+            const id = change.doc.id;
+
+            if (change.type === 'added') {
+              const ts = o.createdAt ? (o.createdAt.toDate ? o.createdAt.toDate().getTime() : new Date(o.createdAt).getTime()) : Date.now();
+              allNotifs.push({
+                id, type: 'order', ts,
+                icon: 'fa-shopping-bag', color: 'var(--primary)', time: fmtDate(o.createdAt),
+                title: `طلب جديد #${o.orderNum}`, body: `من ${o.customerName} بقيمة ${(o.total || 0).toLocaleString()} ر.س`
+              });
+
+              if (!isFirstLoadNotif) {
+                showToast(`🔔 طلب جديد من ${o.customerName}`);
+                playNotifSound();
+              }
+            }
+            if (change.type === 'removed') {
+              allNotifs = allNotifs.filter(n => n.id !== id);
+            }
+          });
+          updateDrawer();
+        });
+
+      // Listen for Bookings
+      db.collection('bookings').where('status', '==', 'pending')
+        .onSnapshot((snapshot) => {
+          snapshot.docChanges().forEach((change) => {
+            const b = change.doc.data();
+            const id = change.doc.id;
+
+            if (change.type === 'added') {
+              const ts = b.createdAt ? (b.createdAt.toDate ? b.createdAt.toDate().getTime() : new Date(b.createdAt).getTime()) : Date.now();
+              allNotifs.push({
+                id, type: 'booking', ts,
+                icon: 'fa-calendar-check', color: 'var(--warning)', time: fmtDate(b.createdAt),
+                title: 'حجز صيانة جديد', body: `من ${b.customerName} - ${b.date}`
+              });
+
+              if (!isFirstLoadNotif) {
+                showToast(`🔔 حجز صيانة جديد من ${b.customerName}`);
+                playNotifSound();
+              }
+            }
+            if (change.type === 'removed') {
+              allNotifs = allNotifs.filter(n => n.id !== id);
+            }
+          });
+          updateDrawer();
+
+          // After first initial fetch, enable toast & sound alerts
+          setTimeout(() => isFirstLoadNotif = false, 2000);
+        });
     }
-  };
 
-  // Listen for Orders
-  db.collection('orders').where('status', '==', 'pending')
-    .onSnapshot((snapshot) => {
-      snapshot.docChanges().forEach((change) => {
-        const o = change.doc.data();
-        const id = change.doc.id;
-        
-        if (change.type === 'added') {
-          const ts = o.createdAt ? (o.createdAt.toDate ? o.createdAt.toDate().getTime() : new Date(o.createdAt).getTime()) : Date.now();
-          allNotifs.push({
-            id, type: 'order', ts,
-            icon: 'fa-shopping-bag', color: 'var(--primary)', time: fmtDate(o.createdAt),
-            title: `طلب جديد #${o.orderNum}`, body: `من ${o.customerName} بقيمة ${(o.total||0).toLocaleString()} ر.س`
-          });
-          
-          if (!isFirstLoadNotif) {
-            showToast(`🔔 طلب جديد من ${o.customerName}`);
-            playNotifSound();
-          }
-        }
-        if (change.type === 'removed') {
-          allNotifs = allNotifs.filter(n => n.id !== id);
-        }
-      });
-      updateDrawer();
-    });
+    function playNotifSound() {
+      try {
+        const audio = new Audio('https://assets.mixkit.co/active_storage/sfx/2869/2869-preview.mp3');
+        audio.volume = 0.5;
+        audio.play().catch(e => console.log('Autoplay prevented'));
+      } catch (e) { }
+    }
 
-  // Listen for Bookings
-  db.collection('bookings').where('status', '==', 'pending')
-    .onSnapshot((snapshot) => {
-      snapshot.docChanges().forEach((change) => {
-        const b = change.doc.data();
-        const id = change.doc.id;
+    async function handleNotifClick(type, id) {
+      toggleAdminNotifications(); // Close drawer
+      if (type === 'order') {
+        showSection('orders-mgmt', document.querySelector('[onclick*="orders-mgmt"]'));
+        await viewOrder(id);
+      } else if (type === 'booking') {
+        showSection('bookings-mgmt', document.querySelector('[onclick*="bookings-mgmt"]'));
+        await viewBooking(id);
+      }
+    }
 
-        if (change.type === 'added') {
-          const ts = b.createdAt ? (b.createdAt.toDate ? b.createdAt.toDate().getTime() : new Date(b.createdAt).getTime()) : Date.now();
-          allNotifs.push({
-            id, type: 'booking', ts,
-            icon: 'fa-calendar-check', color: 'var(--warning)', time: fmtDate(b.createdAt),
-            title: 'حجز صيانة جديد', body: `من ${b.customerName} - ${b.date}`
-          });
-          
-          if (!isFirstLoadNotif) {
-            showToast(`🔔 حجز صيانة جديد من ${b.customerName}`);
-            playNotifSound();
-          }
-        }
-        if (change.type === 'removed') {
-          allNotifs = allNotifs.filter(n => n.id !== id);
-        }
-      });
-      updateDrawer();
-      
-      // After first initial fetch, enable toast & sound alerts
-      setTimeout(() => isFirstLoadNotif = false, 2000);
-    });
-}
+    // ─── Helpers ───
+    function showToast(msg) {
+      let t = document.querySelector('.toast');
+      if (!t) { t = document.createElement('div'); t.className = 'toast'; document.body.appendChild(t); }
+      t.innerHTML = `<i class="fas fa-check-circle" style="color:var(--success);font-size:1.2rem;"></i><span>${msg}</span>`;
+      t.classList.add('show');
+      setTimeout(() => t.classList.remove('show'), 3000);
+    }
 
-function playNotifSound() {
-  try {
-    const audio = new Audio('https://assets.mixkit.co/active_storage/sfx/2869/2869-preview.mp3');
-    audio.volume = 0.5;
-    audio.play().catch(e => console.log('Autoplay prevented'));
-  } catch(e) {}
-}
+    function fmtDate(ts) {
+      if (!ts) return '-';
+      const d = ts.toDate ? ts.toDate() : new Date(ts);
+      return d.toLocaleDateString('ar-EG');
+    }
 
-async function handleNotifClick(type, id) {
-  toggleAdminNotifications(); // Close drawer
-  if (type === 'order') {
-    showSection('orders-mgmt', document.querySelector('[onclick*="orders-mgmt"]'));
-    await viewOrder(id);
-  } else if (type === 'booking') {
-    showSection('bookings-mgmt', document.querySelector('[onclick*="bookings-mgmt"]'));
-    await viewBooking(id);
-  }
-}
+    function statusBadge(status) {
+      const map = {
+        pending: ['في الانتظار', 'pending'],
+        confirmed: ['تم التأكيد', 'processing'],
+        shipping: ['جاري التوصيل', 'processing'],
+        delivered: ['تم التوصيل', 'completed'],
+        completed: ['مكتمل', 'completed'],
+        cancelled: ['ملغي', 'cancelled']
+      };
+      const [label, cls] = map[status] || ['في الانتظار', 'pending'];
+      return `<span class="status-badge ${cls}">${label}</span>`;
+    }
 
-// ─── Helpers ───
-function showToast(msg) {
-  let t = document.querySelector('.toast');
-  if (!t) { t = document.createElement('div'); t.className = 'toast'; document.body.appendChild(t); }
-  t.innerHTML = `<i class="fas fa-check-circle" style="color:var(--success);font-size:1.2rem;"></i><span>${msg}</span>`;
-  t.classList.add('show');
-  setTimeout(() => t.classList.remove('show'), 3000);
-}
+    // ─── Section Navigation ───
+    function showSection(id, el) {
+      document.querySelectorAll('.admin-content > div').forEach(d => d.style.display = 'none');
+      document.getElementById(id).style.display = 'block';
+      document.querySelectorAll('.sidebar-nav a').forEach(a => a.classList.remove('active'));
+      if (el) el.classList.add('active');
+      document.getElementById('adminSidebar').classList.remove('active');
 
-function fmtDate(ts) {
-  if (!ts) return '-';
-  const d = ts.toDate ? ts.toDate() : new Date(ts);
-  return d.toLocaleDateString('ar-EG');
-}
+      const loaders = {
+        'products-mgmt': loadProducts,
+        'orders-mgmt': loadOrders,
+        'bookings-mgmt': loadBookings,
+        'coupons-mgmt': loadCoupons,
+        'customers-mgmt': loadCustomers,
+        'analytics-sec': initAnalyticsCharts,
+        'portfolio-mgmt': loadAdminPortfolio,
+        'beforeafter-mgmt': loadBeforeAfterAdmin
+      };
+      if (loaders[id]) loaders[id]();
+    }
 
-function statusBadge(status) {
-  const map = {
-    pending:   ['في الانتظار', 'pending'],
-    confirmed: ['تم التأكيد',  'processing'],
-    shipping:  ['جاري التوصيل','processing'],
-    delivered: ['تم التوصيل',  'completed'],
-    completed: ['مكتمل',       'completed'],
-    cancelled: ['ملغي',        'cancelled']
-  };
-  const [label, cls] = map[status] || ['في الانتظار', 'pending'];
-  return `<span class="status-badge ${cls}">${label}</span>`;
-}
+    function toggleDarkMode() {
+      document.body.classList.toggle('dark-mode');
+      document.getElementById('themeToggle').classList.toggle('dark');
+    }
 
-// ─── Section Navigation ───
-function showSection(id, el) {
-  document.querySelectorAll('.admin-content > div').forEach(d => d.style.display = 'none');
-  document.getElementById(id).style.display = 'block';
-  document.querySelectorAll('.sidebar-nav a').forEach(a => a.classList.remove('active'));
-  if (el) el.classList.add('active');
-  document.getElementById('adminSidebar').classList.remove('active');
+    function toggleAdminNotifications() {
+      document.getElementById('adminNotifDrawer').classList.toggle('active');
+    }
 
-  const loaders = {
-    'products-mgmt':  loadProducts,
-    'orders-mgmt':    loadOrders,
-    'bookings-mgmt':  loadBookings,
-    'coupons-mgmt':   loadCoupons,
-    'customers-mgmt': loadCustomers,
-    'analytics-sec':  initAnalyticsCharts
-  };
-  if (loaders[id]) loaders[id]();
-}
+    // ─── Dashboard ───
+    async function loadDashboard() {
+      try {
+        const [orders, users, bookings] = await Promise.all([getOrders(), getAllUsers(), getBookings()]);
 
-function toggleDarkMode() {
-  document.body.classList.toggle('dark-mode');
-  document.getElementById('themeToggle').classList.toggle('dark');
-}
+        const revenue = orders.filter(o => o.status !== 'cancelled').reduce((s, o) => s + (o.total || 0), 0);
+        document.getElementById('statOrders').textContent = orders.length;
+        document.getElementById('statRevenue').textContent = revenue.toLocaleString() + ' ر.س';
+        document.getElementById('statCustomers').textContent = users.length;
+        document.getElementById('statBookings').textContent = bookings.length;
 
-function toggleAdminNotifications() {
-  document.getElementById('adminNotifDrawer').classList.toggle('active');
-}
+        const pending = orders.filter(o => o.status === 'pending').length;
+        const bPending = bookings.filter(b => b.status === 'pending').length;
+        document.getElementById('pendingOrdersBadge').textContent = pending;
+        document.getElementById('pendingBookingsBadge').textContent = bPending;
+        if (pending + bPending > 0) document.getElementById('notifDot').style.display = 'block';
 
-// ─── Dashboard ───
-async function loadDashboard() {
-  try {
-    const [orders, users, bookings] = await Promise.all([getOrders(), getAllUsers(), getBookings()]);
-
-    const revenue = orders.filter(o => o.status !== 'cancelled').reduce((s, o) => s + (o.total || 0), 0);
-    document.getElementById('statOrders').textContent    = orders.length;
-    document.getElementById('statRevenue').textContent   = revenue.toLocaleString() + ' ر.س';
-    document.getElementById('statCustomers').textContent = users.length;
-    document.getElementById('statBookings').textContent  = bookings.length;
-
-    const pending  = orders.filter(o => o.status === 'pending').length;
-    const bPending = bookings.filter(b => b.status === 'pending').length;
-    document.getElementById('pendingOrdersBadge').textContent  = pending;
-    document.getElementById('pendingBookingsBadge').textContent = bPending;
-    if (pending + bPending > 0) document.getElementById('notifDot').style.display = 'block';
-
-    // Recent orders table
-    const recent = orders.slice(0, 5);
-    document.getElementById('dashboardOrdersBody').innerHTML = recent.length
-      ? recent.map(o => `
+        // Recent orders table
+        const recent = orders.slice(0, 5);
+        document.getElementById('dashboardOrdersBody').innerHTML = recent.length
+          ? recent.map(o => `
           <tr>
             <td>#${o.orderNum}</td>
             <td>${o.customerName}</td>
-            <td style="font-weight:700;color:var(--primary-dark);">${(o.total||0).toLocaleString()} ر.س</td>
+            <td style="font-weight:700;color:var(--primary-dark);">${(o.total || 0).toLocaleString()} ر.س</td>
             <td>${statusBadge(o.status)}</td>
             <td>${fmtDate(o.createdAt)}</td>
           </tr>`).join('')
-      : '<tr><td colspan="5" style="text-align:center;color:var(--gray-400);">لا توجد طلبات بعد</td></tr>';
+          : '<tr><td colspan="5" style="text-align:center;color:var(--gray-400);">لا توجد طلبات بعد</td></tr>';
 
-    // Sales chart (group by month)
-    renderSalesChart(orders);
+        // Sales chart (group by month)
+        renderSalesChart(orders);
 
-    // Orders status doughnut
-    const statusCounts = {
-      pending:   orders.filter(o => o.status === 'pending').length,
-      shipping:  orders.filter(o => o.status === 'shipping').length,
-      completed: orders.filter(o => o.status === 'completed' || o.status === 'delivered').length,
-      cancelled: orders.filter(o => o.status === 'cancelled').length
-    };
-    renderStatusChart(statusCounts);
+        // Orders status doughnut
+        const statusCounts = {
+          pending: orders.filter(o => o.status === 'pending').length,
+          shipping: orders.filter(o => o.status === 'shipping').length,
+          completed: orders.filter(o => o.status === 'completed' || o.status === 'delivered').length,
+          cancelled: orders.filter(o => o.status === 'cancelled').length
+        };
+        renderStatusChart(statusCounts);
 
-  } catch (e) { console.error('Dashboard error:', e); }
-}
+      } catch (e) { console.error('Dashboard error:', e); }
+    }
 
-function renderSalesChart(orders) {
-  const ctx = document.getElementById('salesChart')?.getContext('2d');
-  if (!ctx) return;
-  const months = ['يناير','فبراير','مارس','أبريل','مايو','يونيو','يوليو','أغسطس','سبتمبر','أكتوبر','نوفمبر','ديسمبر'];
-  const data   = new Array(12).fill(0);
-  orders.filter(o => o.status !== 'cancelled').forEach(o => {
-    const d = o.createdAt?.toDate ? o.createdAt.toDate() : new Date();
-    data[d.getMonth()] += o.total || 0;
-  });
-  new Chart(ctx, {
-    type: 'line',
-    data: { labels: months, datasets: [{ label: 'المبيعات', data, borderColor: '#007BFF', backgroundColor: 'rgba(0,123,255,0.08)', fill: true, tension: 0.4, pointBackgroundColor: '#007BFF', pointRadius: 4 }] },
-    options: { responsive: true, plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true, ticks: { callback: v => (v/1000)+'K' } } } }
-  });
-}
+    function renderSalesChart(orders) {
+      const ctx = document.getElementById('salesChart')?.getContext('2d');
+      if (!ctx) return;
+      const months = ['يناير', 'فبراير', 'مارس', 'أبريل', 'مايو', 'يونيو', 'يوليو', 'أغسطس', 'سبتمبر', 'أكتوبر', 'نوفمبر', 'ديسمبر'];
+      const data = new Array(12).fill(0);
+      orders.filter(o => o.status !== 'cancelled').forEach(o => {
+        const d = o.createdAt?.toDate ? o.createdAt.toDate() : new Date();
+        data[d.getMonth()] += o.total || 0;
+      });
+      new Chart(ctx, {
+        type: 'line',
+        data: { labels: months, datasets: [{ label: 'المبيعات', data, borderColor: '#007BFF', backgroundColor: 'rgba(0,123,255,0.08)', fill: true, tension: 0.4, pointBackgroundColor: '#007BFF', pointRadius: 4 }] },
+        options: { responsive: true, plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true, ticks: { callback: v => (v / 1000) + 'K' } } } }
+      });
+    }
 
-function renderStatusChart(counts) {
-  const ctx = document.getElementById('ordersStatusChart')?.getContext('2d');
-  if (!ctx) return;
-  new Chart(ctx, {
-    type: 'doughnut',
-    data: {
-      labels: ['في الانتظار','قيد الشحن','مكتمل','ملغي'],
-      datasets: [{ data: [counts.pending, counts.shipping, counts.completed, counts.cancelled], backgroundColor: ['#f59e0b','#007BFF','#10b981','#ef4444'] }]
-    },
-    options: { responsive: true, plugins: { legend: { position: 'bottom', labels: { font: { family: 'Cairo' } } } } }
-  });
-}
+    function renderStatusChart(counts) {
+      const ctx = document.getElementById('ordersStatusChart')?.getContext('2d');
+      if (!ctx) return;
+      new Chart(ctx, {
+        type: 'doughnut',
+        data: {
+          labels: ['في الانتظار', 'قيد الشحن', 'مكتمل', 'ملغي'],
+          datasets: [{ data: [counts.pending, counts.shipping, counts.completed, counts.cancelled], backgroundColor: ['#f59e0b', '#007BFF', '#10b981', '#ef4444'] }]
+        },
+        options: { responsive: true, plugins: { legend: { position: 'bottom', labels: { font: { family: 'Cairo' } } } } }
+      });
+    }
 
-// ─── Products ───
-async function loadProducts() {
-  const tbody = document.getElementById('productsTableBody');
-  tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;"><i class="fas fa-spinner fa-spin"></i> جاري التحميل...</td></tr>';
-  try {
-    const products = await getAllProductsAdmin();
-    tbody.innerHTML = products.length
-      ? products.map(p => `
+    // ─── Products ───
+    async function loadProducts() {
+      const tbody = document.getElementById('productsTableBody');
+      tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;"><i class="fas fa-spinner fa-spin"></i> جاري التحميل...</td></tr>';
+      try {
+        const products = await getAllProductsAdmin();
+        tbody.innerHTML = products.length
+          ? products.map(p => `
           <tr>
             <td>
               <div style="display:flex;align-items:center;gap:10px;">
@@ -551,7 +1111,7 @@ async function loadProducts() {
               </div>
             </td>
             <td>${p.brand}</td>
-            <td style="font-weight:700;color:var(--primary);">${(p.price||0).toLocaleString()} ر.س</td>
+            <td style="font-weight:700;color:var(--primary);">${(p.price || 0).toLocaleString()} ر.س</td>
             <td>${p.hp} حصان</td>
             <td><span class="status-badge ${p.active ? 'completed' : 'cancelled'}">${p.active ? 'نشط' : 'مخفي'}</span></td>
             <td style="display:flex;gap:4px;flex-wrap:wrap;">
@@ -560,184 +1120,186 @@ async function loadProducts() {
               <button class="btn btn-sm" style="padding:4px 10px;font-size:0.75rem;background:var(--danger);color:#fff;border-radius:6px;" onclick="removeProduct('${p.firestoreId}','${p.name}')"><i class="fas fa-trash"></i></button>
             </td>
           </tr>`).join('')
-      : '<tr><td colspan="6" style="text-align:center;color:var(--gray-400);">لا توجد منتجات بعد</td></tr>';
-  } catch (e) { tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;color:var(--danger);">خطأ في التحميل</td></tr>'; }
-}
-
-function openProductModal(id) {
-  document.getElementById('editProductId').value = '';
-  document.getElementById('productModalTitle').textContent = 'إضافة منتج جديد';
-  ['pName','pImage'].forEach(id => document.getElementById(id).value = '');
-  ['pPrice','pOldPrice'].forEach(id => document.getElementById(id).value = '');
-  document.getElementById('pBrand').value   = '';
-  document.getElementById('pHp').value      = '1.5';
-  document.getElementById('pBadge').value   = '';
-  document.getElementById('pInverter').value = 'true';
-  document.getElementById('productModal').classList.add('active');
-}
-
-async function editProduct(firestoreId) {
-  try {
-    const doc = await db.collection('products').doc(firestoreId).get();
-    if (!doc.exists) return;
-    const p = doc.data();
-    document.getElementById('editProductId').value = firestoreId;
-    document.getElementById('productModalTitle').textContent = 'تعديل المنتج';
-    document.getElementById('pName').value     = p.name || '';
-    document.getElementById('pBrand').value    = p.brand || '';
-    document.getElementById('pHp').value       = p.hp || '1.5';
-    document.getElementById('pPrice').value    = p.price || '';
-    document.getElementById('pOldPrice').value = p.oldPrice || '';
-    document.getElementById('pBadge').value    = p.badge || '';
-    document.getElementById('pInverter').value = p.inverter ? 'true' : 'false';
-    document.getElementById('pImage').value    = p.image || '';
-    document.getElementById('productModal').classList.add('active');
-  } catch (e) { showToast('خطأ في تحميل بيانات المنتج'); }
-}
-
-function closeProductModal() {
-  document.getElementById('productModal').classList.remove('active');
-}
-
-async function saveProduct() {
-  const name     = document.getElementById('pName').value.trim();
-  const brand    = document.getElementById('pBrand').value;
-  const hp       = document.getElementById('pHp').value;
-  const price    = parseFloat(document.getElementById('pPrice').value);
-  const oldPrice = parseFloat(document.getElementById('pOldPrice').value) || 0;
-  const badge    = document.getElementById('pBadge').value;
-  const inverter = document.getElementById('pInverter').value === 'true';
-  const image    = document.getElementById('pImage').value.trim();
-  const editId   = document.getElementById('editProductId').value;
-
-  if (!name || !brand || !price || !image) { showToast('يرجى تعبئة جميع الحقول المطلوبة ⚠️'); return; }
-
-  const saveBtn = document.querySelector('#productModal .btn-primary');
-  saveBtn.disabled = true;
-  saveBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> جاري الحفظ...';
-
-  const data = { name, brand, hp, price, oldPrice, badge, inverter, image, active: true,
-    discount: oldPrice > price ? Math.round((1 - price/oldPrice) * 100) : 0 };
-
-  try {
-    if (editId) {
-      await updateProduct(editId, data);
-      showToast('تم تحديث المنتج بنجاح ✓');
-    } else {
-      await addProduct(data);
-      showToast('تمت إضافة المنتج بنجاح 🎉');
+          : '<tr><td colspan="6" style="text-align:center;color:var(--gray-400);">لا توجد منتجات بعد</td></tr>';
+      } catch (e) { tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;color:var(--danger);">خطأ في التحميل</td></tr>'; }
     }
-    closeProductModal();
-    loadProducts();
-  } catch (e) { showToast('خطأ في الحفظ: ' + e.message); }
-  finally { saveBtn.disabled = false; saveBtn.innerHTML = '<i class="fas fa-save"></i> حفظ المنتج'; }
-}
 
-async function toggleProductActive(firestoreId, currentActive) {
-  try {
-    await updateProduct(firestoreId, { active: !currentActive });
-    showToast(currentActive ? 'تم إخفاء المنتج من المتجر' : 'تم إظهار المنتج في المتجر ✓');
-    loadProducts();
-  } catch { showToast('خطأ في التحديث'); }
-}
+    function openProductModal(id) {
+      document.getElementById('editProductId').value = '';
+      document.getElementById('productModalTitle').textContent = 'إضافة منتج جديد';
+      ['pName', 'pImage'].forEach(id => document.getElementById(id).value = '');
+      ['pPrice', 'pOldPrice'].forEach(id => document.getElementById(id).value = '');
+      document.getElementById('pBrand').value = '';
+      document.getElementById('pHp').value = '1.5';
+      document.getElementById('pBadge').value = '';
+      document.getElementById('pInverter').value = 'true';
+      document.getElementById('productModal').classList.add('active');
+    }
 
-async function removeProduct(firestoreId, name) {
-  if (!confirm(`هل أنت متأكد من حذف "${name}"؟`)) return;
-  try {
-    await deleteProduct(firestoreId);
-    showToast('تم حذف المنتج بنجاح 🗑️');
-    loadProducts();
-  } catch (e) { showToast('خطأ في الحذف'); }
-}
+    async function editProduct(firestoreId) {
+      try {
+        const doc = await db.collection('products').doc(firestoreId).get();
+        if (!doc.exists) return;
+        const p = doc.data();
+        document.getElementById('editProductId').value = firestoreId;
+        document.getElementById('productModalTitle').textContent = 'تعديل المنتج';
+        document.getElementById('pName').value = p.name || '';
+        document.getElementById('pBrand').value = p.brand || '';
+        document.getElementById('pHp').value = p.hp || '1.5';
+        document.getElementById('pPrice').value = p.price || '';
+        document.getElementById('pOldPrice').value = p.oldPrice || '';
+        document.getElementById('pBadge').value = p.badge || '';
+        document.getElementById('pInverter').value = p.inverter ? 'true' : 'false';
+        document.getElementById('pImage').value = p.image || '';
+        document.getElementById('productModal').classList.add('active');
+      } catch (e) { showToast('خطأ في تحميل بيانات المنتج'); }
+    }
 
-// ─── Orders ───
-async function loadOrders() {
-  const tbody = document.getElementById('ordersTableBody');
-  tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;"><i class="fas fa-spinner fa-spin"></i> جاري التحميل...</td></tr>';
-  try {
-    const orders = await getOrders();
+    function closeProductModal() {
+      document.getElementById('productModal').classList.remove('active');
+    }
 
-    document.getElementById('oStatPending').textContent   = orders.filter(o => o.status === 'pending').length;
-    document.getElementById('oStatProcessing').textContent = orders.filter(o => o.status === 'shipping').length;
-    document.getElementById('oStatDone').textContent      = orders.filter(o => ['completed','delivered'].includes(o.status)).length;
-    document.getElementById('oStatCancelled').textContent = orders.filter(o => o.status === 'cancelled').length;
+    async function saveProduct() {
+      const name = document.getElementById('pName').value.trim();
+      const brand = document.getElementById('pBrand').value;
+      const hp = document.getElementById('pHp').value;
+      const price = parseFloat(document.getElementById('pPrice').value);
+      const oldPrice = parseFloat(document.getElementById('pOldPrice').value) || 0;
+      const badge = document.getElementById('pBadge').value;
+      const inverter = document.getElementById('pInverter').value === 'true';
+      const image = document.getElementById('pImage').value.trim();
+      const editId = document.getElementById('editProductId').value;
 
-    tbody.innerHTML = orders.length
-      ? orders.map(o => `
+      if (!name || !brand || !price || !image) { showToast('يرجى تعبئة جميع الحقول المطلوبة ⚠️'); return; }
+
+      const saveBtn = document.querySelector('#productModal .btn-primary');
+      saveBtn.disabled = true;
+      saveBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> جاري الحفظ...';
+
+      const data = {
+        name, brand, hp, price, oldPrice, badge, inverter, image, active: true,
+        discount: oldPrice > price ? Math.round((1 - price / oldPrice) * 100) : 0
+      };
+
+      try {
+        if (editId) {
+          await updateProduct(editId, data);
+          showToast('تم تحديث المنتج بنجاح ✓');
+        } else {
+          await addProduct(data);
+          showToast('تمت إضافة المنتج بنجاح 🎉');
+        }
+        closeProductModal();
+        loadProducts();
+      } catch (e) { showToast('خطأ في الحفظ: ' + e.message); }
+      finally { saveBtn.disabled = false; saveBtn.innerHTML = '<i class="fas fa-save"></i> حفظ المنتج'; }
+    }
+
+    async function toggleProductActive(firestoreId, currentActive) {
+      try {
+        await updateProduct(firestoreId, { active: !currentActive });
+        showToast(currentActive ? 'تم إخفاء المنتج من المتجر' : 'تم إظهار المنتج في المتجر ✓');
+        loadProducts();
+      } catch { showToast('خطأ في التحديث'); }
+    }
+
+    async function removeProduct(firestoreId, name) {
+      if (!confirm(`هل أنت متأكد من حذف "${name}"؟`)) return;
+      try {
+        await deleteProduct(firestoreId);
+        showToast('تم حذف المنتج بنجاح 🗑️');
+        loadProducts();
+      } catch (e) { showToast('خطأ في الحذف'); }
+    }
+
+    // ─── Orders ───
+    async function loadOrders() {
+      const tbody = document.getElementById('ordersTableBody');
+      tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;"><i class="fas fa-spinner fa-spin"></i> جاري التحميل...</td></tr>';
+      try {
+        const orders = await getOrders();
+
+        document.getElementById('oStatPending').textContent = orders.filter(o => o.status === 'pending').length;
+        document.getElementById('oStatProcessing').textContent = orders.filter(o => o.status === 'shipping').length;
+        document.getElementById('oStatDone').textContent = orders.filter(o => ['completed', 'delivered'].includes(o.status)).length;
+        document.getElementById('oStatCancelled').textContent = orders.filter(o => o.status === 'cancelled').length;
+
+        tbody.innerHTML = orders.length
+          ? orders.map(o => `
           <tr style="cursor:pointer;" onclick="viewOrder('${o.firestoreId}')">
             <td style="font-weight:700;color:var(--primary);">#${o.orderNum}</td>
             <td>${o.customerName}</td>
             <td>${o.phone}</td>
-            <td style="font-weight:700;">${(o.total||0).toLocaleString()} ر.س</td>
+            <td style="font-weight:700;">${(o.total || 0).toLocaleString()} ر.س</td>
             <td>${o.payment === 'cash' ? 'عند الاستلام' : o.payment === 'mada' ? 'مدى' : 'Apple Pay'}</td>
             <td onclick="event.stopPropagation()">
               <select class="form-control" style="padding:4px 8px;font-size:0.8rem;width:auto;" onchange="changeOrderStatus('${o.firestoreId}', this.value)">
-                <option value="pending"   ${o.status==='pending'   ? 'selected':''}>في الانتظار</option>
-                <option value="shipping"  ${o.status==='shipping'  ? 'selected':''}>جاري التوصيل</option>
-                <option value="completed" ${o.status==='completed' ? 'selected':''}>مكتمل</option>
-                <option value="cancelled" ${o.status==='cancelled' ? 'selected':''}>ملغي</option>
+                <option value="pending"   ${o.status === 'pending' ? 'selected' : ''}>في الانتظار</option>
+                <option value="shipping"  ${o.status === 'shipping' ? 'selected' : ''}>جاري التوصيل</option>
+                <option value="completed" ${o.status === 'completed' ? 'selected' : ''}>مكتمل</option>
+                <option value="cancelled" ${o.status === 'cancelled' ? 'selected' : ''}>ملغي</option>
               </select>
             </td>
             <td>${fmtDate(o.createdAt)}</td>
             <td onclick="event.stopPropagation()">
-              <a href="https://wa.me/${o.phone?.replace(/^0/,'966')}" target="_blank" class="btn btn-sm" style="padding:4px 10px;font-size:0.75rem;background:#25d366;color:#fff;border-radius:6px;" title="واتساب العميل">
+              <a href="https://wa.me/${o.phone?.replace(/^0/, '966')}" target="_blank" class="btn btn-sm" style="padding:4px 10px;font-size:0.75rem;background:#25d366;color:#fff;border-radius:6px;" title="واتساب العميل">
                 <i class="fab fa-whatsapp"></i>
               </a>
             </td>
           </tr>`).join('')
-      : '<tr><td colspan="8" style="text-align:center;color:var(--gray-400);">لا توجد طلبات بعد</td></tr>';
-  } catch (e) { tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;color:var(--danger);">خطأ في التحميل</td></tr>'; }
-}
+          : '<tr><td colspan="8" style="text-align:center;color:var(--gray-400);">لا توجد طلبات بعد</td></tr>';
+      } catch (e) { tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;color:var(--danger);">خطأ في التحميل</td></tr>'; }
+    }
 
-async function changeOrderStatus(firestoreId, status) {
-  try {
-    await updateOrderStatus(firestoreId, status);
-    showToast('تم تحديث حالة الطلب ✓');
-  } catch (e) { showToast('خطأ في التحديث'); }
-}
+    async function changeOrderStatus(firestoreId, status) {
+      try {
+        await updateOrderStatus(firestoreId, status);
+        showToast('تم تحديث حالة الطلب ✓');
+      } catch (e) { showToast('خطأ في التحديث'); }
+    }
 
-async function viewOrder(firestoreId) {
-  try {
-    const doc = await db.collection('orders').doc(firestoreId).get();
-    if (!doc.exists) return;
-    const o = doc.data();
-    const items = (o.items || []).map(i => `
+    async function viewOrder(firestoreId) {
+      try {
+        const doc = await db.collection('orders').doc(firestoreId).get();
+        if (!doc.exists) return;
+        const o = doc.data();
+        const items = (o.items || []).map(i => `
       <div style="display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--gray-100);">
         <span>${i.name} × ${i.qty}</span>
         <span style="font-weight:700;">${(i.price * i.qty).toLocaleString()} ر.س</span>
       </div>`).join('');
-    document.getElementById('orderModalBody').innerHTML = `
+        document.getElementById('orderModalBody').innerHTML = `
       <div style="display:grid;gap:8px;font-size:0.9rem;">
         <div style="display:flex;justify-content:space-between;"><strong>رقم الطلب</strong><span>#${o.orderNum}</span></div>
         <div style="display:flex;justify-content:space-between;"><strong>العميل</strong><span>${o.customerName}</span></div>
         <div style="display:flex;justify-content:space-between;"><strong>الهاتف</strong><span dir="ltr">${o.phone}</span></div>
-        <div style="display:flex;justify-content:space-between;"><strong>الإيميل</strong><span>${o.email||'-'}</span></div>
+        <div style="display:flex;justify-content:space-between;"><strong>الإيميل</strong><span>${o.email || '-'}</span></div>
         <div style="display:flex;justify-content:space-between;"><strong>الدفع</strong><span>${o.payment}</span></div>
         <div style="display:flex;justify-content:space-between;"><strong>الحالة</strong>${statusBadge(o.status)}</div>
         ${o.location ? `<div style="display:flex;justify-content:space-between;align-items:center;"><strong>الموقع</strong><a href="${o.location.mapLink}" target="_blank" style="color:#007bff;font-size:0.82rem;display:flex;align-items:center;gap:4px;"><i class="fas fa-map-marker-alt"></i> عرض على الخريطة</a></div>` : ''}
         <hr style="border:none;border-top:1px solid var(--gray-100);">
         ${items}
-        <div style="display:flex;justify-content:space-between;margin-top:8px;"><strong>المجموع</strong><span>${(o.subtotal||0).toLocaleString()} ر.س</span></div>
+        <div style="display:flex;justify-content:space-between;margin-top:8px;"><strong>المجموع</strong><span>${(o.subtotal || 0).toLocaleString()} ر.س</span></div>
         ${o.discount ? `<div style="display:flex;justify-content:space-between;color:var(--success);"><strong>خصم (${o.coupon})</strong><span>- ${(o.discount).toLocaleString()} ر.س</span></div>` : ''}
-        <div style="display:flex;justify-content:space-between;font-size:1.1rem;font-weight:800;"><strong>الإجمالي</strong><span style="color:var(--primary-dark);">${(o.total||0).toLocaleString()} ر.س</span></div>
+        <div style="display:flex;justify-content:space-between;font-size:1.1rem;font-weight:800;"><strong>الإجمالي</strong><span style="color:var(--primary-dark);">${(o.total || 0).toLocaleString()} ر.س</span></div>
       </div>`;
-    document.getElementById('orderModal').classList.add('active');
-  } catch (e) { showToast('خطأ في تحميل الطلب'); }
-}
+        document.getElementById('orderModal').classList.add('active');
+      } catch (e) { showToast('خطأ في تحميل الطلب'); }
+    }
 
-// ─── Bookings ───
-async function loadBookings() {
-  const tbody = document.getElementById('bookingsTableBody');
-  tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;"><i class="fas fa-spinner fa-spin"></i> جاري التحميل...</td></tr>';
-  try {
-    const bookings = await getBookings();
+    // ─── Bookings ───
+    async function loadBookings() {
+      const tbody = document.getElementById('bookingsTableBody');
+      tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;"><i class="fas fa-spinner fa-spin"></i> جاري التحميل...</td></tr>';
+      try {
+        const bookings = await getBookings();
 
-    document.getElementById('bStatPending').textContent   = bookings.filter(b => b.status === 'pending').length;
-    document.getElementById('bStatConfirmed').textContent = bookings.filter(b => b.status === 'confirmed').length;
-    document.getElementById('bStatDone').textContent      = bookings.filter(b => b.status === 'completed').length;
+        document.getElementById('bStatPending').textContent = bookings.filter(b => b.status === 'pending').length;
+        document.getElementById('bStatConfirmed').textContent = bookings.filter(b => b.status === 'confirmed').length;
+        document.getElementById('bStatDone').textContent = bookings.filter(b => b.status === 'completed').length;
 
-    tbody.innerHTML = bookings.length
-      ? bookings.map(b => `
+        tbody.innerHTML = bookings.length
+          ? bookings.map(b => `
           <tr>
             <td style="font-weight:600;">${b.customerName}</td>
             <td dir="ltr">${b.phone}</td>
@@ -746,10 +1308,10 @@ async function loadBookings() {
             <td>${b.date || '-'} ${b.time ? '@ ' + b.time : ''}${b.location ? ` <a href="${b.location.mapLink}" target="_blank" title="عرض الموقع" style="color:#007bff;margin-right:6px;"><i class="fas fa-map-marker-alt"></i></a>` : ''}</td>
             <td>
               <select class="form-control" style="padding:4px 8px;font-size:0.8rem;width:auto;" onchange="changeBookingStatus('${b.firestoreId}', this.value)">
-                <option value="pending"   ${b.status==='pending'   ? 'selected':''}>في الانتظار</option>
-                <option value="confirmed" ${b.status==='confirmed' ? 'selected':''}>تم التأكيد</option>
-                <option value="completed" ${b.status==='completed' ? 'selected':''}>مكتمل</option>
-                <option value="cancelled" ${b.status==='cancelled' ? 'selected':''}>ملغي</option>
+                <option value="pending"   ${b.status === 'pending' ? 'selected' : ''}>في الانتظار</option>
+                <option value="confirmed" ${b.status === 'confirmed' ? 'selected' : ''}>تم التأكيد</option>
+                <option value="completed" ${b.status === 'completed' ? 'selected' : ''}>مكتمل</option>
+                <option value="cancelled" ${b.status === 'cancelled' ? 'selected' : ''}>ملغي</option>
               </select>
             </td>
             <td>
@@ -757,43 +1319,43 @@ async function loadBookings() {
                 <button class="btn btn-sm" onclick="viewBooking('${b.firestoreId}')" style="padding:4px 10px;font-size:0.75rem;background:var(--primary);color:#fff;border-radius:6px;" title="عرض التفاصيل">
                   <i class="fas fa-eye"></i>
                 </button>
-                <a href="https://wa.me/${b.phone?.replace(/^0/,'966')}" target="_blank" class="btn btn-sm" style="padding:4px 10px;font-size:0.75rem;background:#25d366;color:#fff;border-radius:6px;" title="واتساب">
+                <a href="https://wa.me/${b.phone?.replace(/^0/, '966')}" target="_blank" class="btn btn-sm" style="padding:4px 10px;font-size:0.75rem;background:#25d366;color:#fff;border-radius:6px;" title="واتساب">
                   <i class="fab fa-whatsapp"></i>
                 </a>
               </div>
             </td>
           </tr>`).join('')
-      : '<tr><td colspan="7" style="text-align:center;color:var(--gray-400);">لا توجد حجوزات بعد</td></tr>';
-  } catch (e) { tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;color:var(--danger);">خطأ في التحميل</td></tr>'; }
-}
+          : '<tr><td colspan="7" style="text-align:center;color:var(--gray-400);">لا توجد حجوزات بعد</td></tr>';
+      } catch (e) { tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;color:var(--danger);">خطأ في التحميل</td></tr>'; }
+    }
 
-async function changeBookingStatus(firestoreId, status) {
-  try {
-    await updateBookingStatus(firestoreId, status);
-    showToast('تم تحديث حالة الحجز ✓');
-  } catch (e) { showToast('خطأ في التحديث'); }
-}
+    async function changeBookingStatus(firestoreId, status) {
+      try {
+        await updateBookingStatus(firestoreId, status);
+        showToast('تم تحديث حالة الحجز ✓');
+      } catch (e) { showToast('خطأ في التحديث'); }
+    }
 
-async function viewBooking(firestoreId) {
-  try {
-    const doc = await db.collection('bookings').doc(firestoreId).get();
-    if (!doc.exists) return;
-    const b = doc.data();
-    
-    // Build services list if available
-    let servicesHtml = '';
-    if (b.services && b.services.length > 0) {
-      servicesHtml = b.services.map(s => `
+    async function viewBooking(firestoreId) {
+      try {
+        const doc = await db.collection('bookings').doc(firestoreId).get();
+        if (!doc.exists) return;
+        const b = doc.data();
+
+        // Build services list if available
+        let servicesHtml = '';
+        if (b.services && b.services.length > 0) {
+          servicesHtml = b.services.map(s => `
         <div style="display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--gray-100);">
           <span><i class="fas fa-tools" style="color:var(--gray-400);margin-left:4px;"></i> ${s.name}</span>
           <span style="font-weight:700;">${s.price ? s.price + ' ر.س' : 'غير محدد'}</span>
         </div>
       `).join('');
-    } else {
-      servicesHtml = '<div style="color:var(--gray-500);font-size:0.85rem;">لا توجد خدمات محددة مسبقاً في هذا الحجز.</div>';
-    }
+        } else {
+          servicesHtml = '<div style="color:var(--gray-500);font-size:0.85rem;">لا توجد خدمات محددة مسبقاً في هذا الحجز.</div>';
+        }
 
-    document.getElementById('bookingModalBody').innerHTML = `
+        document.getElementById('bookingModalBody').innerHTML = `
       <div style="display:grid;gap:8px;font-size:0.9rem;">
         <div style="display:flex;justify-content:space-between;"><strong>العميل</strong><span>${b.customerName}</span></div>
         <div style="display:flex;justify-content:space-between;"><strong>الهاتف</strong><span dir="ltr">${b.phone}</span></div>
@@ -815,18 +1377,18 @@ async function viewBooking(firestoreId) {
         </div>
       </div>
     `;
-    document.getElementById('bookingModal').classList.add('active');
-  } catch (e) { showToast('خطأ في تحميل تفاصيل الحجز'); }
-}
+        document.getElementById('bookingModal').classList.add('active');
+      } catch (e) { showToast('خطأ في تحميل تفاصيل الحجز'); }
+    }
 
-// ─── Coupons ───
-async function loadCoupons() {
-  const tbody = document.getElementById('couponsTableBody');
-  tbody.innerHTML = '<tr><td colspan="4" style="text-align:center;"><i class="fas fa-spinner fa-spin"></i> جاري التحميل...</td></tr>';
-  try {
-    const coupons = await getCoupons();
-    tbody.innerHTML = coupons.length
-      ? coupons.map(c => `
+    // ─── Coupons ───
+    async function loadCoupons() {
+      const tbody = document.getElementById('couponsTableBody');
+      tbody.innerHTML = '<tr><td colspan="4" style="text-align:center;"><i class="fas fa-spinner fa-spin"></i> جاري التحميل...</td></tr>';
+      try {
+        const coupons = await getCoupons();
+        tbody.innerHTML = coupons.length
+          ? coupons.map(c => `
           <tr>
             <td><code style="background:var(--gray-100);padding:4px 10px;border-radius:6px;font-size:0.9rem;font-weight:700;letter-spacing:2px;">${c.code}</code></td>
             <td style="font-weight:700;color:var(--success);">${c.discount}%</td>
@@ -840,79 +1402,543 @@ async function loadCoupons() {
               <button class="btn btn-sm" style="padding:4px 10px;font-size:0.75rem;background:var(--danger);color:#fff;border-radius:6px;" onclick="removeCoupon('${c.firestoreId}','${c.code}')"><i class="fas fa-trash"></i></button>
             </td>
           </tr>`).join('')
-      : '<tr><td colspan="4" style="text-align:center;color:var(--gray-400);">لا توجد كوبونات بعد</td></tr>';
-  } catch (e) { tbody.innerHTML = '<tr><td colspan="4" style="text-align:center;color:var(--danger);">خطأ في التحميل</td></tr>'; }
-}
+          : '<tr><td colspan="4" style="text-align:center;color:var(--gray-400);">لا توجد كوبونات بعد</td></tr>';
+      } catch (e) { tbody.innerHTML = '<tr><td colspan="4" style="text-align:center;color:var(--danger);">خطأ في التحميل</td></tr>'; }
+    }
 
-async function saveCoupon() {
-  const code     = document.getElementById('couponCode').value.trim().toUpperCase();
-  const discount = parseInt(document.getElementById('couponDiscount').value);
-  if (!code || !discount || discount < 1 || discount > 100) { showToast('يرجى إدخال كود ونسبة خصم صحيحة ⚠️'); return; }
-  try {
-    await addCoupon({ code, discount });
-    showToast('تمت إضافة الكوبون بنجاح 🎉');
-    document.getElementById('couponCode').value     = '';
-    document.getElementById('couponDiscount').value = '';
-    document.getElementById('couponModal').classList.remove('active');
-    loadCoupons();
-  } catch (e) { showToast('خطأ في الحفظ'); }
-}
+    async function saveCoupon() {
+      const code = document.getElementById('couponCode').value.trim().toUpperCase();
+      const discount = parseInt(document.getElementById('couponDiscount').value);
+      if (!code || !discount || discount < 1 || discount > 100) { showToast('يرجى إدخال كود ونسبة خصم صحيحة ⚠️'); return; }
+      try {
+        await addCoupon({ code, discount });
+        showToast('تمت إضافة الكوبون بنجاح 🎉');
+        document.getElementById('couponCode').value = '';
+        document.getElementById('couponDiscount').value = '';
+        document.getElementById('couponModal').classList.remove('active');
+        loadCoupons();
+      } catch (e) { showToast('خطأ في الحفظ'); }
+    }
 
-async function removeCoupon(firestoreId, code) {
-  if (!confirm(`حذف كوبون "${code}"؟`)) return;
-  try {
-    await deleteCoupon(firestoreId);
-    showToast('تم حذف الكوبون ✓');
-    loadCoupons();
-  } catch (e) { showToast('خطأ في الحذف'); }
-}
+    async function removeCoupon(firestoreId, code) {
+      if (!confirm(`حذف كوبون "${code}"؟`)) return;
+      try {
+        await deleteCoupon(firestoreId);
+        showToast('تم حذف الكوبون ✓');
+        loadCoupons();
+      } catch (e) { showToast('خطأ في الحذف'); }
+    }
 
-// ─── Customers ───
-async function loadCustomers() {
-  const tbody = document.getElementById('customersTableBody');
-  tbody.innerHTML = '<tr><td colspan="4" style="text-align:center;"><i class="fas fa-spinner fa-spin"></i> جاري التحميل...</td></tr>';
-  try {
-    const users = await getAllUsers();
-    tbody.innerHTML = users.length
-      ? users.map(u => `
+    // ─── Customers ───
+    async function loadCustomers() {
+      const tbody = document.getElementById('customersTableBody');
+      tbody.innerHTML = '<tr><td colspan="4" style="text-align:center;"><i class="fas fa-spinner fa-spin"></i> جاري التحميل...</td></tr>';
+      try {
+        const users = await getAllUsers();
+        tbody.innerHTML = users.length
+          ? users.map(u => `
           <tr>
             <td style="font-weight:600;">${u.name || '-'}</td>
             <td>${u.email}</td>
             <td dir="ltr">${u.phone || '-'}</td>
             <td>${fmtDate(u.createdAt)}</td>
           </tr>`).join('')
-      : '<tr><td colspan="4" style="text-align:center;color:var(--gray-400);">لا يوجد عملاء بعد</td></tr>';
-  } catch (e) { tbody.innerHTML = '<tr><td colspan="4" style="text-align:center;color:var(--danger);">خطأ في التحميل</td></tr>'; }
-}
+          : '<tr><td colspan="4" style="text-align:center;color:var(--gray-400);">لا يوجد عملاء بعد</td></tr>';
+      } catch (e) { tbody.innerHTML = '<tr><td colspan="4" style="text-align:center;color:var(--danger);">خطأ في التحميل</td></tr>'; }
+    }
 
-// ─── Analytics Charts ───
-function initAnalyticsCharts() {
-  const rc = document.getElementById('revenueChart')?.getContext('2d');
-  if (rc && !rc._chartCreated) {
-    rc._chartCreated = true;
-    new Chart(rc, {
-      type: 'bar',
-      data: { labels: ['سبت','أحد','اثنين','ثلاثاء','أربعاء','خميس','جمعة'],
-              datasets: [{ label: 'الإيرادات', data: [12000,18000,15000,22000,28000,35000,19000], backgroundColor: 'rgba(0,123,255,0.7)', borderRadius: 8 }] },
-      options: { responsive: true, plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true } } }
-    });
-  }
-  const sc = document.getElementById('servicesChart')?.getContext('2d');
-  if (sc && !sc._chartCreated) {
-    sc._chartCreated = true;
-    new Chart(sc, {
-      type: 'pie',
-      data: { labels: ['تركيب','صيانة','غسيل','فريون','كشف أعطال'],
-              datasets: [{ data: [30,25,20,15,10], backgroundColor: ['#007BFF','#00D4FF','#10b981','#f59e0b','#8b5cf6'] }] },
-      options: { responsive: true, plugins: { legend: { position: 'bottom', labels: { font: { family: 'Cairo' } } } } }
-    });
-  }
-}
+    // ─── Analytics Charts ───
+    function initAnalyticsCharts() {
+      const rc = document.getElementById('revenueChart')?.getContext('2d');
+      if (rc && !rc._chartCreated) {
+        rc._chartCreated = true;
+        new Chart(rc, {
+          type: 'bar',
+          data: {
+            labels: ['سبت', 'أحد', 'اثنين', 'ثلاثاء', 'أربعاء', 'خميس', 'جمعة'],
+            datasets: [{ label: 'الإيرادات', data: [12000, 18000, 15000, 22000, 28000, 35000, 19000], backgroundColor: 'rgba(0,123,255,0.7)', borderRadius: 8 }]
+          },
+          options: { responsive: true, plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true } } }
+        });
+      }
+      const sc = document.getElementById('servicesChart')?.getContext('2d');
+      if (sc && !sc._chartCreated) {
+        sc._chartCreated = true;
+        new Chart(sc, {
+          type: 'pie',
+          data: {
+            labels: ['تركيب', 'صيانة', 'غسيل', 'فريون', 'كشف أعطال'],
+            datasets: [{ data: [30, 25, 20, 15, 10], backgroundColor: ['#007BFF', '#00D4FF', '#10b981', '#f59e0b', '#8b5cf6'] }]
+          },
+          options: { responsive: true, plugins: { legend: { position: 'bottom', labels: { font: { family: 'Cairo' } } } } }
+        });
+      }
+    }
 
-// Responsive sidebar
-const sidebarToggleBtn = document.querySelector('.sidebar-toggle-btn');
-if (window.innerWidth <= 768 && sidebarToggleBtn) sidebarToggleBtn.style.display = 'block';
-window.addEventListener('resize', () => { if (sidebarToggleBtn) sidebarToggleBtn.style.display = window.innerWidth <= 768 ? 'block' : 'none'; });
-</script>
+    // Responsive sidebar
+    const sidebarToggleBtn = document.querySelector('.sidebar-toggle-btn');
+    if (window.innerWidth <= 768 && sidebarToggleBtn) sidebarToggleBtn.style.display = 'block';
+    window.addEventListener('resize', () => { if (sidebarToggleBtn) sidebarToggleBtn.style.display = window.innerWidth <= 768 ? 'block' : 'none'; });
+  </script>
+
+  <!-- ═══ Portfolio Admin JS ═══ -->
+  <script>
+    /* ─── Cloudinary Config ─── */
+    const CLOUDINARY_CLOUD_NAME = 'dtomfglbe';
+    const CLOUDINARY_UPLOAD_PRESET = 'ajwaa_upload';
+
+    let _pfItems = [];
+    let _pfBadgeColor = '#007BFF';
+    let _pfUploadedUrl = '';
+    let _pfThumbnailUrl = '';
+
+    /* ── Load ── */
+    async function loadAdminPortfolio() {
+      const grid = document.getElementById('portfolioAdminGrid');
+      try {
+        _pfItems = await getPortfolioItems();
+        const photos = _pfItems.filter(i => i.type === 'photo').length;
+        const videos = _pfItems.filter(i => i.type === 'video').length;
+        document.getElementById('pStatPhotos').textContent = photos;
+        document.getElementById('pStatVideos').textContent = videos;
+        document.getElementById('pStatTotal').textContent = _pfItems.length;
+        renderAdminPortfolio(_pfItems);
+      } catch (e) {
+        grid.innerHTML = `<div style="grid-column:1/-1;text-align:center;color:var(--danger);padding:40px;">خطأ في تحميل البيانات</div>`;
+      }
+    }
+
+    function renderAdminPortfolio(items) {
+      const grid = document.getElementById('portfolioAdminGrid');
+      if (!items.length) {
+        grid.innerHTML = `<div style="grid-column:1/-1;text-align:center;color:var(--gray-400);padding:60px;">
+      <i class="fas fa-images" style="font-size:3rem;opacity:0.3;display:block;margin-bottom:12px;"></i>
+      لا توجد أعمال بعد — أضف أول عمل!
+    </div>`;
+        return;
+      }
+      grid.innerHTML = items.map(item => `
+    <div class="portfolio-admin-card">
+      <div class="portfolio-admin-thumb">
+        ${item.type === 'photo' && item.mediaUrl
+          ? `<img src="${item.mediaUrl}" alt="${item.title}" loading="lazy">`
+          : item.type === 'video' && item.thumbnailUrl
+            ? `<img src="${item.thumbnailUrl}" alt="${item.title}" loading="lazy">`
+            : item.type === 'video' && item.mediaUrl
+              ? `<video src="${item.mediaUrl}" muted></video>`
+              : `<div class="no-media"><i class="fas fa-${item.type === 'video' ? 'film' : 'image'}"></i></div>`
+        }
+        ${item.badge ? `<span class="pa-badge" style="background:${item.badgeColor || '#007BFF'}">${item.badge}</span>` : ''}
+        <div class="pa-type-icon"><i class="fas fa-${item.type === 'video' ? 'play' : 'camera'}"></i></div>
+      </div>
+      <div class="portfolio-admin-body">
+        <h4 title="${item.title}">${item.title}</h4>
+        ${item.location ? `<p><i class="fas fa-map-marker-alt" style="color:var(--primary);margin-left:4px;"></i>${item.location}</p>` : ''}
+      </div>
+      <div class="portfolio-admin-actions">
+        <button class="btn btn-outline btn-sm" style="flex:1;" onclick="editPortfolioItem('${item.firestoreId}')">
+          <i class="fas fa-edit"></i> تعديل
+        </button>
+        <button class="btn btn-sm" style="flex:1;background:var(--danger);color:#fff;" onclick="deletePortfolioItemAdmin('${item.firestoreId}','${item.title}')">
+          <i class="fas fa-trash"></i>
+        </button>
+      </div>
+    </div>
+  `).join('');
+    }
+
+    function filterAdminPortfolio(type, btn) {
+      document.querySelectorAll('.pf-filter').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      const filtered = type === 'all' ? _pfItems : _pfItems.filter(i => i.type === type);
+      renderAdminPortfolio(filtered);
+    }
+
+    /* ── Modal ── */
+    function setPortfolioType(type) {
+      document.getElementById('pfType').value = type;
+      document.getElementById('pfFile').accept = type === 'photo' ? 'image/*' : 'video/*';
+      document.getElementById('typePhotoBtn').className = type === 'photo' ? 'btn btn-primary' : 'btn btn-outline';
+      document.getElementById('typeVideoBtn').className = type === 'video' ? 'btn btn-primary' : 'btn btn-outline';
+      _pfUploadedUrl = '';
+      _pfThumbnailUrl = '';
+      document.getElementById('pfUploadPreview').innerHTML = `
+    <i class="fas fa-cloud-upload-alt" style="font-size:2.5rem;color:var(--gray-300);margin-bottom:12px;display:block;"></i>
+    <p style="color:var(--gray-500);font-size:0.9rem;">اسحب ${type === 'photo' ? 'الصورة' : 'الفيديو'} هنا أو <strong style="color:var(--primary);">اضغط للاختيار</strong></p>
+    <p style="color:var(--gray-400);font-size:0.78rem;margin-top:6px;">${type === 'photo' ? 'JPG, PNG, WebP' : 'MP4, MOV, WebM'} — حجم أقصى 50MB</p>
+  `;
+    }
+
+    function selectBadgeColor(color, el) {
+      _pfBadgeColor = color;
+      document.getElementById('pfBadgeColor').value = color;
+      document.querySelectorAll('.color-swatch').forEach(s => s.classList.remove('selected'));
+      el.classList.add('selected');
+    }
+
+    document.getElementById('pfBadgeColor').addEventListener('input', function () {
+      _pfBadgeColor = this.value;
+    });
+
+    function previewPortfolioFile(input) {
+      const file = input.files[0];
+      if (!file) return;
+      const preview = document.getElementById('pfUploadPreview');
+      const type = document.getElementById('pfType').value;
+
+      if (type === 'photo') {
+        const reader = new FileReader();
+        reader.onload = e => {
+          preview.innerHTML = `
+        <img src="${e.target.result}" style="max-height:160px;border-radius:8px;object-fit:contain;" alt="preview">
+        <p style="margin-top:8px;font-size:0.8rem;color:var(--gray-500);">${file.name}</p>
+      `;
+        };
+        reader.readAsDataURL(file);
+      } else {
+        preview.innerHTML = `
+      <i class="fas fa-film" style="font-size:2.5rem;color:var(--primary);margin-bottom:8px;display:block;"></i>
+      <p style="font-size:0.85rem;color:var(--gray-600);">${file.name}</p>
+      <p style="font-size:0.78rem;color:var(--gray-400);">${(file.size / 1024 / 1024).toFixed(1)} MB</p>
+    `;
+      }
+    }
+
+    function handlePortfolioDrop(e) {
+      e.preventDefault();
+      e.currentTarget.style.borderColor = 'var(--gray-200)';
+      const file = e.dataTransfer.files[0];
+      if (!file) return;
+      const inp = document.getElementById('pfFile');
+      const dt = new DataTransfer();
+      dt.items.add(file);
+      inp.files = dt.files;
+      previewPortfolioFile(inp);
+    }
+
+    async function uploadToCloudinary(file) {
+      if (!CLOUDINARY_CLOUD_NAME || CLOUDINARY_CLOUD_NAME === 'YOUR_CLOUD_NAME') {
+        throw new Error('يرجى إعداد Cloudinary أولاً');
+      }
+
+      const isVideo = file.type.startsWith('video/');
+      const endpoint = `https://api.cloudinary.com/v1_1/${CLOUDINARY_CLOUD_NAME}/${isVideo ? 'video' : 'image'}/upload`;
+
+      const formData = new FormData();
+      formData.append('file', file);
+      formData.append('upload_preset', CLOUDINARY_UPLOAD_PRESET);
+      formData.append('folder', isVideo ? 'ajwaa/videos' : 'ajwaa/photos');
+
+      const progressBar = document.getElementById('pfProgressBar');
+      const progressPct = document.getElementById('pfProgressPct');
+      const progressLabel = document.getElementById('pfProgressLabel');
+      document.getElementById('pfProgress').style.display = 'block';
+
+      return new Promise((resolve, reject) => {
+        const xhr = new XMLHttpRequest();
+        xhr.open('POST', endpoint);
+        xhr.upload.onprogress = e => {
+          if (e.lengthComputable) {
+            const pct = Math.round(e.loaded / e.total * 100);
+            progressBar.style.width = pct + '%';
+            progressPct.textContent = pct + '%';
+            progressLabel.textContent = pct < 100 ? 'جاري الرفع...' : 'جاري المعالجة...';
+          }
+        };
+        xhr.onload = () => {
+          if (xhr.status === 200) {
+            const data = JSON.parse(xhr.responseText);
+            // للفيديو: نجيب thumbnail تلقائياً من Cloudinary
+            const thumbUrl = isVideo
+              ? data.secure_url.replace('/video/upload/', '/video/upload/so_0,w_600/').replace(/\.\w+$/, '.jpg')
+              : '';
+            resolve({ url: data.secure_url, thumbnail: thumbUrl });
+          } else {
+            reject(new Error('فشل الرفع: ' + xhr.status));
+          }
+        };
+        xhr.onerror = () => reject(new Error('خطأ في الاتصال'));
+        xhr.send(formData);
+      });
+    }
+
+    async function savePortfolioItem() {
+      const title = document.getElementById('pfTitle').value.trim();
+      if (!title) { showToast('يرجى إدخال عنوان العمل'); return; }
+
+      const saveBtn = document.getElementById('pfSaveBtn');
+      saveBtn.disabled = true;
+      saveBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> جاري الحفظ...';
+
+      try {
+        const file = document.getElementById('pfFile').files[0];
+        const editId = document.getElementById('pfEditId').value;
+
+        if (file) {
+          const result = await uploadToCloudinary(file);
+          _pfUploadedUrl = result.url;
+          _pfThumbnailUrl = result.thumbnail || '';
+        }
+
+        const data = {
+          type: document.getElementById('pfType').value,
+          title,
+          description: document.getElementById('pfDesc').value.trim(),
+          location: document.getElementById('pfLocation').value.trim(),
+          badge: document.getElementById('pfBadge').value.trim(),
+          badgeColor: document.getElementById('pfBadgeColor').value,
+          mediaUrl: _pfUploadedUrl || '',
+          thumbnailUrl: _pfThumbnailUrl || ''
+        };
+
+        if (editId) {
+          await updatePortfolioItem(editId, data);
+          showToast('تم تحديث العمل بنجاح ✅');
+        } else {
+          await createPortfolioItem(data);
+          showToast('تم إضافة العمل بنجاح ✅');
+        }
+
+        closePortfolioModal();
+        loadAdminPortfolio();
+      } catch (e) {
+        showToast('خطأ: ' + e.message);
+      } finally {
+        saveBtn.disabled = false;
+        saveBtn.innerHTML = '<i class="fas fa-save"></i> حفظ';
+      }
+    }
+
+    function editPortfolioItem(id) {
+      const item = _pfItems.find(i => i.firestoreId === id);
+      if (!item) return;
+
+      document.getElementById('pfEditId').value = id;
+      document.getElementById('portfolioModalTitle').textContent = 'تعديل العمل';
+      setPortfolioType(item.type);
+      document.getElementById('pfTitle').value = item.title || '';
+      document.getElementById('pfDesc').value = item.description || '';
+      document.getElementById('pfLocation').value = item.location || '';
+      document.getElementById('pfBadge').value = item.badge || '';
+      document.getElementById('pfBadgeColor').value = item.badgeColor || '#007BFF';
+      _pfBadgeColor = item.badgeColor || '#007BFF';
+      _pfUploadedUrl = item.mediaUrl || '';
+      _pfThumbnailUrl = item.thumbnailUrl || '';
+
+      if (item.mediaUrl) {
+        const preview = document.getElementById('pfUploadPreview');
+        if (item.type === 'photo') {
+          preview.innerHTML = `<img src="${item.mediaUrl}" style="max-height:160px;border-radius:8px;object-fit:contain;" alt="">
+        <p style="margin-top:8px;font-size:0.78rem;color:var(--gray-400);">الصورة الحالية</p>`;
+        } else {
+          preview.innerHTML = `<i class="fas fa-film" style="font-size:2.5rem;color:var(--primary);display:block;margin-bottom:8px;"></i>
+        <p style="font-size:0.82rem;color:var(--gray-500);">فيديو محفوظ — اختر ملفاً جديداً للتغيير</p>`;
+        }
+      }
+
+      document.getElementById('portfolioModal').classList.add('active');
+    }
+
+    async function deletePortfolioItemAdmin(id, title) {
+      if (!confirm(`هل تريد حذف "${title}"؟`)) return;
+      try {
+        await deletePortfolioItem(id);
+        showToast('تم الحذف ✅');
+        loadAdminPortfolio();
+      } catch (e) {
+        showToast('خطأ في الحذف: ' + e.message);
+      }
+    }
+
+    function closePortfolioModal() {
+      document.getElementById('portfolioModal').classList.remove('active');
+      document.getElementById('pfEditId').value = '';
+      document.getElementById('portfolioModalTitle').textContent = 'إضافة عمل جديد';
+      document.getElementById('pfTitle').value = '';
+      document.getElementById('pfDesc').value = '';
+      document.getElementById('pfLocation').value = '';
+      document.getElementById('pfBadge').value = '';
+      document.getElementById('pfBadgeColor').value = '#007BFF';
+      document.getElementById('pfFile').value = '';
+      document.getElementById('pfProgress').style.display = 'none';
+      document.getElementById('pfProgressBar').style.width = '0%';
+      _pfUploadedUrl = ''; _pfThumbnailUrl = '';
+      setPortfolioType('photo');
+    }
+  </script>
+
+  <!-- ═══ Before & After Admin JS ═══ -->
+  <script>
+    let _baItems = [];
+    let _baBeforeFile = null;
+    let _baAfterFile = null;
+    let _baBeforeUrl = '';
+    let _baAfterUrl = '';
+
+    async function loadBeforeAfterAdmin() {
+      const grid = document.getElementById('baAdminGrid');
+      const addBtn = document.getElementById('baAddBtn');
+      try {
+        _baItems = await getBeforeAfterItems();
+        
+        if (addBtn) {
+          addBtn.style.display = _baItems.length >= 1 ? 'none' : 'inline-flex';
+        }
+
+        if (!_baItems.length) {
+          grid.innerHTML = `<div style="grid-column:1/-1;text-align:center;color:var(--gray-400);padding:60px;">
+        <i class="fas fa-columns" style="font-size:3rem;opacity:0.3;display:block;margin-bottom:12px;"></i>
+        لا توجد إدخالات بعد — أضف أول صورة قبل وبعد!
+      </div>`;
+          return;
+        }
+        grid.innerHTML = _baItems.map(item => `
+      <div style="background:var(--white);border-radius:var(--radius-lg);overflow:hidden;box-shadow:var(--shadow-lg);border:1px solid var(--gray-100); width:100%; max-width:600px;">
+        <div style="display:grid;grid-template-columns:1fr 1fr;height:300px;">
+          <div style="position:relative;overflow:hidden;">
+            ${item.beforeUrl ? `<img src="${item.beforeUrl}" style="width:100%;height:100%;object-fit:cover;" alt="قبل">` : `<div style="width:100%;height:100%;background:var(--gray-100);display:flex;align-items:center;justify-content:center;color:var(--gray-300);font-size:2rem;"><i class="fas fa-image"></i></div>`}
+            <span style="position:absolute;bottom:6px;right:6px;background:rgba(239,68,68,0.9);color:#fff;font-size:0.7rem;font-weight:700;padding:2px 8px;border-radius:20px;">قبل</span>
+          </div>
+          <div style="position:relative;overflow:hidden;">
+            ${item.afterUrl ? `<img src="${item.afterUrl}" style="width:100%;height:100%;object-fit:cover;" alt="بعد">` : `<div style="width:100%;height:100%;background:var(--gray-100);display:flex;align-items:center;justify-content:center;color:var(--gray-300);font-size:2rem;"><i class="fas fa-image"></i></div>`}
+            <span style="position:absolute;bottom:6px;left:6px;background:rgba(16,185,129,0.9);color:#fff;font-size:0.7rem;font-weight:700;padding:2px 8px;border-radius:20px;">بعد</span>
+          </div>
+        </div>
+        <div style="padding:12px 14px;">
+          <h4 style="font-size:0.9rem;font-weight:700;color:var(--gray-900);margin-bottom:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${item.title || 'بدون عنوان'}</h4>
+          ${item.subtitle ? `<p style="font-size:0.78rem;color:var(--gray-500);">${item.subtitle}</p>` : ''}
+        </div>
+        <div style="display:flex;gap:8px;padding:0 14px 14px;">
+          <button class="btn btn-outline btn-sm" style="flex:1;" onclick="editBaItem('${item.firestoreId}')"><i class="fas fa-edit"></i> تعديل</button>
+          <button class="btn btn-sm" style="flex:1;background:var(--danger);color:#fff;" onclick="deleteBaItem('${item.firestoreId}','${item.title || ''}')"><i class="fas fa-trash"></i></button>
+        </div>
+      </div>
+    `).join('');
+      } catch (e) {
+        grid.innerHTML = `<div style="grid-column:1/-1;text-align:center;color:var(--danger);padding:40px;">خطأ في التحميل</div>`;
+      }
+    }
+
+    function previewBaFile(input, previewId, varName) {
+      const file = input.files[0];
+      if (!file) return;
+      if (varName === '_baBeforeFile') _baBeforeFile = file;
+      else _baAfterFile = file;
+      const reader = new FileReader();
+      reader.onload = e => {
+        document.getElementById(previewId).innerHTML =
+          `<img src="${e.target.result}" style="width:100%;height:100%;object-fit:cover;" alt="preview">`;
+      };
+      reader.readAsDataURL(file);
+    }
+
+    async function uploadBaImage(file, label) {
+      const bar = document.getElementById('baProgressBar');
+      const pct = document.getElementById('baProgressPct');
+      const lbl = document.getElementById('baProgressLabel');
+      document.getElementById('baProgress').style.display = 'block';
+      lbl.textContent = `جاري رفع صورة ${label}...`;
+
+      const formData = new FormData();
+      formData.append('file', file);
+      formData.append('upload_preset', CLOUDINARY_UPLOAD_PRESET);
+      formData.append('folder', 'ajwaa/before_after');
+
+      const endpoint = `https://api.cloudinary.com/v1_1/${CLOUDINARY_CLOUD_NAME}/image/upload`;
+
+      return new Promise((resolve, reject) => {
+        const xhr = new XMLHttpRequest();
+        xhr.open('POST', endpoint);
+        xhr.upload.onprogress = e => {
+          if (e.lengthComputable) {
+            const p = Math.round(e.loaded / e.total * 100);
+            bar.style.width = p + '%';
+            pct.textContent = p + '%';
+          }
+        };
+        xhr.onload = () => xhr.status === 200
+          ? resolve(JSON.parse(xhr.responseText).secure_url)
+          : reject(new Error('فشل الرفع'));
+        xhr.onerror = () => reject(new Error('خطأ في الاتصال'));
+        xhr.send(formData);
+      });
+    }
+
+    async function saveBaItem() {
+      const title = document.getElementById('baTitle').value.trim();
+      if (!title) { showToast('يرجى إدخال العنوان'); return; }
+
+      const btn = document.getElementById('baSaveBtn');
+      btn.disabled = true;
+      btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> جاري الحفظ...';
+
+      try {
+        if (_baBeforeFile) _baBeforeUrl = await uploadBaImage(_baBeforeFile, 'قبل');
+        if (_baAfterFile) _baAfterUrl = await uploadBaImage(_baAfterFile, 'بعد');
+
+        const data = {
+          title,
+          subtitle: document.getElementById('baSubtitle').value.trim(),
+          beforeUrl: _baBeforeUrl || '',
+          afterUrl: _baAfterUrl || ''
+        };
+
+        const editId = document.getElementById('baEditId').value;
+        if (editId) {
+          await updateBeforeAfterItem(editId, data);
+          showToast('تم التحديث ✅');
+        } else {
+          await createBeforeAfterItem(data);
+          showToast('تمت الإضافة ✅');
+        }
+        closeBaModal();
+        loadBeforeAfterAdmin();
+      } catch (e) {
+        showToast('خطأ: ' + e.message);
+      } finally {
+        btn.disabled = false;
+        btn.innerHTML = '<i class="fas fa-save"></i> حفظ';
+      }
+    }
+
+    function editBaItem(id) {
+      const item = _baItems.find(i => i.firestoreId === id);
+      if (!item) return;
+      document.getElementById('baEditId').value = id;
+      document.getElementById('baModalTitle').textContent = 'تعديل قبل وبعد';
+      document.getElementById('baTitle').value = item.title || '';
+      document.getElementById('baSubtitle').value = item.subtitle || '';
+      _baBeforeUrl = item.beforeUrl || '';
+      _baAfterUrl = item.afterUrl || '';
+      _baBeforeFile = null; _baAfterFile = null;
+      if (item.beforeUrl) document.getElementById('baBeforePreview').innerHTML = `<img src="${item.beforeUrl}" style="width:100%;height:100%;object-fit:cover;">`;
+      if (item.afterUrl) document.getElementById('baAfterPreview').innerHTML = `<img src="${item.afterUrl}"  style="width:100%;height:100%;object-fit:cover;">`;
+      document.getElementById('baModal').classList.add('active');
+    }
+
+    async function deleteBaItem(id, title) {
+      if (!confirm(`حذف "${title}"؟`)) return;
+      try {
+        await deleteBeforeAfterItem(id);
+        showToast('تم الحذف ✅');
+        loadBeforeAfterAdmin();
+      } catch (e) { showToast('خطأ: ' + e.message); }
+    }
+
+    function closeBaModal() {
+      document.getElementById('baModal').classList.remove('active');
+      document.getElementById('baEditId').value = '';
+      document.getElementById('baTitle').value = '';
+      document.getElementById('baSubtitle').value = '';
+      document.getElementById('baProgress').style.display = 'none';
+      document.getElementById('baProgressBar').style.width = '0%';
+      document.getElementById('baBeforeFile').value = '';
+      document.getElementById('baAfterFile').value = '';
+      document.getElementById('baBeforePreview').innerHTML = `<div style="text-align:center;color:var(--gray-400);"><i class="fas fa-image" style="font-size:2rem;display:block;margin-bottom:8px;"></i><span style="font-size:0.8rem;">اضغط لاختيار صورة "قبل"</span></div>`;
+      document.getElementById('baAfterPreview').innerHTML = `<div style="text-align:center;color:var(--gray-400);"><i class="fas fa-image" style="font-size:2rem;display:block;margin-bottom:8px;"></i><span style="font-size:0.8rem;">اضغط لاختيار صورة "بعد"</span></div>`;
+      _baBeforeUrl = ''; _baAfterUrl = ''; _baBeforeFile = null; _baAfterFile = null;
+    }
+  </script>
 </body>
+
 </html>

@@ -925,57 +925,39 @@ function initBookingSystemUpgrades() {
     uploadInput.addEventListener('change', previewACImage);
   }
 
-  // Inject Map in step 2 of booking
-  const step2Card = document.getElementById('step2');
-  if (step2Card && !document.getElementById('riyadhMapBlock')) {
-    const mapBlock = document.createElement('div');
-    mapBlock.id = 'riyadhMapBlock';
-    mapBlock.className = 'riyadh-map-simulation';
-    mapBlock.innerHTML = `
-      <div class="map-header">
-        <h4><i class="fas fa-map-marked-alt"></i> تحديد موقع العميل بالرياض (تغطية فورية)</h4>
-        <span class="selected-region" id="selectedRegionLabel">منطقة التغطية: الوسطى</span>
-      </div>
-      <div class="map-vector-graphic">
-        <div class="map-region-zone north" onclick="selectRiyadhMapRegion('شمال الرياض', this)">
-          <i class="fas fa-map-pin"></i>
-          <span class="map-region-name">شمال الرياض</span>
-          <span class="map-region-meta">فني متاح</span>
-        </div>
-        <div class="map-region-zone south" onclick="selectRiyadhMapRegion('جنوب الرياض', this)">
-          <i class="fas fa-map-pin"></i>
-          <span class="map-region-name">جنوب الرياض</span>
-          <span class="map-region-meta">فني متاح</span>
-        </div>
-        <div class="map-region-zone center active" onclick="selectRiyadhMapRegion('وسط الرياض', this)">
-          <i class="fas fa-map-pin"></i>
-          <span class="map-region-name">وسط الرياض</span>
-          <span class="map-region-meta">3 فنيين</span>
-        </div>
-        <div class="map-region-zone east" onclick="selectRiyadhMapRegion('شرق الرياض', this)">
-          <i class="fas fa-map-pin"></i>
-          <span class="map-region-name">شرق الرياض</span>
-          <span class="map-region-meta">فني متاح</span>
-        </div>
-        <div class="map-region-zone west" onclick="selectRiyadhMapRegion('غرب الرياض', this)">
-          <i class="fas fa-map-pin"></i>
-          <span class="map-region-name">غرب الرياض</span>
-          <span class="map-region-meta">فني متاح</span>
-        </div>
-      </div>
-    `;
-    const acDesc = document.getElementById('bookDesc').parentElement;
-    acDesc.insertAdjacentElement('afterend', mapBlock);
-  }
 
   // Intercept normal booking success to show tracker
-  window.submitBooking = function() {
+  console.log('[Booking] submitBooking function registered');
+  window.submitBooking = async function() {
+    console.log('[Booking] submitBooking called');
     const date = document.getElementById('bookDate').value;
     const time = document.getElementById('bookTime').value;
     if (!date || !time) { showToast('يرجى اختيار التاريخ والوقت'); return; }
 
     const trackId = 'AJW-' + Math.floor(100000 + Math.random() * 900000);
     localStorage.setItem('last_booking_track', trackId);
+
+    // Save to Firestore
+    try {
+      console.log('[Booking] Trying to save to Firestore...');
+      const user = typeof getCurrentUser === 'function' ? getCurrentUser() : null;
+      await createBooking({
+        trackId,
+        customerName: document.getElementById('bookName')?.value.trim() || '',
+        phone:        document.getElementById('bookPhone')?.value.trim() || '',
+        address:      document.getElementById('bookAddress')?.value.trim() || '',
+        acType:       document.getElementById('bookACType')?.value || '',
+        acBrand:      document.getElementById('bookACBrand')?.value || '',
+        description:  document.getElementById('bookDesc')?.value.trim() || '',
+        date,
+        time,
+        userId: user ? user.uid : null,
+        email:  user ? user.email : '',
+        location: window._locationData || null
+      });
+    } catch (e) {
+      console.error('Firestore booking save error:', e);
+    }
 
     document.querySelectorAll('.booking-form-card').forEach(c => c.style.display = 'none');
     
@@ -1019,13 +1001,6 @@ function previewACImage(event) {
   }
 }
 
-function selectRiyadhMapRegion(region, element) {
-  bookingRegion = region;
-  document.getElementById('selectedRegionLabel').textContent = 'منطقة التغطية: ' + region;
-  document.querySelectorAll('.map-region-zone').forEach(z => z.classList.remove('active'));
-  element.classList.add('active');
-  showToast('تم تحديد منطقة: ' + region);
-}
 
 // 6. E-commerce Upgrades: Recently Viewed Items
 function initRecentlyViewed() {

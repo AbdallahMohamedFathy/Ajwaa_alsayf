@@ -15,20 +15,20 @@ const firebaseConfig = {
 firebase.initializeApp(firebaseConfig);
 
 const auth = firebase.auth();
-const db   = firebase.firestore();
+const db = firebase.firestore();
 
 const ADMIN_EMAIL = 'ajwaaelsaif@admin.com';
 
 /* ─── Auth State Cache ─── */
-let _currentUser  = null;
-let _authReady    = false;
-const _readyCBs   = [];   // one-time "ready" callbacks
+let _currentUser = null;
+let _authReady = false;
+const _readyCBs = [];   // one-time "ready" callbacks
 
 auth.onAuthStateChanged(async (fbUser) => {
   if (fbUser) {
     try {
       const docRef = db.collection('users').doc(fbUser.uid);
-      const doc    = await docRef.get();
+      const doc = await docRef.get();
       if (doc.exists) {
         _currentUser = { uid: fbUser.uid, ...doc.data() };
       } else {
@@ -57,17 +57,17 @@ function onAuthReady(cb) {
 
 /* ─── Auth Helpers ─── */
 function getCurrentUser() { return _currentUser; }
-function isLoggedIn()     { return !!_currentUser; }
-function isAdmin()        { return !!(_currentUser && (_currentUser.role === 'admin' || _currentUser.email?.toLowerCase() === ADMIN_EMAIL)); }
+function isLoggedIn() { return !!_currentUser; }
+function isAdmin() { return !!(_currentUser && (_currentUser.role === 'admin' || _currentUser.email?.toLowerCase() === ADMIN_EMAIL)); }
 
 async function registerUser(name, email, phone, password) {
   try {
     const cred = await auth.createUserWithEmailAndPassword(email, password);
-    const role  = email.toLowerCase() === ADMIN_EMAIL ? 'admin' : 'customer';
-    const data  = {
-      name:      name.trim(),
-      email:     email.toLowerCase().trim(),
-      phone:     phone.trim(),
+    const role = email.toLowerCase() === ADMIN_EMAIL ? 'admin' : 'customer';
+    const data = {
+      name: name.trim(),
+      email: email.toLowerCase().trim(),
+      phone: phone.trim(),
       role,
       createdAt: firebase.firestore.FieldValue.serverTimestamp()
     };
@@ -76,11 +76,11 @@ async function registerUser(name, email, phone, password) {
     return { success: true };
   } catch (e) {
     const msgs = {
-      'auth/email-already-in-use':  'هذا البريد الإلكتروني مسجل مسبقاً',
-      'auth/weak-password':         'كلمة المرور يجب أن تكون 8 أحرف على الأقل',
-      'auth/invalid-email':         'البريد الإلكتروني غير صالح',
+      'auth/email-already-in-use': 'هذا البريد الإلكتروني مسجل مسبقاً',
+      'auth/weak-password': 'كلمة المرور يجب أن تكون 8 أحرف على الأقل',
+      'auth/invalid-email': 'البريد الإلكتروني غير صالح',
       'auth/operation-not-allowed': 'يرجى تفعيل Email/Password في Firebase Console',
-      'auth/network-request-failed':'تحقق من الاتصال بالإنترنت'
+      'auth/network-request-failed': 'تحقق من الاتصال بالإنترنت'
     };
     console.error('Firebase register error:', e.code, e.message);
     return { success: false, error: msgs[e.code] || 'حدث خطأ: ' + e.code };
@@ -119,9 +119,9 @@ async function getAllProductsAdmin() {
 async function addProduct(data) {
   return await db.collection('products').add({
     ...data,
-    active:    true,
-    rating:    data.rating    || 0,
-    reviews:   data.reviews   || 0,
+    active: true,
+    rating: data.rating || 0,
+    reviews: data.reviews || 0,
     createdAt: firebase.firestore.FieldValue.serverTimestamp()
   });
 }
@@ -167,7 +167,7 @@ async function updateOrderStatus(firestoreId, status) {
 async function createBooking(data) {
   return await db.collection('bookings').add({
     ...data,
-    status:    'pending',
+    status: 'pending',
     createdAt: firebase.firestore.FieldValue.serverTimestamp()
   });
 }
@@ -189,7 +189,7 @@ async function getCoupons() {
 
 async function getCouponByCode(code) {
   const snap = await db.collection('coupons')
-    .where('code',   '==', code.toUpperCase())
+    .where('code', '==', code.toUpperCase())
     .where('active', '==', true)
     .get();
   if (snap.empty) return null;
@@ -199,8 +199,8 @@ async function getCouponByCode(code) {
 async function addCoupon(data) {
   return await db.collection('coupons').add({
     ...data,
-    code:      data.code.toUpperCase(),
-    active:    true,
+    code: data.code.toUpperCase(),
+    active: true,
     createdAt: firebase.firestore.FieldValue.serverTimestamp()
   });
 }
@@ -222,4 +222,34 @@ async function getAllUsers() {
 async function updateUserProfile(uid, data) {
   await db.collection('users').doc(uid).set(data, { merge: true });
   if (_currentUser?.uid === uid) _currentUser = { ..._currentUser, ...data };
+}
+
+/* ─── Firestore: Portfolio ─── */
+async function getPortfolioItems() {
+  const snap = await db.collection('portfolio').orderBy('createdAt', 'desc').get();
+  return snap.docs.map(d => ({ firestoreId: d.id, ...d.data() }));
+}
+async function createPortfolioItem(data) {
+  return await db.collection('portfolio').add({ ...data, createdAt: firebase.firestore.FieldValue.serverTimestamp() });
+}
+async function updatePortfolioItem(firestoreId, data) {
+  return await db.collection('portfolio').doc(firestoreId).update(data);
+}
+async function deletePortfolioItem(firestoreId) {
+  return await db.collection('portfolio').doc(firestoreId).delete();
+}
+
+/* ─── Firestore: Before & After ─── */
+async function getBeforeAfterItems() {
+  const snap = await db.collection('before_after').orderBy('createdAt', 'desc').get();
+  return snap.docs.map(d => ({ firestoreId: d.id, ...d.data() }));
+}
+async function createBeforeAfterItem(data) {
+  return await db.collection('before_after').add({ ...data, createdAt: firebase.firestore.FieldValue.serverTimestamp() });
+}
+async function updateBeforeAfterItem(firestoreId, data) {
+  return await db.collection('before_after').doc(firestoreId).update(data);
+}
+async function deleteBeforeAfterItem(firestoreId) {
+  return await db.collection('before_after').doc(firestoreId).delete();
 }
