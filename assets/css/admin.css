@@ -487,22 +487,97 @@ body.dark-mode .topbar-search input { background: #1a2332; border-color: rgba(25
 body.dark-mode .topbar-icon { background: rgba(255,255,255,0.06); color: var(--gray-400); }
 body.dark-mode .topbar-profile span { color: var(--gray-300); }
 
+/* ═══ SIDEBAR OVERLAY (mobile) ═══ */
+.sidebar-overlay {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.5);
+  z-index: 99;
+  backdrop-filter: blur(2px);
+}
+.sidebar-overlay.active { display: block; }
+
 /* ═══ RESPONSIVE ADMIN ═══ */
 @media (max-width: 1024px) {
   .charts-grid { grid-template-columns: 1fr; }
 }
 
 @media (max-width: 768px) {
+  /* Sidebar slides in/out */
   .admin-sidebar {
-    right: -260px;
-    transition: right var(--transition-normal);
+    right: -280px;
+    transition: right 0.3s cubic-bezier(0.4,0,0.2,1);
+    width: 260px;
+    z-index: 200;
   }
   .admin-sidebar.active { right: 0; }
+
+  /* Show hamburger button */
+  .sidebar-toggle-btn {
+    display: flex !important;
+    align-items: center;
+    justify-content: center;
+    width: 38px;
+    height: 38px;
+    background: var(--gray-100) !important;
+    border-radius: var(--radius-md);
+    border: 1px solid var(--gray-200);
+    cursor: pointer;
+    transition: all var(--transition-fast);
+  }
+  .sidebar-toggle-btn:hover {
+    background: var(--primary) !important;
+    color: var(--white) !important;
+    border-color: var(--primary);
+  }
+
   .admin-main { margin-right: 0; }
-  .stats-grid { grid-template-columns: repeat(2, 1fr); }
-  .admin-content { padding: 16px; }
-  .data-table { font-size: 0.8rem; }
-  .data-table th, .data-table td { padding: 8px 10px; }
+
+  /* Topbar compact */
+  .admin-topbar {
+    padding: 10px 14px;
+    gap: 8px;
+  }
+  .topbar-search { width: 140px; }
+  .topbar-search input { padding: 8px 12px 8px 32px; font-size: 0.8rem; }
+  .topbar-profile span { display: none; }
+  .topbar-actions { gap: 8px; }
+
+  /* Stats 2 columns on mobile */
+  .stats-grid { grid-template-columns: repeat(2, 1fr); gap: 10px; }
+  .stat-card { padding: 14px 12px; gap: 10px; }
+  .stat-card .stat-icon { width: 42px; height: 42px; font-size: 1.1rem; }
+  .stat-card .stat-info .stat-val { font-size: 1.25rem; }
+  .stat-card .stat-info h4 { font-size: 0.72rem; }
+
+  /* Content padding */
+  .admin-content { padding: 14px; }
+  .admin-page-title { font-size: 1.15rem; margin-bottom: 16px; }
+
+  /* Tables: horizontal scroll */
+  .data-table-card { overflow-x: auto; }
+  .data-table { font-size: 0.8rem; min-width: 500px; }
+  .data-table th, .data-table td { padding: 9px 10px; }
+  .table-header { padding: 12px 14px; }
+
+  /* Charts */
+  .chart-card { padding: 14px; }
+  .chart-card canvas { max-height: 220px; }
+}
+
+@media (max-width: 420px) {
+  /* Stack stats to 1 column on very small phones */
+  .stats-grid { grid-template-columns: 1fr 1fr; }
+  .topbar-search { display: none; }
+  .modal { width: 96%; }
+}
+
+/* Dark mode sidebar overlay */
+body.dark-mode .sidebar-toggle-btn {
+  background: rgba(255,255,255,0.08) !important;
+  border-color: rgba(255,255,255,0.1);
+  color: var(--gray-300) !important;
 }
 
 /* Notifications Drawer */

@@ -2,6 +2,117 @@
    أجواء الصيف - Business Upgrades Stylings
    ═══════════════════════════════════════ */
 
+/* ═══ 0. Card Qty Selector + Fly-to-Cart Animation ═══ */
+
+/* Wrapper replaces the old btn-add-cart */
+.card-qty-wrap {
+  display: flex;
+  align-items: center;
+  background: #f1f1f1;
+  border-radius: 999px;
+  overflow: hidden;
+  transition: width 0.4s cubic-bezier(0.34, 1.56, 0.64, 1),
+              box-shadow 0.3s ease;
+  width: 38px;
+  height: 38px;
+  justify-content: flex-end;
+  flex-shrink: 0;
+}
+
+.card-qty-wrap.expanded {
+  width: 130px;
+  box-shadow: 0 4px 16px rgba(0, 123, 255, 0.18);
+  justify-content: space-between;
+}
+
+/* Minus / Plus buttons */
+.cq-btn {
+  width: 38px;
+  height: 38px;
+  min-width: 38px;
+  border-radius: 50%;
+  background: var(--gradient-primary);
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1rem;
+  font-weight: 700;
+  flex-shrink: 0;
+  transition: transform 0.18s ease, box-shadow 0.18s ease;
+  cursor: pointer;
+}
+
+.cq-btn:active {
+  transform: scale(0.88);
+}
+
+.cq-btn.cq-plus {
+  box-shadow: 0 4px 14px rgba(0, 123, 255, 0.35);
+}
+
+.cq-btn.cq-minus {
+  opacity: 0;
+  pointer-events: none;
+  transform: scale(0.5);
+  transition: opacity 0.3s ease, transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.card-qty-wrap.expanded .cq-btn.cq-minus {
+  opacity: 1;
+  pointer-events: all;
+  transform: scale(1);
+}
+
+/* Number */
+.cq-num {
+  font-size: 1rem;
+  font-weight: 800;
+  color: #333;
+  min-width: 28px;
+  text-align: center;
+  opacity: 0;
+  transform: scale(0.5);
+  transition: opacity 0.25s ease 0.1s, transform 0.35s cubic-bezier(0.34, 1.56, 0.64, 1) 0.05s;
+  pointer-events: none;
+  user-select: none;
+}
+
+.card-qty-wrap.expanded .cq-num {
+  opacity: 1;
+  transform: scale(1);
+}
+
+/* ─── Fly-to-cart particle ─── */
+.fly-particle {
+  position: fixed;
+  border-radius: 50%;
+  overflow: hidden;
+  pointer-events: none;
+  z-index: 99999;
+  box-shadow: 0 8px 24px rgba(0,0,0,0.25);
+  border: 3px solid #fff;
+  background: #fff;
+}
+
+.fly-particle img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+/* ─── Cart badge bounce ─── */
+@keyframes cartBadgePop {
+  0%   { transform: scale(1); }
+  35%  { transform: scale(1.65); }
+  65%  { transform: scale(0.85); }
+  100% { transform: scale(1); }
+}
+
+.cart-badge.cart-pop {
+  animation: cartBadgePop 0.5s cubic-bezier(0.36, 0.07, 0.19, 0.97) forwards;
+}
+
 /* ═══ 1. Emergency CTA & Mobile Bottom Bar ═══ */
 .emergency-fixed-btn {
   position: fixed;

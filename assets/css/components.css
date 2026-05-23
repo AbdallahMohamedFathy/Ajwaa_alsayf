@@ -247,12 +247,15 @@
   align-items: center;
   justify-content: space-between;
   margin-top: 10px;
+  gap: 8px;
 }
 
 .product-price {
   font-size: 1.2rem;
   font-weight: 800;
   color: var(--primary-dark);
+  min-width: 0;
+  flex: 1;
 }
 
 .product-price .old-price {

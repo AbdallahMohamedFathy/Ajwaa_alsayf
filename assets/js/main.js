@@ -165,6 +165,99 @@ function addToCart(productId) {
   renderCartItems();
 }
 
+// ─── Card Qty Selector ───
+function cardQtyPlus(productId, btn) {
+  const product = productsData.find(p => p.id === productId);
+  if (!product) return;
+
+  const wrap = document.getElementById(`cardQty-${productId}`);
+  const numEl = document.getElementById(`cqNum-${productId}`);
+  const existing = cart.find(i => i.id === productId);
+
+  if (existing) {
+    existing.qty++;
+    if (numEl) numEl.textContent = existing.qty;
+  } else {
+    cart.push({ ...product, qty: 1 });
+    if (wrap) wrap.classList.add('expanded');
+    if (numEl) numEl.textContent = 1;
+  }
+
+  saveCart();
+  updateCartBadge();
+  renderCartItems();
+  flyToCart(btn, productId);
+}
+
+function cardQtyMinus(productId) {
+  const wrap = document.getElementById(`cardQty-${productId}`);
+  const numEl = document.getElementById(`cqNum-${productId}`);
+  const item = cart.find(i => i.id === productId);
+  if (!item) return;
+
+  item.qty--;
+  if (item.qty <= 0) {
+    cart = cart.filter(i => i.id !== productId);
+    if (wrap) wrap.classList.remove('expanded');
+    if (numEl) numEl.textContent = 1;
+  } else {
+    if (numEl) numEl.textContent = item.qty;
+  }
+
+  saveCart();
+  updateCartBadge();
+  renderCartItems();
+}
+
+// ─── Fly-to-Cart Animation ───
+function flyToCart(fromBtn, productId) {
+  const product = productsData.find(p => p.id === productId);
+  const cartIcon = document.querySelector('.cart-icon');
+  if (!cartIcon || !product) return;
+
+  // Use product image as the flying element
+  const imgEl = document.getElementById(`pImg-${productId}`);
+  const srcRect = imgEl ? imgEl.getBoundingClientRect() : fromBtn.getBoundingClientRect();
+  const destRect = cartIcon.getBoundingClientRect();
+
+  const size = Math.min(srcRect.width, srcRect.height, 80);
+  const startX = srcRect.left + srcRect.width / 2 - size / 2;
+  const startY = srcRect.top + srcRect.height / 2 - size / 2;
+  const endX = destRect.left + destRect.width / 2 - size / 2;
+  const endY = destRect.top + destRect.height / 2 - size / 2;
+
+  const particle = document.createElement('div');
+  particle.className = 'fly-particle';
+  particle.style.cssText = `left:${startX}px;top:${startY}px;width:${size}px;height:${size}px;`;
+  particle.innerHTML = `<img src="${product.image}" alt="">`;
+  document.body.appendChild(particle);
+
+  const dx = endX - startX;
+  const dy = endY - startY;
+  // arc midpoint: go up 80px above the straight line
+  const arcY = dy / 2 - 80;
+
+  particle.animate([
+    { transform: 'translate(0,0) scale(1)',              opacity: 1    },
+    { transform: `translate(${dx*0.5}px,${arcY}px) scale(0.55)`, opacity: 0.85, offset: 0.45 },
+    { transform: `translate(${dx}px,${dy}px) scale(0.15)`, opacity: 0  }
+  ], {
+    duration: 750,
+    easing: 'cubic-bezier(0.25, 0.46, 0.45, 0.94)',
+    fill: 'forwards'
+  }).onfinish = () => {
+    particle.remove();
+    // Bounce cart badge
+    const badge = document.querySelector('.cart-badge');
+    if (badge) {
+      badge.classList.remove('cart-pop');
+      void badge.offsetWidth;
+      badge.classList.add('cart-pop');
+      badge.addEventListener('animationend', () => badge.classList.remove('cart-pop'), { once: true });
+    }
+  };
+}
+
 function removeFromCart(productId) {
   cart = cart.filter(item => item.id !== productId);
   saveCart();
@@ -271,6 +364,8 @@ function toggleWishlist(productId) {
 // ═══ Product Card HTML ═══
 function createProductCard(product) {
   const isWished = wishlist.includes(product.id);
+  const cartItem = cart.find(i => i.id === product.id);
+  const currentQty = cartItem ? cartItem.qty : 0;
   return `
     <div class="product-card" data-aos="fade-up">
       <div class="product-image">
@@ -278,7 +373,7 @@ function createProductCard(product) {
         <button class="product-wishlist ${isWished ? 'active' : ''}" data-id="${product.id}" onclick="toggleWishlist(${product.id})">
           <i class="${isWished ? 'fas' : 'far'} fa-heart"></i>
         </button>
-        <a href="product-details.html?id=${product.id}"><img src="${product.image}" alt="${product.name}"></a>
+        <a href="product-details.html?id=${product.id}"><img src="${product.image}" alt="${product.name}" id="pImg-${product.id}"></a>
       </div>
       <div class="product-info">
         <div class="product-brand">${product.brand}</div>
@@ -292,9 +387,15 @@ function createProductCard(product) {
             ${product.oldPrice ? `<span class="old-price">${product.oldPrice.toLocaleString()}</span>` : ''}
             ${product.price.toLocaleString()} <span class="currency">ريال</span>
           </div>
-          <button class="btn-add-cart" onclick="addToCart(${product.id})" title="أضف للسلة">
-            <i class="fas fa-plus"></i>
-          </button>
+          <div class="card-qty-wrap ${currentQty > 0 ? 'expanded' : ''}" id="cardQty-${product.id}">
+            <button class="cq-btn cq-minus" onclick="cardQtyMinus(${product.id})">
+              <i class="fas fa-minus"></i>
+            </button>
+            <span class="cq-num" id="cqNum-${product.id}">${currentQty > 0 ? currentQty : 1}</span>
+            <button class="cq-btn cq-plus" onclick="cardQtyPlus(${product.id}, this)">
+              <i class="fas fa-plus"></i>
+            </button>
+          </div>
         </div>
       </div>
     </div>

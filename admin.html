@@ -50,11 +50,14 @@
       </nav>
     </aside>
 
+    <!-- Sidebar Overlay (mobile) -->
+    <div class="sidebar-overlay" id="sidebarOverlay" onclick="toggleSidebar()"></div>
+
     <!-- Main -->
     <main class="admin-main">
       <div class="admin-topbar">
         <div style="display:flex;align-items:center;gap:12px;">
-          <button onclick="document.getElementById('adminSidebar').classList.toggle('active')"
+          <button onclick="toggleSidebar()"
             style="display:none;background:none;font-size:1.2rem;color:var(--gray-600);" class="sidebar-toggle-btn"><i
               class="fas fa-bars"></i></button>
           <div class="topbar-search"><i class="fas fa-search"></i><input type="text" placeholder="بحث..."></div>
@@ -836,6 +839,26 @@
     /* ═══════════════════════════════════════
        Admin Dashboard - Firebase Connected
        ═══════════════════════════════════════ */
+
+    // ─── Sidebar Toggle (mobile) ───
+    function toggleSidebar() {
+      const sidebar = document.getElementById('adminSidebar');
+      const overlay = document.getElementById('sidebarOverlay');
+      sidebar.classList.toggle('active');
+      overlay.classList.toggle('active');
+    }
+
+    // Close sidebar when a nav link is clicked on mobile
+    document.addEventListener('DOMContentLoaded', () => {
+      document.querySelectorAll('.sidebar-nav a').forEach(link => {
+        link.addEventListener('click', () => {
+          if (window.innerWidth <= 768) {
+            document.getElementById('adminSidebar').classList.remove('active');
+            document.getElementById('sidebarOverlay').classList.remove('active');
+          }
+        });
+      });
+    });
 
     // ─── Auth Protection ───
     onAuthReady(async (user) => {
