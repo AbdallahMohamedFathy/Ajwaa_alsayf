@@ -504,3 +504,9 @@ body.dark-mode .topbar-profile span { color: var(--gray-300); }
   .data-table { font-size: 0.8rem; }
   .data-table th, .data-table td { padding: 8px 10px; }
 }
+
+/* Notifications Drawer */
+.admin-notif-drawer { position: fixed; top: 0; left: -360px; width: 340px; height: 100vh; background: var(--white); box-shadow: 5px 0 25px rgba(0,0,0,0.1); z-index: 2000; transition: left 0.3s cubic-bezier(0.4, 0, 0.2, 1); overflow-y: auto; display: flex; flex-direction: column; }
+.admin-notif-drawer.active { left: 0; }
+.drawer-body { flex: 1; overflow-y: auto; padding: 16px; background: #f8fafc; }
+.notif-dot { position: absolute; top: 0; right: 0; width: 10px; height: 10px; background: var(--danger); border-radius: 50%; border: 2px solid var(--white); display: none; }

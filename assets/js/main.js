@@ -985,41 +985,17 @@ function initBookingSystemUpgrades() {
       <div class="tracking-overlay-box">
         <div class="success-icon"><i class="fas fa-check"></i></div>
         <h2 style="font-size:1.5rem;font-weight:800;color:var(--success);margin-bottom:8px;text-align:center;">تم إرسال طلب الحجز بنجاح! 🎉</h2>
-        <p style="color:var(--gray-500);margin-bottom:24px;text-align:center;">تابع حالة طلب الصيانة الخاص بك أدناه في الوقت الحقيقي</p>
+        <p style="color:var(--gray-500);margin-bottom:24px;text-align:center;">يرجى الاحتفاظ برقم التتبع الخاص بك للمراجعة</p>
         
         <div class="tracking-header">
-          <div class="tracking-id-text">رقم تتبع الحجز: <span>${trackId}</span></div>
+          <div class="tracking-id-text">رقم تتبع الحجز: <span style="font-weight:900;color:var(--primary-dark);letter-spacing:1px;">${trackId}</span></div>
           <button class="btn btn-outline btn-sm" onclick="navigator.clipboard.writeText('${trackId}').then(()=>showToast('تم نسخ رقم التتبع!'))"><i class="far fa-copy"></i> نسخ</button>
         </div>
 
-        <div class="tracking-timeline">
-          <div class="tracking-timeline-bar-active" style="width: 25%;"></div>
-          <div class="tracking-node completed">
-            <div class="tracking-node-dot"><i class="fas fa-file-invoice"></i></div>
-            <div class="tracking-node-label">تم الاستلام</div>
-          </div>
-          <div class="tracking-node active">
-            <div class="tracking-node-dot"><i class="fas fa-user-check"></i></div>
-            <div class="tracking-node-label">تعيين الفني</div>
-          </div>
-          <div class="tracking-node">
-            <div class="tracking-node-dot"><i class="fas fa-truck"></i></div>
-            <div class="tracking-node-label">فني في الطريق</div>
-          </div>
-          <div class="tracking-node">
-            <div class="tracking-node-dot"><i class="fas fa-check-double"></i></div>
-            <div class="tracking-node-label">اكتمل العمل</div>
-          </div>
-        </div>
-
-        <div class="technician-assigned-card" style="margin-top:20px;">
-          <div class="tech-photo">م</div>
-          <div class="tech-info-row">
-            <h4>الفني المعين: مهندس محمود علي</h4>
-            <p>خبير صيانة أنظمة التكييف والتبريد بالرياض</p>
-            <div class="tech-rating-stars">⭐⭐⭐⭐⭐ <span>(4.9)</span></div>
-          </div>
-          <a href="tel:0530656834" class="btn btn-primary btn-sm" style="padding:8px 14px;"><i class="fas fa-phone-alt"></i> اتصال</a>
+        <div style="background:var(--gray-50);border-radius:var(--radius-lg);padding:24px;margin-top:20px;text-align:center;border:1px dashed var(--primary-light);">
+          <i class="fas fa-headset" style="font-size:2.5rem;color:var(--primary);margin-bottom:12px;"></i>
+          <h4 style="font-size:1.1rem;font-weight:800;color:var(--gray-900);margin-bottom:8px;">فريق الدعم الفني في خدمتك</h4>
+          <p style="font-size:0.9rem;color:var(--gray-600);line-height:1.6;margin:0;">لقد استلمنا طلب الصيانة الخاص بك بنجاح، وسيقوم أحد ممثلي خدمة العملاء بالتواصل معك قريباً لتأكيد الموعد وترتيب الزيارة.</p>
         </div>
 
         <div style="display:flex;gap:12px;justify-content:center;margin-top:28px;flex-wrap:wrap;">
