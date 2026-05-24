@@ -291,7 +291,13 @@
 
   // Redirect if already logged in (wait for Firebase auth)
   onAuthReady((user) => {
-    if (user) window.location.href = _redirectTarget;
+    if (user) {
+      if (isAdmin()) {
+        window.location.href = 'admin.html';
+      } else {
+        window.location.href = _redirectTarget;
+      }
+    }
   });
 
   // Tab param
@@ -331,7 +337,9 @@
 
     if (result.success) {
       showToast('مرحباً بعودتك! تم تسجيل الدخول بنجاح ✓');
-      setTimeout(() => { window.location.href = _redirectTarget; }, 900);
+      setTimeout(() => {
+        window.location.href = isAdmin() ? 'admin.html' : _redirectTarget;
+      }, 900);
     } else {
       showFormError('loginError', result.error);
       btn.disabled = false;
