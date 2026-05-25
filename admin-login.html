@@ -1,0 +1,334 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>دخول لوحة التحكم | أجواء الصيف</title>
+  <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+  <link rel="icon" href="assets/images/logo.png">
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+  <script src="assets/js/firebase-config.js"></script>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      font-family: 'Cairo', sans-serif;
+      min-height: 100vh;
+      background: linear-gradient(135deg, #0f1724 0%, #1a2744 50%, #0f1724 100%);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    /* Background pattern */
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background-image: radial-gradient(circle at 20% 50%, rgba(0,123,255,0.08) 0%, transparent 50%),
+                        radial-gradient(circle at 80% 20%, rgba(0,75,173,0.06) 0%, transparent 50%);
+      pointer-events: none;
+    }
+
+    /* Floating dots */
+    .dot {
+      position: fixed;
+      border-radius: 50%;
+      background: rgba(0,123,255,0.15);
+      animation: float 6s ease-in-out infinite;
+      pointer-events: none;
+    }
+    .dot:nth-child(1) { width: 300px; height: 300px; top: -100px; right: -100px; animation-delay: 0s; }
+    .dot:nth-child(2) { width: 200px; height: 200px; bottom: -50px; left: -50px; animation-delay: 2s; }
+    .dot:nth-child(3) { width: 100px; height: 100px; top: 40%; left: 10%; animation-delay: 4s; background: rgba(0,75,173,0.1); }
+
+    @keyframes float {
+      0%, 100% { transform: translateY(0) scale(1); }
+      50% { transform: translateY(-20px) scale(1.05); }
+    }
+
+    .login-card {
+      background: rgba(255,255,255,0.04);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      border: 1px solid rgba(255,255,255,0.08);
+      border-radius: 24px;
+      padding: 48px 40px;
+      width: 100%;
+      max-width: 420px;
+      box-shadow: 0 32px 80px rgba(0,0,0,0.5);
+      position: relative;
+      z-index: 1;
+      animation: slideUp 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
+    }
+
+    @keyframes slideUp {
+      from { opacity: 0; transform: translateY(30px) scale(0.95); }
+      to   { opacity: 1; transform: translateY(0) scale(1); }
+    }
+
+    .logo-wrap {
+      text-align: center;
+      margin-bottom: 32px;
+    }
+
+    .logo-icon {
+      width: 72px;
+      height: 72px;
+      background: linear-gradient(135deg, #004aad, #007bff);
+      border-radius: 20px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin: 0 auto 16px;
+      box-shadow: 0 8px 32px rgba(0,123,255,0.4);
+    }
+
+    .logo-icon img {
+      width: 48px;
+      height: 48px;
+      object-fit: contain;
+    }
+
+    .logo-wrap h1 {
+      font-size: 1.4rem;
+      font-weight: 800;
+      color: #fff;
+      margin-bottom: 6px;
+    }
+
+    .logo-wrap p {
+      font-size: 0.82rem;
+      color: rgba(255,255,255,0.45);
+      font-weight: 500;
+    }
+
+    .form-group {
+      margin-bottom: 18px;
+    }
+
+    .form-group label {
+      display: block;
+      font-size: 0.8rem;
+      font-weight: 700;
+      color: rgba(255,255,255,0.6);
+      margin-bottom: 8px;
+    }
+
+    .input-wrap {
+      position: relative;
+    }
+
+    .input-wrap i {
+      position: absolute;
+      right: 14px;
+      top: 50%;
+      transform: translateY(-50%);
+      color: rgba(255,255,255,0.3);
+      font-size: 0.9rem;
+    }
+
+    .input-wrap input {
+      width: 100%;
+      padding: 13px 42px 13px 16px;
+      background: rgba(255,255,255,0.06);
+      border: 1.5px solid rgba(255,255,255,0.1);
+      border-radius: 12px;
+      color: #fff;
+      font-family: 'Cairo', sans-serif;
+      font-size: 0.92rem;
+      outline: none;
+      transition: all 0.2s ease;
+      direction: ltr;
+      text-align: left;
+    }
+
+    .input-wrap input::placeholder { color: rgba(255,255,255,0.25); }
+
+    .input-wrap input:focus {
+      border-color: #007bff;
+      background: rgba(0,123,255,0.08);
+      box-shadow: 0 0 0 3px rgba(0,123,255,0.15);
+    }
+
+    .toggle-pass {
+      position: absolute;
+      left: 14px;
+      top: 50%;
+      transform: translateY(-50%);
+      color: rgba(255,255,255,0.3);
+      cursor: pointer;
+      font-size: 0.9rem;
+      background: none;
+      border: none;
+      padding: 0;
+    }
+
+    .error-box {
+      background: rgba(239,68,68,0.12);
+      border: 1px solid rgba(239,68,68,0.3);
+      color: #f87171;
+      padding: 11px 14px;
+      border-radius: 10px;
+      font-size: 0.82rem;
+      font-weight: 600;
+      margin-bottom: 18px;
+      display: none;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .error-box.show { display: flex; }
+
+    .btn-login {
+      width: 100%;
+      padding: 14px;
+      background: linear-gradient(135deg, #004aad, #007bff);
+      color: #fff;
+      border: none;
+      border-radius: 12px;
+      font-family: 'Cairo', sans-serif;
+      font-size: 1rem;
+      font-weight: 800;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      box-shadow: 0 8px 24px rgba(0,123,255,0.35);
+      margin-top: 6px;
+    }
+
+    .btn-login:hover:not(:disabled) {
+      transform: translateY(-2px);
+      box-shadow: 0 12px 32px rgba(0,123,255,0.5);
+    }
+
+    .btn-login:active { transform: translateY(0); }
+    .btn-login:disabled { opacity: 0.7; cursor: not-allowed; transform: none; }
+
+    .back-link {
+      text-align: center;
+      margin-top: 20px;
+    }
+
+    .back-link a {
+      color: rgba(255,255,255,0.35);
+      font-size: 0.78rem;
+      text-decoration: none;
+      transition: color 0.2s;
+    }
+
+    .back-link a:hover { color: rgba(255,255,255,0.6); }
+  </style>
+</head>
+<body>
+  <div class="dot"></div>
+  <div class="dot"></div>
+  <div class="dot"></div>
+
+  <div class="login-card">
+    <div class="logo-wrap">
+      <div class="logo-icon">
+        <img src="assets/images/logo.png" alt="أجواء الصيف">
+      </div>
+      <h1>لوحة التحكم</h1>
+      <p>أدخل بيانات المدير للمتابعة</p>
+    </div>
+
+    <div class="error-box" id="errBox">
+      <i class="fas fa-exclamation-circle"></i>
+      <span id="errMsg">خطأ</span>
+    </div>
+
+    <div class="form-group">
+      <label>البريد الإلكتروني</label>
+      <div class="input-wrap">
+        <i class="fas fa-envelope"></i>
+        <input type="email" id="adminEmail" placeholder="admin@example.com" autocomplete="email"
+               onkeydown="if(event.key==='Enter') doLogin()">
+      </div>
+    </div>
+
+    <div class="form-group">
+      <label>كلمة المرور</label>
+      <div class="input-wrap">
+        <i class="fas fa-lock"></i>
+        <input type="password" id="adminPass" placeholder="••••••••"
+               onkeydown="if(event.key==='Enter') doLogin()">
+        <button class="toggle-pass" onclick="togglePass()" type="button">
+          <i class="far fa-eye" id="passEyeIcon"></i>
+        </button>
+      </div>
+    </div>
+
+    <button class="btn-login" id="loginBtn" onclick="doLogin()">
+      <i class="fas fa-sign-in-alt"></i> دخول لوحة التحكم
+    </button>
+
+    <div class="back-link">
+      <a href="index.html"><i class="fas fa-arrow-right"></i> العودة للموقع</a>
+    </div>
+  </div>
+
+  <script>
+    // If already logged in as admin, go straight to dashboard
+    onAuthReady((user) => {
+      if (user && isAdmin()) window.location.href = 'admin.html';
+    });
+
+    function togglePass() {
+      const input = document.getElementById('adminPass');
+      const icon  = document.getElementById('passEyeIcon');
+      input.type = input.type === 'password' ? 'text' : 'password';
+      icon.className = input.type === 'text' ? 'far fa-eye-slash' : 'far fa-eye';
+    }
+
+    function showErr(msg) {
+      document.getElementById('errMsg').textContent = msg;
+      document.getElementById('errBox').classList.add('show');
+    }
+
+    function hideErr() {
+      document.getElementById('errBox').classList.remove('show');
+    }
+
+    async function doLogin() {
+      hideErr();
+      const email = document.getElementById('adminEmail').value.trim();
+      const pass  = document.getElementById('adminPass').value;
+      const btn   = document.getElementById('loginBtn');
+
+      if (!email || !pass) {
+        showErr('يرجى إدخال البريد الإلكتروني وكلمة المرور');
+        return;
+      }
+
+      btn.disabled = true;
+      btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> جاري التحقق...';
+
+      try {
+        const cred = await auth.signInWithEmailAndPassword(email, pass);
+        const doc  = await db.collection('users').doc(cred.user.uid).get();
+        const role = doc.exists ? doc.data().role : '';
+
+        if (role === 'admin' || email.toLowerCase() === ADMIN_EMAIL) {
+          window.location.href = 'admin.html';
+        } else {
+          showErr('ليس لديك صلاحيات الوصول للوحة التحكم');
+          await auth.signOut();
+          btn.disabled = false;
+          btn.innerHTML = '<i class="fas fa-sign-in-alt"></i> دخول لوحة التحكم';
+        }
+      } catch {
+        showErr('البريد الإلكتروني أو كلمة المرور غير صحيحة');
+        btn.disabled = false;
+        btn.innerHTML = '<i class="fas fa-sign-in-alt"></i> دخول لوحة التحكم';
+      }
+    }
+  </script>
+</body>
+</html>
