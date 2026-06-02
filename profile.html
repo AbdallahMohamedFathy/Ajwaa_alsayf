@@ -477,25 +477,25 @@
         if (bk.status === 'completed') { stLabel = 'مكتمل'; stColor = '#10b981'; }
         else if (bk.status === 'cancelled') { stLabel = 'ملغى'; stColor = '#ef4444'; }
         
-        return \`
+        return `
           <div class="order-card">
             <div class="order-card-header">
               <div>
-                <div class="order-num">رقم التتبع: #\${bk.trackId || 'غير متوفر'}</div>
-                <div class="order-date">تاريخ الطلب: \${dateStr}</div>
+                <div class="order-num">رقم التتبع: #${bk.trackId || 'غير متوفر'}</div>
+                <div class="order-date">تاريخ الطلب: ${dateStr}</div>
               </div>
-              <span class="status-badge" style="background:\${stColor}22;color:\${stColor};border:1px solid \${stColor}44;">
-                <i class="fas fa-circle" style="font-size:0.5rem;"></i> \${stLabel}
+              <span class="status-badge" style="background:${stColor}22;color:${stColor};border:1px solid ${stColor}44;">
+                <i class="fas fa-circle" style="font-size:0.5rem;"></i> ${stLabel}
               </span>
             </div>
             <div class="order-items-mini">
-              <span class="order-item-chip"><i class="fas fa-wrench"></i> \${bk.acType || 'خدمة صيانة'}</span>
-              <span class="order-item-chip"><i class="fas fa-calendar-day"></i> الموعد: \${bk.date || '-'} - \${bk.time || '-'}</span>
+              <span class="order-item-chip"><i class="fas fa-wrench"></i> ${bk.acType || 'خدمة صيانة'}</span>
+              <span class="order-item-chip"><i class="fas fa-calendar-day"></i> الموعد: ${bk.date || '-'} - ${bk.time || '-'}</span>
             </div>
             <div class="order-footer" style="padding-top:12px;border-top:1px solid var(--gray-100);font-size:0.9rem;color:var(--gray-600);">
-               <i class="fas fa-map-marker-alt"></i> \${bk.address || 'العنوان غير مسجل'}
+               <i class="fas fa-map-marker-alt"></i> ${bk.address || 'العنوان غير مسجل'}
             </div>
-          </div>\`;
+          </div>`;
       }).join('');
     } catch (e) {
       console.error(e);
