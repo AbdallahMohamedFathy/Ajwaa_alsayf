@@ -488,20 +488,9 @@
     }
 
     .work-strip-wrapper {
-      overflow-x: scroll;
-      overflow-y: hidden;
-      cursor: grab;
-      scrollbar-width: none;
-      -ms-overflow-style: none;
+      overflow: hidden;
       direction: ltr;
-    }
-
-    .work-strip-wrapper::-webkit-scrollbar {
-      display: none;
-    }
-
-    .work-strip-wrapper.is-dragging {
-      cursor: grabbing;
+      width: 100%;
     }
 
     .work-strip-track {
@@ -510,6 +499,22 @@
       width: max-content;
       padding: 12px 10px 16px;
       direction: ltr;
+      animation: wsScroll 40s linear infinite;
+    }
+
+    .work-strip-wrapper:hover .work-strip-track {
+      animation-play-state: paused;
+    }
+
+    @keyframes wsScroll {
+      0%   { transform: translateX(0); }
+      100% { transform: translateX(-50%); }
+    }
+
+    @media (max-width: 768px) {
+      .work-strip-track {
+        animation-duration: 28s;
+      }
     }
 
     .ws-card {
