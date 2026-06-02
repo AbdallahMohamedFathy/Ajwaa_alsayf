@@ -753,21 +753,55 @@ function initBeforeAfterSliders() {
   const handle = container.querySelector('.comparison-handle');
   const imgAfter = container.querySelector('.comparison-img-after');
 
-  function move(x) {
-    const rect = container.getBoundingClientRect();
-    let pos = (x - rect.left) / rect.width;
+  let isInteracting = false;
+  let autoPos = 0.5;
+  let dir = 1;
+  const speed = 0.0035;
+
+  function move(pos) {
     if (pos < 0) pos = 0;
     if (pos > 1) pos = 1;
     handle.style.left = pos * 100 + '%';
     imgAfter.style.clipPath = `polygon(0 0, ${pos * 100}% 0, ${pos * 100}% 100%, 0 100%)`;
   }
 
-  container.addEventListener('mousemove', (e) => move(e.clientX));
+  function autoAnimate() {
+    if (!isInteracting) {
+      autoPos += speed * dir;
+      if (autoPos > 0.85) { dir = -1; }
+      if (autoPos < 0.15) { dir = 1; }
+      move(autoPos);
+    }
+    requestAnimationFrame(autoAnimate);
+  }
+
+  container.addEventListener('mousemove', (e) => {
+    isInteracting = true;
+    const rect = container.getBoundingClientRect();
+    let pos = (e.clientX - rect.left) / rect.width;
+    autoPos = pos; // sync position
+    move(pos);
+  });
+  
+  container.addEventListener('mouseleave', () => {
+    isInteracting = false;
+  });
+
   container.addEventListener('touchmove', (e) => {
+    isInteracting = true;
     if (e.touches && e.touches[0]) {
-      move(e.touches[0].clientX);
+      const rect = container.getBoundingClientRect();
+      let pos = (e.touches[0].clientX - rect.left) / rect.width;
+      autoPos = pos;
+      move(pos);
     }
   }, { passive: true });
+  
+  container.addEventListener('touchend', () => {
+    isInteracting = false;
+  });
+
+  autoAnimate();
 }
 
 // 3. E-commerce Upgrades: Comparison Engine
