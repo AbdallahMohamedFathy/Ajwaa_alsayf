@@ -456,7 +456,7 @@
     container.innerHTML = '<div style="text-align:center;padding:30px;color:var(--gray-400);"><i class="fas fa-spinner fa-spin fa-2x"></i></div>';
 
     try {
-      const snap = await db.collection('bookings').where('userId', '==', user.uid).orderBy('createdAt', 'desc').get();
+      const snap = await db.collection('bookings').where('userId', '==', user.uid).get();
       
       if (snap.empty) {
         container.innerHTML = `
@@ -469,8 +469,15 @@
         return;
       }
 
-      container.innerHTML = snap.docs.map(doc => {
-        const bk = doc.data();
+      // Sort locally to avoid Firestore composite index requirement
+      const bookings = snap.docs.map(doc => doc.data());
+      bookings.sort((a, b) => {
+        const t1 = a.createdAt?.toMillis ? a.createdAt.toMillis() : 0;
+        const t2 = b.createdAt?.toMillis ? b.createdAt.toMillis() : 0;
+        return t2 - t1;
+      });
+
+      container.innerHTML = bookings.map(bk => {
         const dateStr = bk.createdAt?.toDate ? bk.createdAt.toDate().toLocaleDateString('ar-SA', { year:'numeric', month:'long', day:'numeric' }) : 'غير متوفر';
         let stLabel = 'قيد الانتظار';
         let stColor = '#f59e0b';
