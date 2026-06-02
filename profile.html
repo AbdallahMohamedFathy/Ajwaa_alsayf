@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
   <meta charset="UTF-8">
@@ -298,6 +298,9 @@
             <button class="profile-nav-item active" id="navOrders" onclick="switchTab('orders')">
               <i class="fas fa-box"></i> طلباتي
             </button>
+            <button class="profile-nav-item" id="navBookings" onclick="switchTab('bookings')">
+              <i class="fas fa-calendar-check"></i> حجوزات الصيانة
+            </button>
             <button class="profile-nav-item" id="navEdit" onclick="switchTab('edit')">
               <i class="fas fa-edit"></i> تعديل البيانات
             </button>
@@ -318,6 +321,12 @@
         <div class="content-card tab-content active" id="tabOrders">
           <h2><i class="fas fa-box"></i> طلباتي</h2>
           <div id="ordersList"></div>
+        </div>
+
+        <!-- Bookings Tab -->
+        <div class="content-card tab-content" id="tabBookings">
+          <h2><i class="fas fa-calendar-check"></i> حجوزات الصيانة</h2>
+          <div id="bookingsList"></div>
         </div>
 
         <!-- Edit Profile Tab -->
@@ -388,6 +397,7 @@
     document.getElementById('editEmail').value = user.email || '';
 
     await loadOrders(user);
+    await loadBookings(user);
   });
 
   async function loadOrders(user) {
@@ -441,8 +451,60 @@
     }
   }
 
+  async function loadBookings(user) {
+    const container = document.getElementById('bookingsList');
+    container.innerHTML = '<div style="text-align:center;padding:30px;color:var(--gray-400);"><i class="fas fa-spinner fa-spin fa-2x"></i></div>';
+
+    try {
+      const snap = await db.collection('bookings').where('userId', '==', user.uid).orderBy('createdAt', 'desc').get();
+      
+      if (snap.empty) {
+        container.innerHTML = `
+          <div class="empty-state">
+            <i class="fas fa-tools"></i>
+            <h3>لا توجد حجوزات صيانة بعد</h3>
+            <p>يمكنك طلب صيانة أو تركيب لتكييفك الآن</p>
+            <a href="booking.html" class="btn btn-primary"><i class="fas fa-calendar-plus"></i> احجز صيانة</a>
+          </div>`;
+        return;
+      }
+
+      container.innerHTML = snap.docs.map(doc => {
+        const bk = doc.data();
+        const dateStr = bk.createdAt?.toDate ? bk.createdAt.toDate().toLocaleDateString('ar-SA', { year:'numeric', month:'long', day:'numeric' }) : 'غير متوفر';
+        let stLabel = 'قيد الانتظار';
+        let stColor = '#f59e0b';
+        if (bk.status === 'completed') { stLabel = 'مكتمل'; stColor = '#10b981'; }
+        else if (bk.status === 'cancelled') { stLabel = 'ملغى'; stColor = '#ef4444'; }
+        
+        return \`
+          <div class="order-card">
+            <div class="order-card-header">
+              <div>
+                <div class="order-num">رقم التتبع: #\${bk.trackId || 'غير متوفر'}</div>
+                <div class="order-date">تاريخ الطلب: \${dateStr}</div>
+              </div>
+              <span class="status-badge" style="background:\${stColor}22;color:\${stColor};border:1px solid \${stColor}44;">
+                <i class="fas fa-circle" style="font-size:0.5rem;"></i> \${stLabel}
+              </span>
+            </div>
+            <div class="order-items-mini">
+              <span class="order-item-chip"><i class="fas fa-wrench"></i> \${bk.acType || 'خدمة صيانة'}</span>
+              <span class="order-item-chip"><i class="fas fa-calendar-day"></i> الموعد: \${bk.date || '-'} - \${bk.time || '-'}</span>
+            </div>
+            <div class="order-footer" style="padding-top:12px;border-top:1px solid var(--gray-100);font-size:0.9rem;color:var(--gray-600);">
+               <i class="fas fa-map-marker-alt"></i> \${bk.address || 'العنوان غير مسجل'}
+            </div>
+          </div>\`;
+      }).join('');
+    } catch (e) {
+      console.error(e);
+      container.innerHTML = '<div style="text-align:center;color:var(--danger);padding:20px;">خطأ في تحميل الحجوزات</div>';
+    }
+  }
+
   function switchTab(tab) {
-    ['orders', 'edit'].forEach(t => {
+    ['orders', 'bookings', 'edit'].forEach(t => {
       document.getElementById('tab' + t.charAt(0).toUpperCase() + t.slice(1))?.classList.toggle('active', t === tab);
       document.getElementById('nav' + t.charAt(0).toUpperCase() + t.slice(1))?.classList.toggle('active', t === tab);
     });
