@@ -122,6 +122,7 @@ async function addProduct(data) {
     active: true,
     rating: data.rating || 0,
     reviews: data.reviews || 0,
+    numId: Date.now(),
     createdAt: firebase.firestore.FieldValue.serverTimestamp()
   });
 }

@@ -2,8 +2,8 @@
    أجواء الصيف - Main JavaScript
    ═══════════════════════════════════════ */
 
-// ═══ Products Data ═══
-const productsData = [
+// ═══ Products Data (static fallback — replaced by Firestore on load) ═══
+let productsData = [
   { id: 1, name: 'تكييف كاريير انفرتر 1.5 حصان بارد', brand: 'Carrier', hp: '1.5', price: 22999, oldPrice: 27500, discount: 16, rating: 4.8, reviews: 124, image: 'assets/images/product-1.png', inverter: true, badge: 'الأكثر مبيعاً' },
   { id: 2, name: 'تكييف شارب انفرتر 1.5 حصان بارد ساخن', brand: 'Sharp', hp: '1.5', price: 21500, oldPrice: 25000, discount: 14, rating: 4.7, reviews: 98, image: 'assets/images/product-2.png', inverter: true, badge: 'خصم' },
   { id: 3, name: 'تكييف ال جي دوال كول 2.25 حصان', brand: 'LG', hp: '2.25', price: 32999, oldPrice: 38000, discount: 13, rating: 4.9, reviews: 67, image: 'assets/images/product-3.png', inverter: true, badge: 'جديد' },
@@ -13,6 +13,39 @@ const productsData = [
   { id: 7, name: 'تكييف كاريير 2.25 حصان بارد ساخن', brand: 'Carrier', hp: '2.25', price: 29999, oldPrice: 34000, discount: 12, rating: 4.8, reviews: 89, image: 'assets/images/product-3.png', inverter: false, badge: '' },
   { id: 8, name: 'تكييف شارب 3 حصان انفرتر بلازما', brand: 'Sharp', hp: '3', price: 45000, oldPrice: 52000, discount: 13, rating: 4.9, reviews: 34, image: 'assets/images/product-4.png', inverter: true, badge: 'premium' },
 ];
+
+// ═══ Load Products from Firestore ═══
+async function loadProductsFromFirestore() {
+  if (typeof db === 'undefined') return;
+  try {
+    const items = await getProducts();
+    if (!items || items.length === 0) return;
+    productsData = items.map((d, i) => ({
+      id:         d.numId || (1000 + i),
+      firestoreId: d.firestoreId,
+      name:       d.name || '',
+      brand:      d.brand || '',
+      hp:         String(d.hp || '1.5'),
+      price:      Number(d.price) || 0,
+      oldPrice:   Number(d.oldPrice) || 0,
+      discount:   Number(d.discount) || 0,
+      rating:     Number(d.rating) || 4.5,
+      reviews:    Number(d.reviews) || 0,
+      image:      d.image || 'assets/images/product-1.png',
+      inverter:   Boolean(d.inverter),
+      badge:      d.badge || '',
+    }));
+    // Re-render wherever products are shown
+    if (document.getElementById('featured-products')) {
+      renderProducts('featured-products', productsData.slice(0, 4));
+    }
+    if (typeof filterProducts === 'function' && document.getElementById('all-products')) {
+      filterProducts();
+    }
+  } catch (e) {
+    console.warn('تعذر تحميل المنتجات من Firestore:', e);
+  }
+}
 
 // ═══ Cart State ═══
 let cart = JSON.parse(localStorage.getItem('ajwaa_cart')) || [];
@@ -38,6 +71,9 @@ document.addEventListener('DOMContentLoaded', () => {
   initBookingSystemUpgrades();
   initRecentlyViewed();
   initSaaSAdminInterface();
+  // Load products from Firestore (replaces static data)
+  loadProductsFromFirestore();
+
   // Auth-dependent navbar (waits for Firebase)
   onAuthReady(() => updateNavbarAuth());
 

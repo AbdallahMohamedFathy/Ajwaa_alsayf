@@ -764,9 +764,26 @@
           </div>
         </div>
         <div class="form-group">
-          <label>رابط الصورة (Cloudinary) *</label>
-          <input type="text" class="form-control" id="pImage" placeholder="https://res.cloudinary.com/...">
-          <small style="color:var(--gray-400);font-size:0.75rem;">ارفع الصورة على Cloudinary ثم الصق الرابط هنا</small>
+          <label>صورة المنتج *</label>
+          <input type="hidden" id="pImage">
+          <div id="pImageUploadArea"
+            onclick="document.getElementById('pImageFile').click()"
+            style="border:2px dashed var(--gray-300);border-radius:12px;padding:24px;text-align:center;cursor:pointer;transition:all 0.2s;background:var(--gray-50);"
+            onmouseover="this.style.borderColor='var(--primary)';this.style.background='rgba(0,123,255,0.03)'"
+            onmouseout="this.style.borderColor='var(--gray-300)';this.style.background='var(--gray-50)'">
+            <div id="pImagePreviewWrap">
+              <i class="fas fa-cloud-upload-alt" style="font-size:2rem;color:var(--gray-300);display:block;margin-bottom:8px;"></i>
+              <p style="font-size:0.85rem;color:var(--gray-500);margin:0;">اضغط لاختيار صورة من جهازك</p>
+              <p style="font-size:0.75rem;color:var(--gray-400);margin:4px 0 0;">PNG, JPG, WEBP — حتى 10MB</p>
+            </div>
+          </div>
+          <input type="file" id="pImageFile" accept="image/*" style="display:none" onchange="handleProductImageUpload(this)">
+          <div id="pImageProgress" style="display:none;margin-top:10px;">
+            <div style="background:var(--gray-100);border-radius:999px;height:6px;overflow:hidden;">
+              <div id="pImageProgressBar" style="height:100%;background:var(--gradient-primary);width:0%;transition:width 0.3s;"></div>
+            </div>
+            <p id="pImageProgressText" style="font-size:0.78rem;color:var(--gray-500);margin:6px 0 0;text-align:center;">جاري الرفع...</p>
+          </div>
         </div>
       </div>
       <div class="modal-footer">
@@ -1147,6 +1164,71 @@
       } catch (e) { tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;color:var(--danger);">خطأ في التحميل</td></tr>'; }
     }
 
+    // ─── Product Image Upload ───
+    async function handleProductImageUpload(input) {
+      const file = input.files[0];
+      if (!file) return;
+      if (file.size > 10 * 1024 * 1024) { showToast('الصورة أكبر من 10MB ⚠️'); return; }
+
+      const progress  = document.getElementById('pImageProgress');
+      const bar       = document.getElementById('pImageProgressBar');
+      const txt       = document.getElementById('pImageProgressText');
+      const preview   = document.getElementById('pImagePreviewWrap');
+
+      progress.style.display = 'block';
+      bar.style.width = '0%';
+      txt.textContent = 'جاري الرفع...';
+
+      const formData = new FormData();
+      formData.append('file', file);
+      formData.append('upload_preset', CLOUDINARY_UPLOAD_PRESET);
+      formData.append('folder', 'products');
+
+      const endpoint = `https://api.cloudinary.com/v1_1/${CLOUDINARY_CLOUD_NAME}/image/upload`;
+
+      try {
+        await new Promise((resolve, reject) => {
+          const xhr = new XMLHttpRequest();
+          xhr.open('POST', endpoint);
+          xhr.upload.onprogress = e => {
+            if (e.lengthComputable) {
+              const pct = Math.round(e.loaded / e.total * 100);
+              bar.style.width = pct + '%';
+              txt.textContent = `جاري الرفع... ${pct}%`;
+            }
+          };
+          xhr.onload = () => {
+            if (xhr.status === 200) {
+              const data = JSON.parse(xhr.responseText);
+              document.getElementById('pImage').value = data.secure_url;
+              preview.innerHTML = `
+                <img src="${data.secure_url}" style="width:100%;max-height:160px;object-fit:contain;border-radius:8px;">
+                <p style="font-size:0.75rem;color:var(--success);margin:8px 0 0;font-weight:700;"><i class="fas fa-check-circle"></i> تم رفع الصورة بنجاح</p>`;
+              bar.style.width = '100%';
+              txt.textContent = 'تم الرفع!';
+              setTimeout(() => progress.style.display = 'none', 1500);
+              resolve();
+            } else { reject(new Error('فشل الرفع')); }
+          };
+          xhr.onerror = () => reject(new Error('خطأ في الشبكة'));
+          xhr.send(formData);
+        });
+      } catch (e) {
+        showToast('خطأ في رفع الصورة: ' + e.message);
+        progress.style.display = 'none';
+      }
+    }
+
+    function resetProductImageUpload() {
+      document.getElementById('pImage').value = '';
+      document.getElementById('pImageFile').value = '';
+      document.getElementById('pImageProgress').style.display = 'none';
+      document.getElementById('pImagePreviewWrap').innerHTML = `
+        <i class="fas fa-cloud-upload-alt" style="font-size:2rem;color:var(--gray-300);display:block;margin-bottom:8px;"></i>
+        <p style="font-size:0.85rem;color:var(--gray-500);margin:0;">اضغط لاختيار صورة من جهازك</p>
+        <p style="font-size:0.75rem;color:var(--gray-400);margin:4px 0 0;">PNG, JPG, WEBP — حتى 10MB</p>`;
+    }
+
     function openProductModal(id) {
       document.getElementById('editProductId').value = '';
       document.getElementById('productModalTitle').textContent = 'إضافة منتج جديد';
@@ -1156,6 +1238,7 @@
       document.getElementById('pHp').value = '1.5';
       document.getElementById('pBadge').value = '';
       document.getElementById('pInverter').value = 'true';
+      resetProductImageUpload();
       document.getElementById('productModal').classList.add('active');
     }
 
@@ -1174,6 +1257,14 @@
         document.getElementById('pBadge').value = p.badge || '';
         document.getElementById('pInverter').value = p.inverter ? 'true' : 'false';
         document.getElementById('pImage').value = p.image || '';
+        // Show current image in upload area
+        if (p.image) {
+          document.getElementById('pImagePreviewWrap').innerHTML = `
+            <img src="${p.image}" style="width:100%;max-height:160px;object-fit:contain;border-radius:8px;">
+            <p style="font-size:0.75rem;color:var(--gray-500);margin:8px 0 0;"><i class="fas fa-edit"></i> اضغط لتغيير الصورة</p>`;
+        } else {
+          resetProductImageUpload();
+        }
         document.getElementById('productModal').classList.add('active');
       } catch (e) { showToast('خطأ في تحميل بيانات المنتج'); }
     }
