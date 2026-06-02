@@ -997,7 +997,6 @@ function initQuickViewModal() {
     }
 
     const tamaraSplit = Math.round(product.price / 4);
-    const tabbySplit = Math.round(product.price / 4);
 
     qvModal.innerHTML = `
       <div class="modal" style="max-width:700px;width:95%;">
@@ -1019,21 +1018,7 @@ function initQuickViewModal() {
                 ${product.oldPrice ? `<div style="font-size:0.9rem;color:var(--gray-400);text-decoration:line-through;">${product.oldPrice.toLocaleString()} ر.س</div>` : ''}
               </div>
 
-              <!-- Tamara / Tabby Banners -->
-              <div class="installment-badge-container" style="margin-bottom:14px;">
-                <div class="installment-badge tamara-badge">
-                  <img src="https://tamara.co/assets/svg/tamara-logo-ar.svg" alt="Tamara">
-                  <span>قسّمها على 4 دفعات بقيمة ${tamaraSplit} ر.س بدون فوائد</span>
-                </div>
-              </div>
-
-              <div style="font-size:0.8rem;color:var(--gray-600);line-height:1.6;margin-bottom:14px;">
-                تكييف سبليت ${product.hp} حصان ${product.inverter ? 'بتقنية الانفرتر الموفرة للطاقة حتى 60%' : ''} مع تبريد ذكي سريع، فلاتر حماية متطورة وضمان شامل لمدة 5 سنوات.
-              </div>
-
-              <div style="margin-bottom:18px;background:var(--gray-50);padding:8px 12px;border-radius:8px;font-size:0.75rem;color:var(--success);font-weight:700;display:inline-flex;align-items:center;gap:6px;">
-                <i class="fas fa-truck"></i> توصيل وتركيب مجاني خلال 24 ساعة بالرياض
-              </div>
+              ${product.description ? `<div style="font-size:0.8rem;color:var(--gray-600);line-height:1.6;margin-bottom:14px;">${product.description}</div>` : ''}
 
               <div style="display:flex;gap:10px;">
                 <button class="btn btn-primary" onclick="addToCart(${product.id}); closeQuickViewModal();" style="flex:1;"><i class="fas fa-shopping-cart"></i> أضف للسلة</button>

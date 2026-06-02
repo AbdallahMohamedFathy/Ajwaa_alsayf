@@ -42,6 +42,7 @@
         <a href="#" onclick="showSection('customers-mgmt',this)"><i class="fas fa-users"></i> العملاء</a>
         <a href="#" onclick="showSection('portfolio-mgmt',this)"><i class="fas fa-images"></i> معرض الأعمال</a>
         <a href="#" onclick="showSection('beforeafter-mgmt',this)"><i class="fas fa-columns"></i> قبل وبعد</a>
+        <a href="#" onclick="showSection('services-extra-mgmt',this)"><i class="fas fa-concierge-bell"></i> خدمات إضافية</a>
         <div class="sidebar-nav-label">أخرى</div>
         <a href="#" onclick="showSection('analytics-sec',this)"><i class="fas fa-chart-line"></i> التحليلات</a>
         <a href="https://ajwaaalsayf.vercel.app" target="_blank"><i class="fas fa-globe"></i> الموقع</a>
@@ -408,6 +409,41 @@
             </div>
           </div>
         </div>
+
+        <!-- ═══ Extra Services Management ═══ -->
+        <div id="services-extra-mgmt" style="display:none;">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;flex-wrap:wrap;gap:12px;">
+            <h1 class="admin-page-title" style="margin:0;">🛠️ الخدمات الإضافية</h1>
+            <button class="btn btn-primary" onclick="openServiceModal()"><i class="fas fa-plus"></i> إضافة خدمة</button>
+          </div>
+
+          <!-- Fixed 5 (read-only) -->
+          <div class="data-table-card" style="margin-bottom:24px;">
+            <div class="table-header"><h3>🔒 الخدمات الثابتة (لا يمكن حذفها)</h3></div>
+            <table class="data-table">
+              <thead><tr><th>#</th><th>اسم الخدمة</th><th>الحالة</th></tr></thead>
+              <tbody>
+                <tr><td>1</td><td>تركيب جديد</td><td><span class="status-badge completed">ثابت</span></td></tr>
+                <tr><td>2</td><td>صيانة عامة</td><td><span class="status-badge completed">ثابت</span></td></tr>
+                <tr><td>3</td><td>غسيل وتنظيف</td><td><span class="status-badge completed">ثابت</span></td></tr>
+                <tr><td>4</td><td>شحن فريون</td><td><span class="status-badge completed">ثابت</span></td></tr>
+                <tr><td>5</td><td>كشف أعطال</td><td><span class="status-badge completed">ثابت</span></td></tr>
+              </tbody>
+            </table>
+          </div>
+
+          <!-- Extra services (admin-added) -->
+          <div class="data-table-card">
+            <div class="table-header"><h3>➕ الخدمات المضافة</h3></div>
+            <table class="data-table">
+              <thead><tr><th>اسم الخدمة</th><th>إجراء</th></tr></thead>
+              <tbody id="extraServicesBody">
+                <tr><td colspan="2" style="text-align:center;color:var(--gray-400);">&#x062c;&#x627;&#x631;&#x64A; &#x627;&#x644;&#x62A;&#x62D;&#x645;&#x64A;&#x644;...</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
       </div>
     </main>
   </div>
@@ -714,6 +750,7 @@
         <input type="hidden" id="editProductId">
         <div class="form-group"><label>اسم المنتج *</label><input type="text" class="form-control" id="pName"
             placeholder="اسم المنتج"></div>
+        <div class="form-group"><label>وصف المنتج</label><textarea class="form-control" id="pDesc" rows="3" placeholder="اكتب وصفاً مفصلاً للمنتج..."></textarea></div>
         <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
           <div class="form-group">
             <label>الماركة *</label>
@@ -789,6 +826,23 @@
       <div class="modal-footer">
         <button class="btn btn-primary" onclick="saveProduct()"><i class="fas fa-save"></i> حفظ المنتج</button>
         <button class="btn btn-outline" onclick="closeProductModal()">إلغاء</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══ Extra Service Modal ═══ -->
+  <div class="modal-overlay" id="serviceModal">
+    <div class="modal" style="max-width:420px;">
+      <div class="modal-header">
+        <h3>إضافة خدمة جديدة</h3>
+        <button onclick="closeServiceModal()" style="background:none;font-size:1.2rem;color:var(--gray-500);"><i class="fas fa-times"></i></button>
+      </div>
+      <div class="modal-body">
+        <div class="form-group"><label>اسم الخدمة *</label><input type="text" class="form-control" id="svcName" placeholder="مثال: تركيب مكيف مركزي"></div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-primary" onclick="saveExtraService()"><i class="fas fa-save"></i> حفظ</button>
+        <button class="btn btn-outline" onclick="closeServiceModal()">إلغاء</button>
       </div>
     </div>
   </div>
@@ -1047,7 +1101,8 @@
         'customers-mgmt': loadCustomers,
         'analytics-sec': initAnalyticsCharts,
         'portfolio-mgmt': loadAdminPortfolio,
-        'beforeafter-mgmt': loadBeforeAfterAdmin
+        'beforeafter-mgmt': loadBeforeAfterAdmin,
+        'services-extra-mgmt': loadExtraServicesAdmin
       };
       if (loaders[id]) loaders[id]();
     }
@@ -1055,6 +1110,56 @@
     function toggleDarkMode() {
       document.body.classList.toggle('dark-mode');
       document.getElementById('themeToggle').classList.toggle('dark');
+    }
+
+    // ─── Extra Services ───
+    function openServiceModal() {
+      document.getElementById('svcName').value = '';
+      document.getElementById('serviceModal').classList.add('active');
+    }
+    function closeServiceModal() {
+      document.getElementById('serviceModal').classList.remove('active');
+    }
+
+    async function saveExtraService() {
+      const name = document.getElementById('svcName').value.trim();
+      if (!name) { showToast('يرجى إدخال اسم الخدمة ⚠️'); return; }
+      try {
+        const snap = await db.collection('extraServices').get();
+        await db.collection('extraServices').add({ name, order: snap.size + 1 });
+        showToast('تمت إضافة الخدمة بنجاح ✓');
+        closeServiceModal();
+        loadExtraServicesAdmin();
+      } catch(e) { showToast('خطأ في الحفظ: ' + e.message); }
+    }
+
+    async function loadExtraServicesAdmin() {
+      const tbody = document.getElementById('extraServicesBody');
+      if (!tbody) return;
+      tbody.innerHTML = '<tr><td colspan="2" style="text-align:center;"><i class="fas fa-spinner fa-spin"></i></td></tr>';
+      try {
+        const snap = await db.collection('extraServices').orderBy('order','asc').get();
+        if (snap.empty) {
+          tbody.innerHTML = '<tr><td colspan="2" style="text-align:center;color:var(--gray-400);">لا توجد خدمات مضافة حتى الآن</td></tr>';
+          return;
+        }
+        tbody.innerHTML = snap.docs.map(doc => {
+          const d = doc.data();
+          return `<tr>
+            <td style="font-weight:600;">${d.name}</td>
+            <td><button class="btn btn-sm" style="background:var(--danger);color:#fff;padding:4px 12px;border-radius:6px;font-size:0.75rem;" onclick="deleteExtraService('${doc.id}','${d.name}')"><i class="fas fa-trash"></i> حذف</button></td>
+          </tr>`;
+        }).join('');
+      } catch(e) { tbody.innerHTML = '<tr><td colspan="2" style="text-align:center;color:var(--danger);">خطأ في التحميل</td></tr>'; }
+    }
+
+    async function deleteExtraService(id, name) {
+      if (!confirm(`حذف خدمة "${name}"?`)) return;
+      try {
+        await db.collection('extraServices').doc(id).delete();
+        showToast('تم حذف الخدمة 🗑️');
+        loadExtraServicesAdmin();
+      } catch(e) { showToast('خطأ في الحذف'); }
     }
 
     function toggleAdminNotifications() {
@@ -1232,7 +1337,7 @@
     function openProductModal(id) {
       document.getElementById('editProductId').value = '';
       document.getElementById('productModalTitle').textContent = 'إضافة منتج جديد';
-      ['pName', 'pImage'].forEach(id => document.getElementById(id).value = '');
+      ['pName', 'pDesc', 'pImage'].forEach(id => document.getElementById(id).value = '');
       ['pPrice', 'pOldPrice'].forEach(id => document.getElementById(id).value = '');
       document.getElementById('pBrand').value = '';
       document.getElementById('pHp').value = '1.5';
@@ -1250,6 +1355,7 @@
         document.getElementById('editProductId').value = firestoreId;
         document.getElementById('productModalTitle').textContent = 'تعديل المنتج';
         document.getElementById('pName').value = p.name || '';
+        document.getElementById('pDesc').value = p.description || '';
         document.getElementById('pBrand').value = p.brand || '';
         document.getElementById('pHp').value = p.hp || '1.5';
         document.getElementById('pPrice').value = p.price || '';
@@ -1275,6 +1381,7 @@
 
     async function saveProduct() {
       const name = document.getElementById('pName').value.trim();
+      const description = document.getElementById('pDesc').value.trim();
       const brand = document.getElementById('pBrand').value;
       const hp = document.getElementById('pHp').value;
       const price = parseFloat(document.getElementById('pPrice').value);
@@ -1291,7 +1398,7 @@
       saveBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> جاري الحفظ...';
 
       const data = {
-        name, brand, hp, price, oldPrice, badge, inverter, image, active: true,
+        name, description, brand, hp, price, oldPrice, badge, inverter, image, active: true,
         discount: oldPrice > price ? Math.round((1 - price / oldPrice) * 100) : 0
       };
 

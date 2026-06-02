@@ -107,13 +107,18 @@ async function logoutUser() {
 
 /* ─── Firestore: Products ─── */
 async function getProducts() {
-  const snap = await db.collection('products').where('active', '==', true).orderBy('createdAt', 'desc').get();
-  return snap.docs.map(d => ({ firestoreId: d.id, ...d.data() }));
+  const snap = await db.collection('products').get();
+  return snap.docs
+    .map(d => ({ firestoreId: d.id, ...d.data() }))
+    .filter(p => p.active !== false)
+    .sort((a, b) => (b.createdAt?.seconds || 0) - (a.createdAt?.seconds || 0));
 }
 
 async function getAllProductsAdmin() {
-  const snap = await db.collection('products').orderBy('createdAt', 'desc').get();
-  return snap.docs.map(d => ({ firestoreId: d.id, ...d.data() }));
+  const snap = await db.collection('products').get();
+  return snap.docs
+    .map(d => ({ firestoreId: d.id, ...d.data() }))
+    .sort((a, b) => (b.createdAt?.seconds || 0) - (a.createdAt?.seconds || 0));
 }
 
 async function addProduct(data) {

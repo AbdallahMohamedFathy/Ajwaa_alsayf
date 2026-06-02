@@ -138,14 +138,12 @@
             <label>الخدمة المطلوبة *</label>
             <select class="form-control" id="bookService">
               <option value="">اختر الخدمة</option>
-              <option>صيانة عامة</option>
-              <option>غسيل وتنظيف</option>
-              <option>شحن فريون</option>
-              <option>كشف أعطال</option>
-              <option>تركيب جديد</option>
-              <option>تركيب غرف تبريد وتجميد</option>
-              <option>صيانة غرف تبريد وتجميد</option>
-              <option>تمديد مواسير نحاس</option>
+              <option value="تركيب جديد">تركيب جديد</option>
+              <option value="صيانة عامة">صيانة عامة</option>
+              <option value="غسيل وتنظيف">غسيل وتنظيف</option>
+              <option value="شحن فريون">شحن فريون</option>
+              <option value="كشف أعطال">كشف أعطال</option>
+              <!-- extra services loaded by JS -->
             </select>
           </div>
         </div>
@@ -255,6 +253,46 @@
   // Set min date to today
   const dateInput = document.getElementById('bookDate');
   if (dateInput) dateInput.min = new Date().toISOString().split('T')[0];
+
+  // ── Auto-fill service from URL param ──
+  const _urlParams = new URLSearchParams(window.location.search);
+  const _preService = _urlParams.get('service');
+
+  // ── Load extra services from Firestore ──
+  async function loadExtraServices() {
+    const sel = document.getElementById('bookService');
+    try {
+      const snap = await db.collection('extraServices').orderBy('order', 'asc').get();
+      snap.forEach(doc => {
+        const d = doc.data();
+        const opt = document.createElement('option');
+        opt.value = d.name;
+        opt.textContent = d.name;
+        sel.appendChild(opt);
+      });
+    } catch(e) { /* Firestore not available or empty */ }
+    // Auto-select after options loaded
+    if (_preService) {
+      const decoded = decodeURIComponent(_preService.replace(/\+/g,' '));
+      for (let i = 0; i < sel.options.length; i++) {
+        if (sel.options[i].value === decoded || sel.options[i].textContent === decoded) {
+          sel.selectedIndex = i;
+          // Jump to step 2 smoothly after a tiny delay
+          setTimeout(() => {
+            document.querySelectorAll('.booking-form-card').forEach(c => c.style.display = 'none');
+            document.getElementById('step2').style.display = 'block';
+            document.querySelectorAll('.booking-step').forEach(s => {
+              s.classList.remove('active','completed');
+              if (parseInt(s.dataset.step) < 2) s.classList.add('completed');
+              if (parseInt(s.dataset.step) === 2) s.classList.add('active');
+            });
+          }, 300);
+          break;
+        }
+      }
+    }
+  }
+  loadExtraServices();
 
   function goToStep(step) {
     // Validation
