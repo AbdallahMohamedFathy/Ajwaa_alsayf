@@ -79,12 +79,7 @@
         <div class="step-line"></div>
         <div class="booking-step" data-step="2">
           <div class="step-number">2</div>
-          <span class="step-label">التفاصيل</span>
-        </div>
-        <div class="step-line"></div>
-        <div class="booking-step" data-step="3">
-          <div class="step-number">3</div>
-          <span class="step-label">الموعد</span>
+          <span class="step-label">التفاصيل والموعد</span>
         </div>
       </div>
 
@@ -117,10 +112,10 @@
         </div>
       </div>
 
-      <!-- Step 2: AC Details -->
+      <!-- Step 2: Details + Appointment -->
       <div class="booking-form-card" id="step2" style="display:none;">
         <h2 style="font-size:1.3rem;font-weight:800;margin-bottom:24px;color:var(--gray-900);">
-          <i class="fas fa-snowflake" style="color:var(--primary);margin-left:8px;"></i> تفاصيل التكييف
+          <i class="fas fa-snowflake" style="color:var(--primary);margin-left:8px;"></i> تفاصيل الطلب والموعد
         </h2>
         <div class="form-row">
           <div class="form-group">
@@ -147,33 +142,6 @@
             </select>
           </div>
         </div>
-        <div class="form-group">
-          <label>وصف المشكلة</label>
-          <textarea class="form-control" id="bookDesc" placeholder="اشرح المشكلة بالتفصيل (اختياري)..." rows="3"></textarea>
-        </div>
-        <div class="form-group">
-          <label>صورة للعطل (اختياري)</label>
-          <div class="file-upload" onclick="document.getElementById('bookImage').click();">
-            <i class="fas fa-cloud-upload-alt" style="display:block;"></i>
-            <p id="fileLabel">اضغط لرفع صورة أو اسحب الملف هنا</p>
-            <input type="file" id="bookImage" accept="image/*" style="display:none;" onchange="document.getElementById('fileLabel').textContent=this.files[0]?.name || 'اضغط لرفع صورة';">
-          </div>
-        </div>
-        <div style="display:flex;justify-content:space-between;margin-top:8px;">
-          <button class="btn btn-outline" onclick="goToStep(1)">
-            <i class="fas fa-arrow-right"></i> السابق
-          </button>
-          <button class="btn btn-primary btn-lg" onclick="goToStep(3)">
-            التالي <i class="fas fa-arrow-left"></i>
-          </button>
-        </div>
-      </div>
-
-      <!-- Step 3: Appointment -->
-      <div class="booking-form-card" id="step3" style="display:none;">
-        <h2 style="font-size:1.3rem;font-weight:800;margin-bottom:24px;color:var(--gray-900);">
-          <i class="fas fa-clock" style="color:var(--primary);margin-left:8px;"></i> اختيار الموعد
-        </h2>
         <div class="form-row">
           <div class="form-group">
             <label>التاريخ المفضل *</label>
@@ -190,15 +158,20 @@
             </select>
           </div>
         </div>
-
-        <!-- Summary -->
-        <div style="background:var(--gray-50);border-radius:var(--radius-md);padding:20px;margin:16px 0;">
-          <h3 style="font-size:0.95rem;font-weight:700;margin-bottom:12px;color:var(--gray-800);">ملخص الحجز</h3>
-          <div id="bookingSummary" style="font-size:0.88rem;color:var(--gray-600);line-height:2;"></div>
+        <div class="form-group">
+          <label>وصف المشكلة</label>
+          <textarea class="form-control" id="bookDesc" placeholder="اشرح المشكلة بالتفصيل (اختياري)..." rows="3"></textarea>
         </div>
-
+        <div class="form-group">
+          <label>صورة للعطل (اختياري)</label>
+          <div class="file-upload" onclick="document.getElementById('bookImage').click();">
+            <i class="fas fa-cloud-upload-alt" style="display:block;"></i>
+            <p id="fileLabel">اضغط لرفع صورة أو اسحب الملف هنا</p>
+            <input type="file" id="bookImage" accept="image/*" style="display:none;" onchange="document.getElementById('fileLabel').textContent=this.files[0]?.name || 'اضغط لرفع صورة';">
+          </div>
+        </div>
         <div style="display:flex;justify-content:space-between;margin-top:8px;">
-          <button class="btn btn-outline" onclick="goToStep(2)">
+          <button class="btn btn-outline" onclick="goToStep(1)">
             <i class="fas fa-arrow-right"></i> السابق
           </button>
           <button class="btn btn-primary btn-lg" onclick="submitBooking()">
@@ -277,16 +250,6 @@
       for (let i = 0; i < sel.options.length; i++) {
         if (sel.options[i].value === decoded || sel.options[i].textContent === decoded) {
           sel.selectedIndex = i;
-          // Jump to step 2 smoothly after a tiny delay
-          setTimeout(() => {
-            document.querySelectorAll('.booking-form-card').forEach(c => c.style.display = 'none');
-            document.getElementById('step2').style.display = 'block';
-            document.querySelectorAll('.booking-step').forEach(s => {
-              s.classList.remove('active','completed');
-              if (parseInt(s.dataset.step) < 2) s.classList.add('completed');
-              if (parseInt(s.dataset.step) === 2) s.classList.add('active');
-            });
-          }, 300);
           break;
         }
       }
@@ -295,18 +258,11 @@
   loadExtraServices();
 
   function goToStep(step) {
-    // Validation
     if (step === 2) {
       const name = document.getElementById('bookName').value.trim();
       const phone = document.getElementById('bookPhone').value.trim();
       const address = document.getElementById('bookAddress').value.trim();
       if (!name || !phone || !address) { showToast('يرجى ملء جميع البيانات المطلوبة'); return; }
-    }
-    if (step === 3) {
-      const acType = document.getElementById('bookACType').value;
-      const service = document.getElementById('bookService').value;
-      if (!acType || !service) { showToast('يرجى اختيار نوع التكييف والخدمة'); return; }
-      updateSummary();
     }
 
     document.querySelectorAll('.booking-form-card').forEach(c => c.style.display = 'none');
@@ -320,17 +276,6 @@
     });
 
     window.scrollTo({ top: 300, behavior: 'smooth' });
-  }
-
-  function updateSummary() {
-    const summary = document.getElementById('bookingSummary');
-    summary.innerHTML = `
-      <div><strong>الاسم:</strong> ${document.getElementById('bookName').value}</div>
-      <div><strong>الهاتف:</strong> ${document.getElementById('bookPhone').value}</div>
-      <div><strong>العنوان:</strong> ${document.getElementById('bookAddress').value}</div>
-      <div><strong>نوع التكييف:</strong> ${document.getElementById('bookACType').value}</div>
-      <div><strong>الخدمة:</strong> ${document.getElementById('bookService').value}</div>
-    `;
   }
 
   // Auth Gate
