@@ -22,6 +22,39 @@
 
 <body>
 
+  <!-- ═══ Quick View Modal ═══ -->
+  <div class="modal-overlay" id="quickViewModal">
+    <!-- Populated dynamically -->
+  </div>
+
+  <!-- ═══ Review Modal ═══ -->
+  <div class="modal-overlay" id="reviewModal">
+    <div class="modal" style="max-width:500px;">
+      <div class="modal-header">
+        <h3>أضف تقييمك</h3>
+        <button onclick="document.getElementById('reviewModal').classList.remove('active')"
+          style="background:none;font-size:1.2rem;color:var(--gray-500);"><i class="fas fa-times"></i></button>
+      </div>
+      <div class="modal-body">
+        <div class="form-group">
+          <label>الاسم الكامل *</label>
+          <input type="text" class="form-control" id="reviewName" placeholder="اكتب اسمك">
+        </div>
+        <div class="form-group">
+          <label>المدينة *</label>
+          <input type="text" class="form-control" id="reviewCity" placeholder="مثال: الرياض">
+        </div>
+        <div class="form-group">
+          <label>التقييم *</label>
+          <textarea class="form-control" id="reviewText" rows="4" placeholder="اكتب رأيك في خدمتنا..."></textarea>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-primary" onclick="submitReview()"><i class="fas fa-paper-plane"></i> إرسال التقييم</button>
+      </div>
+    </div>
+  </div>
+
   <!-- Loading Screen -->
   <div class="loading-screen" id="loading">
     <div class="loading-spinner"></div>
@@ -200,40 +233,13 @@
         <div class="section-badge"><i class="fas fa-comments"></i> آراء العملاء</div>
         <h2 class="section-title">ماذا يقول <span>عملاؤنا</span></h2>
       </div>
-      <div class="testimonials-grid">
-        <div class="testimonial-card" data-aos="fade-up" data-aos-delay="0">
-          <i class="fas fa-quote-right quote-icon"></i>
-          <p class="testimonial-text">خدمة ممتازة وتركيب احترافي جداً. التكييف شغال زي الفل والفنيين محترمين ومتعاونين.
-            أنصح الكل بالتعامل معاهم.</p>
-          <div class="testimonial-author">
-            <div class="testimonial-avatar">أ</div>
-            <div>
-              <h4>أحمد محمد</h4><span>القاهرة</span>
-            </div>
-          </div>
-        </div>
-        <div class="testimonial-card" data-aos="fade-up" data-aos-delay="100">
-          <i class="fas fa-quote-right quote-icon"></i>
-          <p class="testimonial-text">أسعار ممتازة مقارنة بالسوق وجودة التركيب عالية جداً. الضمان ريحني وخدمة ما بعد
-            البيع ممتازة.</p>
-          <div class="testimonial-author">
-            <div class="testimonial-avatar">س</div>
-            <div>
-              <h4>سارة أحمد</h4><span>الإسكندرية</span>
-            </div>
-          </div>
-        </div>
-        <div class="testimonial-card" data-aos="fade-up" data-aos-delay="200">
-          <i class="fas fa-quote-right quote-icon"></i>
-          <p class="testimonial-text">عملت صيانة لـ 3 تكييفات وكلهم رجعوا زي الجداد. الفنيين شغلهم نضيف ومواعيدهم
-            مظبوطة. شكراً أجواء الصيف!</p>
-          <div class="testimonial-author">
-            <div class="testimonial-avatar">م</div>
-            <div>
-              <h4>محمد علي</h4><span>الجيزة</span>
-            </div>
-          </div>
-        </div>
+      <div class="testimonials-grid" id="testimonialsGrid">
+        <!-- Loaded dynamically from Firestore -->
+      </div>
+      <div style="text-align:center; margin-top:30px;" data-aos="fade-up">
+        <button class="btn btn-primary" onclick="document.getElementById('reviewModal').classList.add('active')">
+          <i class="fas fa-pencil-alt"></i> أضف تقييمك
+        </button>
       </div>
     </div>
   </section>

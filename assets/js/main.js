@@ -72,6 +72,7 @@ document.addEventListener('DOMContentLoaded', () => {
   initSaaSAdminInterface();
   // Load products from Firestore (replaces static data)
   loadProductsFromFirestore();
+  loadTestimonials();
 
   // Auth-dependent navbar (waits for Firebase)
   onAuthReady(() => updateNavbarAuth());
@@ -1287,4 +1288,75 @@ function triggerReportExport(type) {
       }, 500);
     }
   }, 100);
+}
+
+// ═══ Reviews System ═══
+async function loadTestimonials() {
+  const grid = document.getElementById('testimonialsGrid');
+  if (!grid) return;
+  grid.innerHTML = '<div style="text-align:center;grid-column:1/-1;"><i class="fas fa-spinner fa-spin fa-2x" style="color:var(--primary);"></i></div>';
+  try {
+    const snapshot = await db.collection('reviews').orderBy('createdAt', 'desc').limit(6).get();
+    if (snapshot.empty) {
+      grid.innerHTML = '<p style="text-align:center;grid-column:1/-1;color:var(--gray-500);">لا توجد تقييمات حتى الآن. كن أول من يضيف تقييماً!</p>';
+      return;
+    }
+    grid.innerHTML = snapshot.docs.map((doc, idx) => {
+      const data = doc.data();
+      const firstLetter = data.name ? data.name.charAt(0) : 'ع';
+      const delay = idx * 100;
+      return `
+        <div class="testimonial-card" data-aos="fade-up" data-aos-delay="${delay}">
+          <i class="fas fa-quote-right quote-icon"></i>
+          <p class="testimonial-text">${data.text}</p>
+          <div class="testimonial-author">
+            <div class="testimonial-avatar">${firstLetter}</div>
+            <div>
+              <h4>${data.name}</h4><span>${data.city}</span>
+            </div>
+          </div>
+        </div>
+      `;
+    }).join('');
+  } catch (error) {
+    grid.innerHTML = '<p style="text-align:center;grid-column:1/-1;color:var(--danger);">خطأ في تحميل التقييمات.</p>';
+  }
+}
+
+async function submitReview() {
+  const name = document.getElementById('reviewName').value.trim();
+  const city = document.getElementById('reviewCity').value.trim();
+  const text = document.getElementById('reviewText').value.trim();
+
+  if (!name || !city || !text) {
+    showToast('يرجى ملء جميع الحقول المطلوبة ⚠️');
+    return;
+  }
+
+  const btn = document.querySelector('#reviewModal .btn-primary');
+  const originalHtml = btn.innerHTML;
+  btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> جاري الإرسال...';
+  btn.disabled = true;
+
+  try {
+    await db.collection('reviews').add({
+      name,
+      city,
+      text,
+      createdAt: firebase.firestore.FieldValue.serverTimestamp()
+    });
+    
+    showToast('تم إرسال تقييمك بنجاح ✓');
+    document.getElementById('reviewModal').classList.remove('active');
+    document.getElementById('reviewName').value = '';
+    document.getElementById('reviewCity').value = '';
+    document.getElementById('reviewText').value = '';
+    
+    loadTestimonials();
+  } catch (error) {
+    showToast('خطأ أثناء إرسال التقييم: ' + error.message);
+  } finally {
+    btn.innerHTML = originalHtml;
+    btn.disabled = false;
+  }
 }
