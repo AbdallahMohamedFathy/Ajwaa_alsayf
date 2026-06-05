@@ -81,31 +81,45 @@
           <h1 class="admin-page-title">👋 مرحباً بك في لوحة التحكم</h1>
           <div class="stats-grid">
             <div class="stat-card">
-              <div class="stat-icon blue"><i class="fas fa-shopping-bag"></i></div>
-              <div class="stat-info">
-                <h4>إجمالي الطلبات</h4>
-                <div class="stat-val" id="statOrders">-</div>
-              </div>
-            </div>
-            <div class="stat-card">
-              <div class="stat-icon green"><i class="fas fa-money-bill-wave"></i></div>
+              <div class="stat-icon blue"><i class="fas fa-coins"></i></div>
               <div class="stat-info">
                 <h4>إجمالي الإيرادات</h4>
                 <div class="stat-val" id="statRevenue">-</div>
               </div>
             </div>
             <div class="stat-card">
-              <div class="stat-icon orange"><i class="fas fa-users"></i></div>
+              <div class="stat-icon green"><i class="fas fa-shopping-bag"></i></div>
               <div class="stat-info">
-                <h4>العملاء</h4>
+                <h4>إجمالي الطلبات</h4>
+                <div class="stat-val" id="statOrders">-</div>
+              </div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-icon orange"><i class="fas fa-calendar-check"></i></div>
+              <div class="stat-info">
+                <h4>إجمالي الحجوزات</h4>
+                <div class="stat-val" id="statBookings">-</div>
+              </div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-icon purple"><i class="fas fa-users"></i></div>
+              <div class="stat-info">
+                <h4>إجمالي العملاء</h4>
                 <div class="stat-val" id="statCustomers">-</div>
               </div>
             </div>
             <div class="stat-card">
-              <div class="stat-icon purple"><i class="fas fa-calendar-check"></i></div>
+              <div class="stat-icon" style="background:#fef3c7;"><i class="fas fa-clock" style="color:#f59e0b;"></i></div>
               <div class="stat-info">
-                <h4>حجوزات الصيانة</h4>
-                <div class="stat-val" id="statBookings">-</div>
+                <h4>طلبات معلقة</h4>
+                <div class="stat-val" id="statPendingOrders">-</div>
+              </div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-icon" style="background:#fce7f3;"><i class="fas fa-wrench" style="color:#ec4899;"></i></div>
+              <div class="stat-info">
+                <h4>حجوزات معلقة</h4>
+                <div class="stat-val" id="statPendingBookings">-</div>
               </div>
             </div>
           </div>
@@ -118,7 +132,7 @@
             <div class="chart-card">
               <div class="chart-card-header">
                 <h3>توزيع حالات الطلبات</h3>
-              </div><canvas id="ordersStatusChart"></canvas>
+              </div><canvas id="dashOrdersChart"></canvas>
             </div>
           </div>
           <div class="data-table-card">
@@ -395,18 +409,31 @@
           </div>
         </div>
 
+        <!-- ═══ Analytics ═══ -->
         <div id="analytics-sec" style="display:none;">
           <h1 class="admin-page-title">📊 التحليلات</h1>
-          <div class="charts-grid" style="grid-template-columns:1fr 1fr;">
+
+          <!-- Row 1: Monthly Revenue + Orders Status -->
+          <div class="charts-grid" style="grid-template-columns:2fr 1fr;margin-bottom:24px;">
             <div class="chart-card">
-              <div class="chart-card-header">
-                <h3>الإيرادات الأسبوعية</h3>
-              </div><canvas id="revenueChart"></canvas>
+              <div class="chart-card-header"><h3>الإيرادات الشهرية</h3></div>
+              <canvas id="revenueChart"></canvas>
             </div>
             <div class="chart-card">
-              <div class="chart-card-header">
-                <h3>توزيع الخدمات</h3>
-              </div><canvas id="servicesChart"></canvas>
+              <div class="chart-card-header"><h3>حالات الطلبات</h3></div>
+              <canvas id="ordersStatusChart"></canvas>
+            </div>
+          </div>
+
+          <!-- Row 2: Services + Bookings Status -->
+          <div class="charts-grid" style="grid-template-columns:1fr 1fr;">
+            <div class="chart-card">
+              <div class="chart-card-header"><h3>الحجوزات الشهرية</h3></div>
+              <canvas id="servicesChart"></canvas>
+            </div>
+            <div class="chart-card">
+              <div class="chart-card-header"><h3>حالات الحجوزات</h3></div>
+              <canvas id="bookingsStatusChart"></canvas>
             </div>
           </div>
         </div>
@@ -417,8 +444,6 @@
             <h1 class="admin-page-title" style="margin:0;">🛠️ الخدمات الإضافية</h1>
             <button class="btn btn-primary" onclick="openServiceModal()"><i class="fas fa-plus"></i> إضافة خدمة</button>
           </div>
-
-          <!-- Fixed 5 (read-only) -->
           <div class="data-table-card" style="margin-bottom:24px;">
             <div class="table-header"><h3>🔒 الخدمات الثابتة (لا يمكن حذفها)</h3></div>
             <table class="data-table">
@@ -432,19 +457,15 @@
               </tbody>
             </table>
           </div>
-
-          <!-- Extra services (admin-added) -->
           <div class="data-table-card">
             <div class="table-header"><h3>➕ الخدمات المضافة</h3></div>
             <table class="data-table">
               <thead><tr><th>اسم الخدمة</th><th>إجراء</th></tr></thead>
               <tbody id="extraServicesBody">
-                <tr><td colspan="2" style="text-align:center;color:var(--gray-400);">&#x062c;&#x627;&#x631;&#x64A; &#x627;&#x644;&#x62A;&#x62D;&#x645;&#x64A;&#x644;...</td></tr>
+                <tr><td colspan="2" style="text-align:center;color:var(--gray-400);">جاري التحميل...</td></tr>
               </tbody>
             </table>
           </div>
-        </div>
-
         </div>
 
         <!-- ═══ Reviews Management ═══ -->
@@ -1229,15 +1250,18 @@
       try {
         const [orders, users, bookings] = await Promise.all([getOrders(), getAllUsers(), getBookings()]);
 
-        const revenue = orders.filter(o => o.status !== 'cancelled').reduce((s, o) => s + (o.total || 0), 0);
-        document.getElementById('statOrders').textContent = orders.length;
-        document.getElementById('statRevenue').textContent = revenue.toLocaleString() + ' ر.س';
-        document.getElementById('statCustomers').textContent = users.length;
-        document.getElementById('statBookings').textContent = bookings.length;
-
-        const pending = orders.filter(o => o.status === 'pending').length;
+        const revenue  = orders.filter(o => o.status !== 'cancelled').reduce((s, o) => s + (o.total || 0), 0);
+        const pending  = orders.filter(o => o.status === 'pending').length;
         const bPending = bookings.filter(b => b.status === 'pending').length;
-        document.getElementById('pendingOrdersBadge').textContent = pending;
+
+        document.getElementById('statRevenue').textContent         = revenue.toLocaleString() + ' ر.س';
+        document.getElementById('statOrders').textContent          = orders.length;
+        document.getElementById('statBookings').textContent        = bookings.length;
+        document.getElementById('statCustomers').textContent       = users.length;
+        document.getElementById('statPendingOrders').textContent   = pending;
+        document.getElementById('statPendingBookings').textContent = bPending;
+
+        document.getElementById('pendingOrdersBadge').textContent  = pending;
         document.getElementById('pendingBookingsBadge').textContent = bPending;
         if (pending + bPending > 0) document.getElementById('notifDot').style.display = 'block';
 
@@ -1286,7 +1310,7 @@
     }
 
     function renderStatusChart(counts) {
-      const ctx = document.getElementById('ordersStatusChart')?.getContext('2d');
+      const ctx = document.getElementById('dashOrdersChart')?.getContext('2d');
       if (!ctx) return;
       new Chart(ctx, {
         type: 'doughnut',
@@ -1726,31 +1750,108 @@
       } catch (e) { tbody.innerHTML = '<tr><td colspan="4" style="text-align:center;color:var(--danger);">خطأ في التحميل</td></tr>'; }
     }
 
-    // ─── Analytics Charts ───
-    function initAnalyticsCharts() {
-      const rc = document.getElementById('revenueChart')?.getContext('2d');
-      if (rc && !rc._chartCreated) {
-        rc._chartCreated = true;
-        new Chart(rc, {
+    // ─── Analytics Charts (real Firestore data) ───
+    let _analyticsCharts = {};
+
+    async function initAnalyticsCharts() {
+      try {
+        const [orders, bookings, users] = await Promise.all([
+          getOrders().catch(() => []),
+          getBookings().catch(() => []),
+          getAllUsers().catch(() => [])
+        ]);
+
+
+        // ── Monthly revenue ──
+        const months = ['يناير','فبراير','مارس','أبريل','مايو','يونيو','يوليو','أغسطس','سبتمبر','أكتوبر','نوفمبر','ديسمبر'];
+        const monthlyRev = new Array(12).fill(0);
+        orders.filter(o => o.status !== 'cancelled').forEach(o => {
+          const d = o.createdAt?.toDate ? o.createdAt.toDate() : new Date();
+          monthlyRev[d.getMonth()] += o.total || 0;
+        });
+
+        // ── Orders status ──
+        const oStatus = {
+          'في الانتظار': orders.filter(o => o.status === 'pending').length,
+          'جاري التوصيل': orders.filter(o => o.status === 'shipping').length,
+          'مكتمل': orders.filter(o => ['completed','delivered'].includes(o.status)).length,
+          'ملغي': orders.filter(o => o.status === 'cancelled').length,
+        };
+
+        // ── Monthly bookings count ──
+        const monthlyBookings = new Array(12).fill(0);
+        bookings.forEach(b => {
+          const d = b.createdAt?.toDate ? b.createdAt.toDate() : new Date();
+          monthlyBookings[d.getMonth()]++;
+        });
+
+        // ── Bookings status ──
+        const bStatus = {
+          'في الانتظار': bookings.filter(b => b.status === 'pending').length,
+          'تم التأكيد':  bookings.filter(b => b.status === 'confirmed').length,
+          'مكتمل':       bookings.filter(b => b.status === 'completed').length,
+          'ملغي':        bookings.filter(b => b.status === 'cancelled').length,
+        };
+
+        // destroy any existing Chart.js instance on each canvas
+        ['revenueChart','ordersStatusChart','servicesChart','bookingsStatusChart','dashOrdersChart'].forEach(id => {
+          const existing = Chart.getChart(id);
+          if (existing) existing.destroy();
+        });
+
+        const font = { family: 'Cairo', size: 12 };
+        const chartOpts = (extra = {}) => ({
+          responsive: true,
+          plugins: { legend: { position: 'bottom', labels: { font, padding: 14, boxWidth: 14 } } },
+          ...extra
+        });
+
+        // Revenue bar
+        const rc = document.getElementById('revenueChart')?.getContext('2d');
+        if (rc) _analyticsCharts.rev = new Chart(rc, {
+          type: 'bar',
+          data: { labels: months, datasets: [{ label: 'ر.س', data: monthlyRev, backgroundColor: 'rgba(0,123,255,0.75)', borderRadius: 8 }] },
+          options: { ...chartOpts({ plugins: { legend: { display: false } } }), scales: { y: { beginAtZero: true, ticks: { font } }, x: { ticks: { font } } } }
+        });
+
+        // Orders status doughnut
+        const osc = document.getElementById('ordersStatusChart')?.getContext('2d');
+        if (osc) _analyticsCharts.oStatus = new Chart(osc, {
+          type: 'doughnut',
+          data: { labels: Object.keys(oStatus), datasets: [{ data: Object.values(oStatus), backgroundColor: ['#f59e0b','#3b82f6','#10b981','#ef4444'], borderWidth: 0 }] },
+          options: { ...chartOpts(), cutout: '62%' }
+        });
+
+        // Monthly bookings bar
+        const sc = document.getElementById('servicesChart')?.getContext('2d');
+        if (sc) _analyticsCharts.svc = new Chart(sc, {
           type: 'bar',
           data: {
-            labels: ['سبت', 'أحد', 'اثنين', 'ثلاثاء', 'أربعاء', 'خميس', 'جمعة'],
-            datasets: [{ label: 'الإيرادات', data: [12000, 18000, 15000, 22000, 28000, 35000, 19000], backgroundColor: 'rgba(0,123,255,0.7)', borderRadius: 8 }]
+            labels: months,
+            datasets: [{
+              label: 'عدد الحجوزات',
+              data: monthlyBookings,
+              backgroundColor: 'rgba(16,185,129,0.75)',
+              borderRadius: 8
+            }]
           },
-          options: { responsive: true, plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true } } }
+          options: {
+            ...chartOpts({ plugins: { legend: { display: false } } }),
+            scales: { y: { beginAtZero: true, ticks: { font, precision: 0 } }, x: { ticks: { font } } }
+          }
         });
-      }
-      const sc = document.getElementById('servicesChart')?.getContext('2d');
-      if (sc && !sc._chartCreated) {
-        sc._chartCreated = true;
-        new Chart(sc, {
-          type: 'pie',
-          data: {
-            labels: ['تركيب', 'صيانة', 'غسيل', 'فريون', 'كشف أعطال'],
-            datasets: [{ data: [30, 25, 20, 15, 10], backgroundColor: ['#007BFF', '#00D4FF', '#10b981', '#f59e0b', '#8b5cf6'] }]
-          },
-          options: { responsive: true, plugins: { legend: { position: 'bottom', labels: { font: { family: 'Cairo' } } } } }
+
+        // Bookings status doughnut
+        const bsc = document.getElementById('bookingsStatusChart')?.getContext('2d');
+        if (bsc) _analyticsCharts.bStatus = new Chart(bsc, {
+          type: 'doughnut',
+          data: { labels: Object.keys(bStatus), datasets: [{ data: Object.values(bStatus), backgroundColor: ['#f59e0b','#3b82f6','#10b981','#ef4444'], borderWidth: 0 }] },
+          options: { ...chartOpts(), cutout: '62%' }
         });
+
+      } catch(e) {
+        console.error('Analytics error:', e);
+        document.getElementById('analyticsKPIs').innerHTML = `<div style="color:var(--danger);">خطأ في تحميل البيانات</div>`;
       }
     }
 
@@ -1796,8 +1897,10 @@
     </div>`;
         return;
       }
-      grid.innerHTML = items.map(item => `
-    <div class="portfolio-admin-card">
+      grid.innerHTML = items.map(item => {
+        const isActive = item.active !== false;
+        return `
+    <div class="portfolio-admin-card" style="opacity:${isActive ? '1' : '0.65'};">
       <div class="portfolio-admin-thumb">
         ${item.type === 'photo' && item.mediaUrl
           ? `<img src="${item.mediaUrl}" alt="${item.title}" loading="lazy">`
@@ -1809,21 +1912,29 @@
         }
         ${item.badge ? `<span class="pa-badge" style="background:${item.badgeColor || '#007BFF'}">${item.badge}</span>` : ''}
         <div class="pa-type-icon"><i class="fas fa-${item.type === 'video' ? 'play' : 'camera'}"></i></div>
+        <div style="position:absolute;top:8px;left:8px;">
+          <span style="background:${isActive ? '#10b981' : '#6b7280'};color:#fff;font-size:0.68rem;font-weight:700;padding:3px 8px;border-radius:20px;">
+            <i class="fas fa-${isActive ? 'eye' : 'eye-slash'}"></i> ${isActive ? 'ظاهر' : 'مخفي'}
+          </span>
+        </div>
       </div>
       <div class="portfolio-admin-body">
         <h4 title="${item.title}">${item.title}</h4>
         ${item.location ? `<p><i class="fas fa-map-marker-alt" style="color:var(--primary);margin-left:4px;"></i>${item.location}</p>` : ''}
       </div>
       <div class="portfolio-admin-actions">
+        <button class="btn btn-sm" style="flex:1;background:${isActive ? '#6b7280' : '#10b981'};color:#fff;" onclick="togglePortfolioActive('${item.firestoreId}',${isActive})" title="${isActive ? 'إخفاء من الموقع' : 'إظهار في الموقع'}">
+          <i class="fas fa-${isActive ? 'eye-slash' : 'eye'}"></i>
+        </button>
         <button class="btn btn-outline btn-sm" style="flex:1;" onclick="editPortfolioItem('${item.firestoreId}')">
-          <i class="fas fa-edit"></i> تعديل
+          <i class="fas fa-edit"></i>
         </button>
         <button class="btn btn-sm" style="flex:1;background:var(--danger);color:#fff;" onclick="deletePortfolioItemAdmin('${item.firestoreId}','${item.title}')">
           <i class="fas fa-trash"></i>
         </button>
       </div>
     </div>
-  `).join('');
+  `}).join('');
     }
 
     function filterAdminPortfolio(type, btn) {
@@ -1974,7 +2085,7 @@
           await updatePortfolioItem(editId, data);
           showToast('تم تحديث العمل بنجاح ✅');
         } else {
-          await createPortfolioItem(data);
+          await createPortfolioItem({ ...data, active: true });
           showToast('تم إضافة العمل بنجاح ✅');
         }
 
@@ -2026,6 +2137,16 @@
         loadAdminPortfolio();
       } catch (e) {
         showToast('خطأ في الحذف: ' + e.message);
+      }
+    }
+
+    async function togglePortfolioActive(id, currentActive) {
+      try {
+        await updatePortfolioItem(id, { active: !currentActive });
+        showToast(currentActive ? 'تم إخفاء العمل من الموقع' : 'تم إظهار العمل في الموقع ✓');
+        loadAdminPortfolio();
+      } catch (e) {
+        showToast('خطأ في التحديث');
       }
     }
 

@@ -117,45 +117,51 @@
         <h2 style="font-size:1.3rem;font-weight:800;margin-bottom:24px;color:var(--gray-900);">
           <i class="fas fa-snowflake" style="color:var(--primary);margin-left:8px;"></i> تفاصيل الطلب والموعد
         </h2>
-        <div class="form-row">
-          <div class="form-group">
-            <label>نوع التكييف *</label>
-            <select class="form-control" id="bookACType">
-              <option value="">اختر النوع</option>
-              <option>سبليت (Split)</option>
-              <option>شباك (Window)</option>
-              <option>مركزي (Central)</option>
-              <option>كونسيلد (Concealed)</option>
-              <option>بورتابل (Portable)</option>
-            </select>
-          </div>
-          <div class="form-group">
-            <label>الخدمة المطلوبة *</label>
-            <select class="form-control" id="bookService">
-              <option value="">اختر الخدمة</option>
-              <option value="تركيب جديد">تركيب جديد</option>
-              <option value="صيانة عامة">صيانة عامة</option>
-              <option value="غسيل وتنظيف">غسيل وتنظيف</option>
-              <option value="شحن فريون">شحن فريون</option>
-              <option value="كشف أعطال">كشف أعطال</option>
-              <!-- extra services loaded by JS -->
-            </select>
-          </div>
+        <div class="form-group">
+          <label>الخدمة المطلوبة *</label>
+          <select class="form-control" id="bookService">
+            <option value="">اختر الخدمة</option>
+            <option value="تركيب جديد">تركيب جديد</option>
+            <option value="صيانة عامة">صيانة عامة</option>
+            <option value="غسيل وتنظيف">غسيل وتنظيف</option>
+            <option value="شحن فريون">شحن فريون</option>
+            <option value="كشف أعطال">كشف أعطال</option>
+            <!-- extra services loaded by JS -->
+          </select>
         </div>
-        <div class="form-row">
-          <div class="form-group">
-            <label>التاريخ المفضل *</label>
-            <input type="date" class="form-control" id="bookDate">
-          </div>
-          <div class="form-group">
-            <label>الوقت المفضل *</label>
-            <select class="form-control" id="bookTime">
-              <option value="">اختر الوقت</option>
-              <option>صباحاً (9 - 12)</option>
-              <option>ظهراً (12 - 3)</option>
-              <option>عصراً (3 - 6)</option>
-              <option>مساءً (6 - 9)</option>
-            </select>
+
+        <!-- Date Picker -->
+        <div class="form-group">
+          <label>التاريخ المفضل *</label>
+          <input type="hidden" id="bookDate">
+          <div class="date-picker-scroll" id="datePicker"></div>
+        </div>
+
+        <!-- Time Slots -->
+        <div class="form-group" id="timeSlotGroup" style="display:none;">
+          <label>الوقت المفضل *</label>
+          <input type="hidden" id="bookTime">
+          <div class="time-slots-grid">
+            <button type="button" class="time-slot-card" onclick="selectTimeSlot(this,'صباحاً (9 - 12)')">
+              <i class="fas fa-sun"></i>
+              <span class="time-slot-label">صباحاً</span>
+              <span class="time-slot-hours">9 - 12</span>
+            </button>
+            <button type="button" class="time-slot-card" onclick="selectTimeSlot(this,'ظهراً (12 - 3)')">
+              <i class="fas fa-cloud-sun"></i>
+              <span class="time-slot-label">ظهراً</span>
+              <span class="time-slot-hours">12 - 3</span>
+            </button>
+            <button type="button" class="time-slot-card" onclick="selectTimeSlot(this,'عصراً (3 - 6)')">
+              <i class="fas fa-cloud"></i>
+              <span class="time-slot-label">عصراً</span>
+              <span class="time-slot-hours">3 - 6</span>
+            </button>
+            <button type="button" class="time-slot-card" onclick="selectTimeSlot(this,'مساءً (6 - 9)')">
+              <i class="fas fa-moon"></i>
+              <span class="time-slot-label">مساءً</span>
+              <span class="time-slot-hours">6 - 9</span>
+            </button>
           </div>
         </div>
         <div class="form-group">
@@ -223,9 +229,38 @@
   <script src="assets/js/firebase-config.js"></script>
   <script src="assets/js/main.js"></script>
 <script>
-  // Set min date to today
-  const dateInput = document.getElementById('bookDate');
-  if (dateInput) dateInput.min = new Date().toISOString().split('T')[0];
+  // ── Date Picker ──
+  (function buildDatePicker() {
+    const container = document.getElementById('datePicker');
+    if (!container) return;
+    const days = ['الأحد','الاثنين','الثلاثاء','الأربعاء','الخميس','الجمعة','السبت'];
+    const months = ['يناير','فبراير','مارس','أبريل','مايو','يونيو','يوليو','أغسطس','سبتمبر','أكتوبر','نوفمبر','ديسمبر'];
+    const today = new Date();
+    for (let i = 1; i <= 14; i++) {
+      const d = new Date(today);
+      d.setDate(today.getDate() + i);
+      const isoDate = d.toISOString().split('T')[0];
+      const card = document.createElement('button');
+      card.type = 'button';
+      card.className = 'date-pick-card';
+      card.dataset.value = isoDate;
+      card.innerHTML = `<span class="dp-day">${days[d.getDay()]}</span><span class="dp-num">${d.getDate()}</span><span class="dp-month">${months[d.getMonth()]}</span>`;
+      card.addEventListener('click', function() {
+        document.querySelectorAll('.date-pick-card').forEach(c => c.classList.remove('selected'));
+        this.classList.add('selected');
+        document.getElementById('bookDate').value = this.dataset.value;
+        document.getElementById('timeSlotGroup').style.display = 'block';
+        document.getElementById('timeSlotGroup').scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+      });
+      container.appendChild(card);
+    }
+  })();
+
+  function selectTimeSlot(el, value) {
+    document.querySelectorAll('.time-slot-card').forEach(c => c.classList.remove('selected'));
+    el.classList.add('selected');
+    document.getElementById('bookTime').value = value;
+  }
 
   // ── Auto-fill service from URL param ──
   const _urlParams = new URLSearchParams(window.location.search);

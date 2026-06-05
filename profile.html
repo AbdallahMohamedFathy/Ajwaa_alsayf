@@ -481,8 +481,9 @@
         const dateStr = bk.createdAt?.toDate ? bk.createdAt.toDate().toLocaleDateString('ar-SA', { year:'numeric', month:'long', day:'numeric' }) : 'غير متوفر';
         let stLabel = 'قيد الانتظار';
         let stColor = '#f59e0b';
-        if (bk.status === 'completed') { stLabel = 'مكتمل'; stColor = '#10b981'; }
-        else if (bk.status === 'cancelled') { stLabel = 'ملغى'; stColor = '#ef4444'; }
+        if (bk.status === 'confirmed')      { stLabel = 'تم التأكيد'; stColor = '#3b82f6'; }
+        else if (bk.status === 'completed') { stLabel = 'مكتمل';      stColor = '#10b981'; }
+        else if (bk.status === 'cancelled') { stLabel = 'ملغى';       stColor = '#ef4444'; }
         
         return `
           <div class="order-card">

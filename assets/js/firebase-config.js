@@ -235,6 +235,10 @@ async function getPortfolioItems() {
   const snap = await db.collection('portfolio').orderBy('createdAt', 'desc').get();
   return snap.docs.map(d => ({ firestoreId: d.id, ...d.data() }));
 }
+async function getActivePortfolioItems() {
+  const snap = await db.collection('portfolio').orderBy('createdAt', 'desc').get();
+  return snap.docs.map(d => ({ firestoreId: d.id, ...d.data() })).filter(i => i.active !== false);
+}
 async function createPortfolioItem(data) {
   return await db.collection('portfolio').add({ ...data, createdAt: firebase.firestore.FieldValue.serverTimestamp() });
 }

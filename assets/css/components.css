@@ -221,6 +221,7 @@
   line-height: 1.4;
   display: -webkit-box;
   -webkit-line-clamp: 2;
+  line-clamp: 2;
   -webkit-box-orient: vertical;
   overflow: hidden;
 }
@@ -617,4 +618,120 @@ textarea.form-control {
   display: flex;
   justify-content: flex-start;
   gap: 10px;
+}
+
+/* ═══ Booking Date Picker ═══ */
+.date-picker-scroll {
+  display: flex;
+  gap: 10px;
+  overflow-x: auto;
+  padding-bottom: 8px;
+  scroll-snap-type: x mandatory;
+  -webkit-overflow-scrolling: touch;
+}
+.date-picker-scroll::-webkit-scrollbar { height: 4px; }
+.date-picker-scroll::-webkit-scrollbar-track { background: var(--gray-100); border-radius: 4px; }
+.date-picker-scroll::-webkit-scrollbar-thumb { background: var(--primary-light); border-radius: 4px; }
+
+.date-pick-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  min-width: 72px;
+  padding: 12px 8px;
+  border: 2px solid var(--gray-200);
+  border-radius: 14px;
+  background: #fff;
+  cursor: pointer;
+  scroll-snap-align: start;
+  transition: all 0.2s ease;
+  flex-shrink: 0;
+}
+.date-pick-card:hover {
+  border-color: var(--primary);
+  background: #f0f7ff;
+  transform: translateY(-2px);
+}
+.date-pick-card.selected {
+  border-color: var(--primary);
+  background: linear-gradient(135deg, var(--primary), #0056b3);
+  color: #fff;
+  box-shadow: 0 4px 14px rgba(0,123,255,0.35);
+  transform: translateY(-3px);
+}
+.dp-day {
+  font-size: 0.7rem;
+  font-weight: 600;
+  opacity: 0.75;
+  white-space: nowrap;
+}
+.dp-num {
+  font-size: 1.5rem;
+  font-weight: 900;
+  line-height: 1;
+}
+.dp-month {
+  font-size: 0.68rem;
+  font-weight: 600;
+  opacity: 0.75;
+}
+.date-pick-card.selected .dp-day,
+.date-pick-card.selected .dp-month { opacity: 0.85; }
+
+/* ═══ Booking Time Slots ═══ */
+.time-slots-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 10px;
+}
+@media (max-width: 500px) {
+  .time-slots-grid { grid-template-columns: repeat(2, 1fr); }
+}
+
+.time-slot-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 16px 8px;
+  border: 2px solid var(--gray-200);
+  border-radius: 14px;
+  background: #fff;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  font-family: 'Cairo', sans-serif;
+}
+.time-slot-card i {
+  font-size: 1.5rem;
+  color: var(--primary);
+  transition: color 0.2s;
+}
+.time-slot-label {
+  font-size: 0.9rem;
+  font-weight: 700;
+  color: var(--gray-800);
+}
+.time-slot-hours {
+  font-size: 0.75rem;
+  color: var(--gray-500);
+  font-weight: 600;
+}
+.time-slot-card:hover {
+  border-color: var(--primary);
+  background: #f0f7ff;
+  transform: translateY(-2px);
+}
+.time-slot-card.selected {
+  border-color: var(--primary);
+  background: linear-gradient(135deg, var(--primary), #0056b3);
+  box-shadow: 0 4px 14px rgba(0,123,255,0.35);
+  transform: translateY(-3px);
+}
+.time-slot-card.selected i,
+.time-slot-card.selected .time-slot-label,
+.time-slot-card.selected .time-slot-hours {
+  color: #fff;
 }
