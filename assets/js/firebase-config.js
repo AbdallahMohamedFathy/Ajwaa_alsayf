@@ -300,3 +300,40 @@ async function updateBeforeAfterItem(firestoreId, data) {
 async function deleteBeforeAfterItem(firestoreId) {
   return await db.collection('before_after').doc(firestoreId).delete();
 }
+
+/* ─── Push Notifications (FCM) ─── */
+const VAPID_KEY = 'BJ0_KieYj20EnVcinHW-024szIQrvulQ1v2F3BU3PCn5oBYIBQtEeH5USsSMrfyKCuFG3svyxbQ49KuMC5hTUow';
+
+async function _initFCMToken() {
+  if (!_currentUser || !('serviceWorker' in navigator)) return;
+  try {
+    const reg = await navigator.serviceWorker.register('/firebase-messaging-sw.js');
+    const messaging = firebase.messaging();
+    const token = await messaging.getToken({ vapidKey: VAPID_KEY, serviceWorkerRegistration: reg });
+    if (token) {
+      const snap = await db.collection('users').doc(_currentUser.uid).get();
+      if (snap.data()?.fcmToken !== token) {
+        await db.collection('users').doc(_currentUser.uid).update({ fcmToken: token });
+      }
+    }
+    messaging.onMessage((payload) => {
+      const title = payload.notification?.title || 'أجواء الصيف';
+      const body  = payload.notification?.body  || '';
+      if ('Notification' in window && Notification.permission === 'granted') {
+        new Notification(title, { body, icon: '/assets/images/logo.png', dir: 'rtl' });
+      }
+    });
+  } catch (e) {
+    console.log('FCM init:', e.code || e.message);
+  }
+}
+
+async function requestPushPermission() {
+  if (!('Notification' in window) || !_currentUser) return;
+  if (Notification.permission === 'denied') return;
+  if (Notification.permission !== 'granted') {
+    const perm = await Notification.requestPermission();
+    if (perm !== 'granted') return;
+  }
+  await _initFCMToken();
+}

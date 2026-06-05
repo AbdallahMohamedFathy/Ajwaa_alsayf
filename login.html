@@ -333,6 +333,7 @@
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-messaging-compat.js"></script>
   <script src="assets/js/firebase-config.js"></script>
   <script src="assets/js/main.js"></script>
 <script>
@@ -388,6 +389,7 @@
 
     if (result.success) {
       showToast('مرحباً بعودتك! تم تسجيل الدخول بنجاح ✓');
+      requestPushPermission().catch(() => {});
       setTimeout(() => {
         window.location.href = isAdmin() ? 'admin.html' : _redirectTarget;
       }, 900);
@@ -406,6 +408,7 @@
 
     if (result.success) {
       showToast('تم تسجيل الدخول بـ Google بنجاح ✓');
+      requestPushPermission().catch(() => {});
       setTimeout(() => {
         window.location.href = isAdmin() ? 'admin.html' : _redirectTarget;
       }, 900);
@@ -434,6 +437,7 @@
 
     if (result.success) {
       showToast('تم إنشاء حسابك بنجاح! مرحباً بك ✓');
+      requestPushPermission().catch(() => {});
       setTimeout(() => { window.location.href = _redirectTarget; }, 900);
     } else {
       showFormError('registerError', result.error);
