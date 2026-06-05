@@ -2,17 +2,8 @@
    أجواء الصيف - Main JavaScript
    ═══════════════════════════════════════ */
 
-// ═══ Products Data (static fallback — replaced by Firestore on load) ═══
-let productsData = [
-  { id: 1, name: 'تكييف كاريير انفرتر 1.5 حصان بارد', brand: 'Carrier', hp: '1.5', price: 22999, oldPrice: 27500, discount: 16, rating: 4.8, reviews: 124, image: 'assets/images/product-1.png', inverter: true, badge: 'الأكثر مبيعاً' },
-  { id: 2, name: 'تكييف شارب انفرتر 1.5 حصان بارد ساخن', brand: 'Sharp', hp: '1.5', price: 21500, oldPrice: 25000, discount: 14, rating: 4.7, reviews: 98, image: 'assets/images/product-2.png', inverter: true, badge: 'خصم' },
-  { id: 3, name: 'تكييف ال جي دوال كول 2.25 حصان', brand: 'LG', hp: '2.25', price: 32999, oldPrice: 38000, discount: 13, rating: 4.9, reviews: 67, image: 'assets/images/product-3.png', inverter: true, badge: 'جديد' },
-  { id: 4, name: 'تكييف تورنيدو 1.5 حصان بارد', brand: 'Tornado', hp: '1.5', price: 15999, oldPrice: 18500, discount: 14, rating: 4.5, reviews: 203, image: 'assets/images/product-4.png', inverter: false, badge: 'خصم' },
-  { id: 5, name: 'تكييف فريش 1.5 حصان بروفيشنال', brand: 'Fresh', hp: '1.5', price: 14500, oldPrice: 17000, discount: 15, rating: 4.4, reviews: 156, image: 'assets/images/product-1.png', inverter: false, badge: '' },
-  { id: 6, name: 'تكييف ميديا انفرتر 3 حصان', brand: 'Midea', hp: '3', price: 42000, oldPrice: 48000, discount: 12, rating: 4.6, reviews: 45, image: 'assets/images/product-2.png', inverter: true, badge: 'جديد' },
-  { id: 7, name: 'تكييف كاريير 2.25 حصان بارد ساخن', brand: 'Carrier', hp: '2.25', price: 29999, oldPrice: 34000, discount: 12, rating: 4.8, reviews: 89, image: 'assets/images/product-3.png', inverter: false, badge: '' },
-  { id: 8, name: 'تكييف شارب 3 حصان انفرتر بلازما', brand: 'Sharp', hp: '3', price: 45000, oldPrice: 52000, discount: 13, rating: 4.9, reviews: 34, image: 'assets/images/product-4.png', inverter: true, badge: 'premium' },
-];
+// ═══ Products Data (loaded from Firestore) ═══
+let productsData = [];
 
 // ═══ Load Products from Firestore ═══
 async function loadProductsFromFirestore() {
@@ -637,11 +628,12 @@ function filterWork(category, btn) {
 
 function getStatusLabel(status) {
   const map = {
-    pending: { label: 'قيد المراجعة', color: 'var(--warning)' },
-    confirmed: { label: 'تم التأكيد', color: 'var(--primary)' },
-    shipping: { label: 'جارٍ التوصيل', color: '#f97316' },
-    delivered: { label: 'تم التوصيل', color: 'var(--success)' },
-    cancelled: { label: 'ملغي', color: 'var(--danger)' }
+    pending:   { label: 'قيد المراجعة',   color: 'var(--warning)' },
+    confirmed: { label: 'تم التأكيد',      color: 'var(--primary)' },
+    shipping:  { label: 'جارٍ التوصيل',   color: '#f97316' },
+    delivered: { label: 'تم التوصيل',     color: 'var(--success)' },
+    completed: { label: 'مكتمل',           color: 'var(--success)' },
+    cancelled: { label: 'ملغي',            color: 'var(--danger)' }
   };
   return map[status] || map.pending;
 }
@@ -1040,7 +1032,7 @@ function initBookingSystemUpgrades() {
         customerName: document.getElementById('bookName')?.value.trim() || '',
         phone:        document.getElementById('bookPhone')?.value.trim() || '',
         address:      document.getElementById('bookAddress')?.value.trim() || '',
-        acType:       document.getElementById('bookACType')?.value || '',
+        service:      document.getElementById('bookService')?.value || '',
         acBrand:      document.getElementById('bookACBrand')?.value || '',
         description:  document.getElementById('bookDesc')?.value.trim() || '',
         date,

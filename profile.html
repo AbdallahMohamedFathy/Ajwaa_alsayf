@@ -400,114 +400,121 @@
     await loadBookings(user);
   });
 
-  async function loadOrders(user) {
+  let _profileOrdersUnsub = null;
+  function loadOrders(user) {
+    if (_profileOrdersUnsub) { _profileOrdersUnsub(); _profileOrdersUnsub = null; }
     const container = document.getElementById('ordersList');
     container.innerHTML = '<div style="text-align:center;padding:30px;color:var(--gray-400);"><i class="fas fa-spinner fa-spin fa-2x"></i></div>';
 
-    try {
-      const userOrders = await getUserOrders(user.uid);
-      document.getElementById('sidebarOrderCount').textContent = userOrders.length + ' طلبات';
+    const paymentMap = { cash: 'الدفع عند الاستلام', mada: 'مدى / بطاقة ائتمان', applepay: 'Apple Pay' };
 
-      if (userOrders.length === 0) {
-        container.innerHTML = `
-          <div class="empty-state">
-            <i class="fas fa-box-open"></i>
-            <h3>لا توجد طلبات بعد</h3>
-            <p>اطلب منتجاً من المتجر وستظهر طلباتك هنا</p>
-            <a href="products.html" class="btn btn-primary"><i class="fas fa-shopping-bag"></i> تسوق الآن</a>
-          </div>`;
-        return;
-      }
+    _profileOrdersUnsub = db.collection('orders').where('userId', '==', user.uid)
+      .onSnapshot((snapshot) => {
+        const userOrders = snapshot.docs
+          .map(d => ({ firestoreId: d.id, ...d.data() }))
+          .sort((a, b) => (b.createdAt?.seconds || 0) - (a.createdAt?.seconds || 0));
 
-      const paymentMap = { cash: 'الدفع عند الاستلام', mada: 'مدى / بطاقة ائتمان', applepay: 'Apple Pay' };
+        document.getElementById('sidebarOrderCount').textContent = userOrders.length + ' طلبات';
 
-      container.innerHTML = userOrders.map(order => {
-        const st      = getStatusLabel(order.status);
-        const d       = order.createdAt?.toDate ? order.createdAt.toDate() : new Date();
-        const dateStr = d.toLocaleDateString('ar-SA', { year:'numeric', month:'long', day:'numeric' });
-        const itemsHtml = (order.items || []).map(it =>
-          `<span class="order-item-chip">${it.name.split(' ').slice(0,3).join(' ')} x${it.qty}</span>`
-        ).join('');
-        return `
-          <div class="order-card">
-            <div class="order-card-header">
-              <div>
-                <div class="order-num">#${order.orderNum}</div>
-                <div class="order-date">${dateStr}</div>
+        if (userOrders.length === 0) {
+          container.innerHTML = `
+            <div class="empty-state">
+              <i class="fas fa-box-open"></i>
+              <h3>لا توجد طلبات بعد</h3>
+              <p>اطلب منتجاً من المتجر وستظهر طلباتك هنا</p>
+              <a href="products.html" class="btn btn-primary"><i class="fas fa-shopping-bag"></i> تسوق الآن</a>
+            </div>`;
+          return;
+        }
+
+        container.innerHTML = userOrders.map(order => {
+          const st      = getStatusLabel(order.status);
+          const d       = order.createdAt?.toDate ? order.createdAt.toDate() : new Date();
+          const dateStr = d.toLocaleDateString('ar-SA', { year:'numeric', month:'long', day:'numeric' });
+          const itemsHtml = (order.items || []).map(it =>
+            `<span class="order-item-chip">${it.name.split(' ').slice(0,3).join(' ')} x${it.qty}</span>`
+          ).join('');
+          return `
+            <div class="order-card">
+              <div class="order-card-header">
+                <div>
+                  <div class="order-num">#${order.orderNum}</div>
+                  <div class="order-date">${dateStr}</div>
+                </div>
+                <span class="status-badge" style="background:${st.color}22;color:${st.color};border:1px solid ${st.color}44;">
+                  <i class="fas fa-circle" style="font-size:0.5rem;"></i>${st.label}
+                </span>
               </div>
-              <span class="status-badge" style="background:${st.color}22;color:${st.color};border:1px solid ${st.color}44;">
-                <i class="fas fa-circle" style="font-size:0.5rem;"></i>${st.label}
-              </span>
-            </div>
-            <div class="order-items-mini">${itemsHtml || '<span class="order-item-chip">لا توجد منتجات</span>'}</div>
-            <div class="order-footer">
-              <span class="order-total">${(order.total || 0).toLocaleString()} ريال</span>
-              <span class="order-payment"><i class="fas fa-credit-card"></i> ${paymentMap[order.payment] || order.payment || 'غير محدد'}</span>
-            </div>
-          </div>`;
-      }).join('');
-    } catch (e) {
-      container.innerHTML = '<div style="text-align:center;color:var(--danger);padding:20px;">خطأ في تحميل الطلبات</div>';
-    }
+              <div class="order-items-mini">${itemsHtml || '<span class="order-item-chip">لا توجد منتجات</span>'}</div>
+              <div class="order-footer">
+                <span class="order-total">${(order.total || 0).toLocaleString()} ريال</span>
+                <span class="order-payment"><i class="fas fa-credit-card"></i> ${paymentMap[order.payment] || order.payment || 'غير محدد'}</span>
+              </div>
+            </div>`;
+        }).join('');
+      }, () => {
+        container.innerHTML = '<div style="text-align:center;color:var(--danger);padding:20px;">خطأ في تحميل الطلبات</div>';
+      });
   }
 
-  async function loadBookings(user) {
+  let _profileBookingsUnsub = null;
+  function loadBookings(user) {
+    if (_profileBookingsUnsub) { _profileBookingsUnsub(); _profileBookingsUnsub = null; }
     const container = document.getElementById('bookingsList');
     container.innerHTML = '<div style="text-align:center;padding:30px;color:var(--gray-400);"><i class="fas fa-spinner fa-spin fa-2x"></i></div>';
 
-    try {
-      const snap = await db.collection('bookings').where('userId', '==', user.uid).get();
-      
-      if (snap.empty) {
-        container.innerHTML = `
-          <div class="empty-state">
-            <i class="fas fa-tools"></i>
-            <h3>لا توجد حجوزات صيانة بعد</h3>
-            <p>يمكنك طلب صيانة أو تركيب لتكييفك الآن</p>
-            <a href="booking.html" class="btn btn-primary"><i class="fas fa-calendar-plus"></i> احجز صيانة</a>
-          </div>`;
-        return;
-      }
+    _profileBookingsUnsub = db.collection('bookings').where('userId', '==', user.uid)
+      .onSnapshot((snap) => {
+        if (snap.empty) {
+          container.innerHTML = `
+            <div class="empty-state">
+              <i class="fas fa-tools"></i>
+              <h3>لا توجد حجوزات صيانة بعد</h3>
+              <p>يمكنك طلب صيانة أو تركيب لتكييفك الآن</p>
+              <a href="booking.html" class="btn btn-primary"><i class="fas fa-calendar-plus"></i> احجز صيانة</a>
+            </div>`;
+          return;
+        }
 
-      // Sort locally to avoid Firestore composite index requirement
-      const bookings = snap.docs.map(doc => doc.data());
-      bookings.sort((a, b) => {
-        const t1 = a.createdAt?.toMillis ? a.createdAt.toMillis() : 0;
-        const t2 = b.createdAt?.toMillis ? b.createdAt.toMillis() : 0;
-        return t2 - t1;
-      });
+        const bookings = snap.docs.map(doc => doc.data());
+        bookings.sort((a, b) => {
+          const t1 = a.createdAt?.toMillis ? a.createdAt.toMillis() : 0;
+          const t2 = b.createdAt?.toMillis ? b.createdAt.toMillis() : 0;
+          return t2 - t1;
+        });
 
-      container.innerHTML = bookings.map(bk => {
-        const dateStr = bk.createdAt?.toDate ? bk.createdAt.toDate().toLocaleDateString('ar-SA', { year:'numeric', month:'long', day:'numeric' }) : 'غير متوفر';
-        let stLabel = 'قيد الانتظار';
-        let stColor = '#f59e0b';
-        if (bk.status === 'completed') { stLabel = 'مكتمل'; stColor = '#10b981'; }
-        else if (bk.status === 'cancelled') { stLabel = 'ملغى'; stColor = '#ef4444'; }
-        
-        return `
-          <div class="order-card">
-            <div class="order-card-header">
-              <div>
-                <div class="order-num">رقم التتبع: #${bk.trackId || 'غير متوفر'}</div>
-                <div class="order-date">تاريخ الطلب: ${dateStr}</div>
+        container.innerHTML = bookings.map(bk => {
+          const dateStr = bk.createdAt?.toDate ? bk.createdAt.toDate().toLocaleDateString('ar-SA', { year:'numeric', month:'long', day:'numeric' }) : 'غير متوفر';
+          let stLabel = 'قيد الانتظار';
+          let stColor = '#f59e0b';
+          if (bk.status === 'confirmed')      { stLabel = 'تم التأكيد'; stColor = '#3b82f6'; }
+          else if (bk.status === 'completed') { stLabel = 'مكتمل';      stColor = '#10b981'; }
+          else if (bk.status === 'cancelled') { stLabel = 'ملغى';       stColor = '#ef4444'; }
+
+          return `
+            <div class="order-card">
+              <div class="order-card-header">
+                <div>
+                  <div class="order-num">رقم التتبع: #${bk.trackId || 'غير متوفر'}</div>
+                  <div class="order-date">تاريخ الطلب: ${dateStr}</div>
+                </div>
+                <span class="status-badge" style="background:${stColor}22;color:${stColor};border:1px solid ${stColor}44;">
+                  <i class="fas fa-circle" style="font-size:0.5rem;"></i> ${stLabel}
+                </span>
               </div>
-              <span class="status-badge" style="background:${stColor}22;color:${stColor};border:1px solid ${stColor}44;">
-                <i class="fas fa-circle" style="font-size:0.5rem;"></i> ${stLabel}
-              </span>
-            </div>
-            <div class="order-items-mini">
-              <span class="order-item-chip"><i class="fas fa-wrench"></i> ${bk.acType || 'خدمة صيانة'}</span>
-              <span class="order-item-chip"><i class="fas fa-calendar-day"></i> الموعد: ${bk.date || '-'} - ${bk.time || '-'}</span>
-            </div>
-            <div class="order-footer" style="padding-top:12px;border-top:1px solid var(--gray-100);font-size:0.9rem;color:var(--gray-600);">
-               <i class="fas fa-map-marker-alt"></i> ${bk.address || 'العنوان غير مسجل'}
-            </div>
-          </div>`;
-      }).join('');
-    } catch (e) {
-      console.error(e);
-      container.innerHTML = '<div style="text-align:center;color:var(--danger);padding:20px;">خطأ في تحميل الحجوزات</div>';
-    }
+              <div class="order-items-mini">
+                <span class="order-item-chip"><i class="fas fa-wrench"></i> ${bk.acType || 'خدمة صيانة'}</span>
+                <span class="order-item-chip"><i class="fas fa-calendar-day"></i> الموعد: ${bk.date || '-'} - ${bk.time || '-'}</span>
+              </div>
+              <div class="order-footer" style="padding-top:12px;border-top:1px solid var(--gray-100);font-size:0.9rem;color:var(--gray-600);">
+                <i class="fas fa-map-marker-alt"></i> ${bk.address || 'العنوان غير مسجل'}
+              </div>
+            </div>`;
+        }).join('');
+      }, (e) => {
+        console.error(e);
+        container.innerHTML = '<div style="text-align:center;color:var(--danger);padding:20px;">خطأ في تحميل الحجوزات</div>';
+      });
   }
 
   function switchTab(tab) {

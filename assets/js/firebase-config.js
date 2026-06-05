@@ -99,6 +99,43 @@ async function loginUser(email, password) {
   }
 }
 
+async function loginWithGoogle() {
+  try {
+    const provider = new firebase.auth.GoogleAuthProvider();
+    provider.setCustomParameters({ prompt: 'select_account' });
+    const cred = await auth.signInWithPopup(provider);
+    const fbUser = cred.user;
+    const docRef = db.collection('users').doc(fbUser.uid);
+    const doc = await docRef.get();
+    if (!doc.exists) {
+      const role = fbUser.email?.toLowerCase() === ADMIN_EMAIL ? 'admin' : 'customer';
+      const data = {
+        name: fbUser.displayName || '',
+        email: fbUser.email?.toLowerCase() || '',
+        phone: '',
+        role,
+        createdAt: firebase.firestore.FieldValue.serverTimestamp()
+      };
+      await docRef.set(data);
+      _currentUser = { uid: fbUser.uid, ...data };
+    } else {
+      _currentUser = { uid: fbUser.uid, ...doc.data() };
+    }
+    return { success: true };
+  } catch (e) {
+    console.error('Google sign-in error:', e.code, e.message);
+    if (e.code === 'auth/popup-closed-by-user' || e.code === 'auth/cancelled-popup-request')
+      return { success: false, error: null };
+    if (e.code === 'auth/popup-blocked')
+      return { success: false, error: 'تم حظر النافذة المنبثقة، يرجى السماح بها من إعدادات المتصفح' };
+    if (e.code === 'auth/unauthorized-domain')
+      return { success: false, error: 'يرجى إضافة هذا الدومين في Firebase Console ← Authentication ← Settings ← Authorized domains' };
+    if (e.code === 'auth/operation-not-allowed')
+      return { success: false, error: 'يرجى تفعيل Google Sign-In في Firebase Console' };
+    return { success: false, error: 'حدث خطأ: ' + (e.code || e.message) };
+  }
+}
+
 async function logoutUser() {
   await auth.signOut();
   _currentUser = null;
@@ -234,6 +271,10 @@ async function updateUserProfile(uid, data) {
 async function getPortfolioItems() {
   const snap = await db.collection('portfolio').orderBy('createdAt', 'desc').get();
   return snap.docs.map(d => ({ firestoreId: d.id, ...d.data() }));
+}
+async function getActivePortfolioItems() {
+  const snap = await db.collection('portfolio').orderBy('createdAt', 'desc').get();
+  return snap.docs.map(d => ({ firestoreId: d.id, ...d.data() })).filter(i => i.active !== false);
 }
 async function createPortfolioItem(data) {
   return await db.collection('portfolio').add({ ...data, createdAt: firebase.firestore.FieldValue.serverTimestamp() });
