@@ -357,6 +357,7 @@
 
     try {
       await createOrder(orderData);
+      notifyAdmin('طلب جديد 🛒', `${orderData.customerName} — ${orderData.total.toLocaleString()} ر.س (${orderNum})`).catch(() => {});
     } catch (e) {
       if (confirmBtn) { confirmBtn.disabled = false; confirmBtn.innerHTML = '<i class="fas fa-check-circle"></i> تأكيد الطلب'; }
       showToast('حدث خطأ، يرجى المحاولة مرة أخرى');

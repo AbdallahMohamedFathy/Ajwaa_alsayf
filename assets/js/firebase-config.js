@@ -317,6 +317,9 @@ async function _initFCMToken() {
     console.log('[FCM] token:', token ? token.substring(0, 20) + '...' : 'EMPTY');
     if (token) {
       await db.collection('users').doc(_currentUser.uid).update({ fcmToken: token });
+      if (isAdmin()) {
+        await db.collection('settings').doc('admin').set({ fcmToken: token }, { merge: true });
+      }
       console.log('[FCM] token saved to Firestore ✓');
     }
     messaging.onMessage((payload) => {
@@ -328,6 +331,21 @@ async function _initFCMToken() {
     });
   } catch (e) {
     console.error('[FCM] error:', e.code, e.message, e);
+  }
+}
+
+async function notifyAdmin(title, body) {
+  try {
+    const snap = await db.collection('settings').doc('admin').get();
+    const token = snap.data()?.fcmToken;
+    if (!token) return;
+    await fetch('/api/notify', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ token, title, body })
+    });
+  } catch (e) {
+    console.log('Admin notify failed:', e.message);
   }
 }
 

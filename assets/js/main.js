@@ -1027,12 +1027,14 @@ function initBookingSystemUpgrades() {
     try {
       console.log('[Booking] Trying to save to Firestore...');
       const user = typeof getCurrentUser === 'function' ? getCurrentUser() : null;
+      const bookName    = document.getElementById('bookName')?.value.trim() || '';
+      const bookService = document.getElementById('bookService')?.value || '';
       await createBooking({
         trackId,
-        customerName: document.getElementById('bookName')?.value.trim() || '',
+        customerName: bookName,
         phone:        document.getElementById('bookPhone')?.value.trim() || '',
         address:      document.getElementById('bookAddress')?.value.trim() || '',
-        service:      document.getElementById('bookService')?.value || '',
+        service:      bookService,
         acBrand:      document.getElementById('bookACBrand')?.value || '',
         description:  document.getElementById('bookDesc')?.value.trim() || '',
         date,
@@ -1041,6 +1043,9 @@ function initBookingSystemUpgrades() {
         email:  user ? user.email : '',
         location: window._locationData || null
       });
+      if (typeof notifyAdmin === 'function') {
+        notifyAdmin('حجز صيانة جديد 🔧', `${bookName} — ${bookService || 'صيانة'} — ${date}`).catch(() => {});
+      }
     } catch (e) {
       console.error('Firestore booking save error:', e);
     }

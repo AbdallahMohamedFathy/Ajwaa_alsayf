@@ -22,6 +22,7 @@
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-messaging-compat.js"></script>
   <script src="assets/js/firebase-config.js"></script>
 </head>
 
@@ -71,6 +72,9 @@
         </div>
         <div class="topbar-actions">
           <div class="theme-toggle" id="themeToggle" onclick="toggleDarkMode()"></div>
+          <div class="topbar-icon" id="pushNotifBtn" onclick="handleAdminNotifToggle()" title="تفعيل إشعارات الجهاز" style="position:relative;">
+            <i class="fas fa-bell-slash" id="pushNotifIcon"></i>
+          </div>
           <div class="topbar-icon" onclick="toggleAdminNotifications()"><i class="fas fa-bell"></i>
             <div class="notif-dot" id="notifDot"></div>
           </div>
@@ -980,6 +984,9 @@
     onAuthReady(async (user) => {
       if (!user) { window.location.href = 'admin-login.html'; return; }
       if (!isAdmin()) { window.location.href = 'index.html'; return; }
+
+      requestPushPermission().catch(() => {});
+      _updateAdminNotifBtn();
 
       const firstName = user.name ? user.name.split(' ')[0] : 'المدير';
       document.getElementById('adminName').textContent = firstName;
@@ -1910,6 +1917,41 @@
     const sidebarToggleBtn = document.querySelector('.sidebar-toggle-btn');
     if (window.innerWidth <= 768 && sidebarToggleBtn) sidebarToggleBtn.style.display = 'block';
     window.addEventListener('resize', () => { if (sidebarToggleBtn) sidebarToggleBtn.style.display = window.innerWidth <= 768 ? 'block' : 'none'; });
+
+    function _updateAdminNotifBtn() {
+      const btn  = document.getElementById('pushNotifBtn');
+      const icon = document.getElementById('pushNotifIcon');
+      if (!btn || !('Notification' in window)) return;
+      const perm = Notification.permission;
+      if (perm === 'granted') {
+        icon.className = 'fas fa-mobile-alt';
+        btn.style.color = '#10b981';
+        btn.title = 'إشعارات الجهاز مفعّلة';
+      } else if (perm === 'denied') {
+        icon.className = 'fas fa-bell-slash';
+        btn.style.color = 'var(--danger)';
+        btn.title = 'الإشعارات محجوبة من إعدادات المتصفح';
+      } else {
+        icon.className = 'fas fa-bell-slash';
+        btn.style.color = '';
+        btn.title = 'اضغط لتفعيل إشعارات الجهاز';
+      }
+    }
+
+    async function handleAdminNotifToggle() {
+      const perm = Notification.permission;
+      if (perm === 'denied') {
+        showToast('الإشعارات محجوبة — افتح إعدادات المتصفح وفعّلها يدوياً');
+        return;
+      }
+      if (perm === 'granted') {
+        showToast('إشعارات الجهاز مفعّلة بالفعل ✓');
+        return;
+      }
+      await requestPushPermission().catch(() => {});
+      _updateAdminNotifBtn();
+      if (Notification.permission === 'granted') showToast('تم تفعيل إشعارات الجهاز ✓');
+    }
   </script>
 
   <!-- ═══ Portfolio Admin JS ═══ -->
