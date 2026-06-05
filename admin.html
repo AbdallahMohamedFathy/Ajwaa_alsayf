@@ -1516,42 +1516,48 @@
     }
 
     // ─── Orders ───
-    async function loadOrders() {
+    let _ordersUnsub = null;
+    function loadOrders() {
+      if (_ordersUnsub) { _ordersUnsub(); _ordersUnsub = null; }
       const tbody = document.getElementById('ordersTableBody');
       tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;"><i class="fas fa-spinner fa-spin"></i> جاري التحميل...</td></tr>';
-      try {
-        const orders = await getOrders();
 
-        document.getElementById('oStatPending').textContent = orders.filter(o => o.status === 'pending').length;
-        document.getElementById('oStatProcessing').textContent = orders.filter(o => o.status === 'shipping').length;
-        document.getElementById('oStatDone').textContent = orders.filter(o => ['completed', 'delivered'].includes(o.status)).length;
-        document.getElementById('oStatCancelled').textContent = orders.filter(o => o.status === 'cancelled').length;
+      _ordersUnsub = db.collection('orders').orderBy('createdAt', 'desc')
+        .onSnapshot((snapshot) => {
+          const orders = snapshot.docs.map(d => ({ firestoreId: d.id, ...d.data() }));
 
-        tbody.innerHTML = orders.length
-          ? orders.map(o => `
-          <tr style="cursor:pointer;" onclick="viewOrder('${o.firestoreId}')">
-            <td style="font-weight:700;color:var(--primary);">#${o.orderNum}</td>
-            <td>${o.customerName}</td>
-            <td>${o.phone}</td>
-            <td style="font-weight:700;">${(o.total || 0).toLocaleString()} ر.س</td>
-            <td>${o.payment === 'cash' ? 'عند الاستلام' : o.payment === 'mada' ? 'مدى' : 'Apple Pay'}</td>
-            <td onclick="event.stopPropagation()">
-              <select class="form-control" style="padding:4px 8px;font-size:0.8rem;width:auto;" onchange="changeOrderStatus('${o.firestoreId}', this.value)">
-                <option value="pending"   ${o.status === 'pending' ? 'selected' : ''}>في الانتظار</option>
-                <option value="shipping"  ${o.status === 'shipping' ? 'selected' : ''}>جاري التوصيل</option>
-                <option value="completed" ${o.status === 'completed' ? 'selected' : ''}>مكتمل</option>
-                <option value="cancelled" ${o.status === 'cancelled' ? 'selected' : ''}>ملغي</option>
-              </select>
-            </td>
-            <td>${fmtDate(o.createdAt)}</td>
-            <td onclick="event.stopPropagation()">
-              <a href="https://wa.me/${o.phone?.replace(/^0/, '966')}" target="_blank" class="btn btn-sm" style="padding:4px 10px;font-size:0.75rem;background:#25d366;color:#fff;border-radius:6px;" title="واتساب العميل">
-                <i class="fab fa-whatsapp"></i>
-              </a>
-            </td>
-          </tr>`).join('')
-          : '<tr><td colspan="8" style="text-align:center;color:var(--gray-400);">لا توجد طلبات بعد</td></tr>';
-      } catch (e) { tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;color:var(--danger);">خطأ في التحميل</td></tr>'; }
+          document.getElementById('oStatPending').textContent = orders.filter(o => o.status === 'pending').length;
+          document.getElementById('oStatProcessing').textContent = orders.filter(o => o.status === 'shipping').length;
+          document.getElementById('oStatDone').textContent = orders.filter(o => ['completed', 'delivered'].includes(o.status)).length;
+          document.getElementById('oStatCancelled').textContent = orders.filter(o => o.status === 'cancelled').length;
+
+          tbody.innerHTML = orders.length
+            ? orders.map(o => `
+            <tr style="cursor:pointer;" onclick="viewOrder('${o.firestoreId}')">
+              <td style="font-weight:700;color:var(--primary);">#${o.orderNum}</td>
+              <td>${o.customerName}</td>
+              <td>${o.phone}</td>
+              <td style="font-weight:700;">${(o.total || 0).toLocaleString()} ر.س</td>
+              <td>${o.payment === 'cash' ? 'عند الاستلام' : o.payment === 'mada' ? 'مدى' : 'Apple Pay'}</td>
+              <td onclick="event.stopPropagation()">
+                <select class="form-control" style="padding:4px 8px;font-size:0.8rem;width:auto;" onchange="changeOrderStatus('${o.firestoreId}', this.value)">
+                  <option value="pending"   ${o.status === 'pending' ? 'selected' : ''}>في الانتظار</option>
+                  <option value="shipping"  ${o.status === 'shipping' ? 'selected' : ''}>جاري التوصيل</option>
+                  <option value="completed" ${o.status === 'completed' ? 'selected' : ''}>مكتمل</option>
+                  <option value="cancelled" ${o.status === 'cancelled' ? 'selected' : ''}>ملغي</option>
+                </select>
+              </td>
+              <td>${fmtDate(o.createdAt)}</td>
+              <td onclick="event.stopPropagation()">
+                <a href="https://wa.me/${o.phone?.replace(/^0/, '966')}" target="_blank" class="btn btn-sm" style="padding:4px 10px;font-size:0.75rem;background:#25d366;color:#fff;border-radius:6px;" title="واتساب العميل">
+                  <i class="fab fa-whatsapp"></i>
+                </a>
+              </td>
+            </tr>`).join('')
+            : '<tr><td colspan="8" style="text-align:center;color:var(--gray-400);">لا توجد طلبات بعد</td></tr>';
+        }, () => {
+          tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;color:var(--danger);">خطأ في التحميل</td></tr>';
+        });
     }
 
     async function changeOrderStatus(firestoreId, status) {
@@ -1591,45 +1597,51 @@
     }
 
     // ─── Bookings ───
-    async function loadBookings() {
+    let _bookingsUnsub = null;
+    function loadBookings() {
+      if (_bookingsUnsub) { _bookingsUnsub(); _bookingsUnsub = null; }
       const tbody = document.getElementById('bookingsTableBody');
       tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;"><i class="fas fa-spinner fa-spin"></i> جاري التحميل...</td></tr>';
-      try {
-        const bookings = await getBookings();
 
-        document.getElementById('bStatPending').textContent = bookings.filter(b => b.status === 'pending').length;
-        document.getElementById('bStatConfirmed').textContent = bookings.filter(b => b.status === 'confirmed').length;
-        document.getElementById('bStatDone').textContent = bookings.filter(b => b.status === 'completed').length;
+      _bookingsUnsub = db.collection('bookings').orderBy('createdAt', 'desc')
+        .onSnapshot((snapshot) => {
+          const bookings = snapshot.docs.map(d => ({ firestoreId: d.id, ...d.data() }));
 
-        tbody.innerHTML = bookings.length
-          ? bookings.map(b => `
-          <tr>
-            <td style="font-weight:600;">${b.customerName}</td>
-            <td dir="ltr">${b.phone}</td>
-            <td style="font-size:0.8rem;">${b.address || '-'}</td>
-            <td>${b.acType || '-'}</td>
-            <td>${b.date || '-'} ${b.time ? '@ ' + b.time : ''}${b.location ? ` <a href="${b.location.mapLink}" target="_blank" title="عرض الموقع" style="color:#007bff;margin-right:6px;"><i class="fas fa-map-marker-alt"></i></a>` : ''}</td>
-            <td>
-              <select class="form-control" style="padding:4px 8px;font-size:0.8rem;width:auto;" onchange="changeBookingStatus('${b.firestoreId}', this.value)">
-                <option value="pending"   ${b.status === 'pending' ? 'selected' : ''}>في الانتظار</option>
-                <option value="confirmed" ${b.status === 'confirmed' ? 'selected' : ''}>تم التأكيد</option>
-                <option value="completed" ${b.status === 'completed' ? 'selected' : ''}>مكتمل</option>
-                <option value="cancelled" ${b.status === 'cancelled' ? 'selected' : ''}>ملغي</option>
-              </select>
-            </td>
-            <td>
-              <div style="display:flex;gap:4px;">
-                <button class="btn btn-sm" onclick="viewBooking('${b.firestoreId}')" style="padding:4px 10px;font-size:0.75rem;background:var(--primary);color:#fff;border-radius:6px;" title="عرض التفاصيل">
-                  <i class="fas fa-eye"></i>
-                </button>
-                <a href="https://wa.me/${b.phone?.replace(/^0/, '966')}" target="_blank" class="btn btn-sm" style="padding:4px 10px;font-size:0.75rem;background:#25d366;color:#fff;border-radius:6px;" title="واتساب">
-                  <i class="fab fa-whatsapp"></i>
-                </a>
-              </div>
-            </td>
-          </tr>`).join('')
-          : '<tr><td colspan="7" style="text-align:center;color:var(--gray-400);">لا توجد حجوزات بعد</td></tr>';
-      } catch (e) { tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;color:var(--danger);">خطأ في التحميل</td></tr>'; }
+          document.getElementById('bStatPending').textContent = bookings.filter(b => b.status === 'pending').length;
+          document.getElementById('bStatConfirmed').textContent = bookings.filter(b => b.status === 'confirmed').length;
+          document.getElementById('bStatDone').textContent = bookings.filter(b => b.status === 'completed').length;
+
+          tbody.innerHTML = bookings.length
+            ? bookings.map(b => `
+            <tr>
+              <td style="font-weight:600;">${b.customerName}</td>
+              <td dir="ltr">${b.phone}</td>
+              <td style="font-size:0.8rem;">${b.address || '-'}</td>
+              <td>${b.acType || '-'}</td>
+              <td>${b.date || '-'} ${b.time ? '@ ' + b.time : ''}${b.location ? ` <a href="${b.location.mapLink}" target="_blank" title="عرض الموقع" style="color:#007bff;margin-right:6px;"><i class="fas fa-map-marker-alt"></i></a>` : ''}</td>
+              <td>
+                <select class="form-control" style="padding:4px 8px;font-size:0.8rem;width:auto;" onchange="changeBookingStatus('${b.firestoreId}', this.value)">
+                  <option value="pending"   ${b.status === 'pending' ? 'selected' : ''}>في الانتظار</option>
+                  <option value="confirmed" ${b.status === 'confirmed' ? 'selected' : ''}>تم التأكيد</option>
+                  <option value="completed" ${b.status === 'completed' ? 'selected' : ''}>مكتمل</option>
+                  <option value="cancelled" ${b.status === 'cancelled' ? 'selected' : ''}>ملغي</option>
+                </select>
+              </td>
+              <td>
+                <div style="display:flex;gap:4px;">
+                  <button class="btn btn-sm" onclick="viewBooking('${b.firestoreId}')" style="padding:4px 10px;font-size:0.75rem;background:var(--primary);color:#fff;border-radius:6px;" title="عرض التفاصيل">
+                    <i class="fas fa-eye"></i>
+                  </button>
+                  <a href="https://wa.me/${b.phone?.replace(/^0/, '966')}" target="_blank" class="btn btn-sm" style="padding:4px 10px;font-size:0.75rem;background:#25d366;color:#fff;border-radius:6px;" title="واتساب">
+                    <i class="fab fa-whatsapp"></i>
+                  </a>
+                </div>
+              </td>
+            </tr>`).join('')
+            : '<tr><td colspan="7" style="text-align:center;color:var(--gray-400);">لا توجد حجوزات بعد</td></tr>';
+        }, () => {
+          tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;color:var(--danger);">خطأ في التحميل</td></tr>';
+        });
     }
 
     async function changeBookingStatus(firestoreId, status) {
