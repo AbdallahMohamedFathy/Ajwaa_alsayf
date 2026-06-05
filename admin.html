@@ -1560,10 +1560,34 @@
         });
     }
 
+    async function _sendPushToUser(userId, title, body) {
+      try {
+        const userSnap = await db.collection('users').doc(userId).get();
+        const token = userSnap.data()?.fcmToken;
+        if (!token) return;
+        await fetch('/api/notify', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ token, title, body })
+        });
+      } catch (e) { console.log('Push failed:', e.message); }
+    }
+
     async function changeOrderStatus(firestoreId, status) {
       try {
         await updateOrderStatus(firestoreId, status);
         showToast('تم تحديث حالة الطلب ✓');
+        const snap = await db.collection('orders').doc(firestoreId).get();
+        const { userId, orderNum } = snap.data() || {};
+        if (userId) {
+          const msgs = {
+            confirmed: ['تم تأكيد طلبك 🎉', `طلبك رقم ${orderNum || ''} تم تأكيده وسيصلك قريباً`],
+            shipping:  ['طلبك في الطريق 🚚', `طلبك رقم ${orderNum || ''} جارٍ توصيله الآن`],
+            completed: ['تم توصيل طلبك ✅', `طلبك رقم ${orderNum || ''} وصلك بنجاح`],
+            cancelled: ['تم إلغاء طلبك ❌', `طلبك رقم ${orderNum || ''} تم إلغاؤه`]
+          };
+          if (msgs[status]) await _sendPushToUser(userId, msgs[status][0], msgs[status][1]);
+        }
       } catch (e) { showToast('خطأ في التحديث'); }
     }
 
@@ -1648,6 +1672,16 @@
       try {
         await updateBookingStatus(firestoreId, status);
         showToast('تم تحديث حالة الحجز ✓');
+        const snap = await db.collection('bookings').doc(firestoreId).get();
+        const { userId, date } = snap.data() || {};
+        if (userId) {
+          const msgs = {
+            confirmed: ['تم تأكيد حجزك 🎉', `حجز الصيانة ليوم ${date || ''} تم تأكيده`],
+            completed: ['اكتملت خدمة الصيانة ✅', 'تمت خدمة الصيانة المطلوبة بنجاح'],
+            cancelled: ['تم إلغاء حجزك ❌', `حجزك ليوم ${date || ''} تم إلغاؤه`]
+          };
+          if (msgs[status]) await _sendPushToUser(userId, msgs[status][0], msgs[status][1]);
+        }
       } catch (e) { showToast('خطأ في التحديث'); }
     }
 
