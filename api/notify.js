@@ -22,6 +22,7 @@ async function getAccessToken(sa) {
     body: `grant_type=urn%3Aietf%3Aparams%3Aoauth%3Agrant-type%3Ajwt-bearer&assertion=${jwt}`
   });
   const data = await res.json();
+  if (!data.access_token) throw new Error('Token exchange failed: ' + JSON.stringify(data));
   return data.access_token;
 }
 
@@ -39,8 +40,14 @@ module.exports = async function handler(req, res) {
   const saRaw = process.env.FIREBASE_SERVICE_ACCOUNT;
   if (!saRaw) return res.status(500).json({ error: 'FIREBASE_SERVICE_ACCOUNT not set' });
 
+  let sa;
   try {
-    const sa = JSON.parse(saRaw);
+    sa = JSON.parse(saRaw);
+  } catch (e) {
+    return res.status(500).json({ error: 'Invalid JSON in FIREBASE_SERVICE_ACCOUNT: ' + e.message });
+  }
+
+  try {
     const accessToken = await getAccessToken(sa);
 
     const fcmRes = await fetch(
@@ -71,8 +78,9 @@ module.exports = async function handler(req, res) {
     );
 
     const data = await fcmRes.json();
-    return res.status(200).json(data);
+    const statusCode = fcmRes.ok ? 200 : 400;
+    return res.status(statusCode).json(data);
   } catch (e) {
-    return res.status(500).json({ error: e.message });
+    return res.status(500).json({ error: e.message, stack: e.stack });
   }
 };
