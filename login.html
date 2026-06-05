@@ -389,7 +389,6 @@
 
     if (result.success) {
       showToast('مرحباً بعودتك! تم تسجيل الدخول بنجاح ✓');
-      requestPushPermission().catch(() => {});
       setTimeout(() => {
         window.location.href = isAdmin() ? 'admin.html' : _redirectTarget;
       }, 900);
@@ -408,7 +407,6 @@
 
     if (result.success) {
       showToast('تم تسجيل الدخول بـ Google بنجاح ✓');
-      requestPushPermission().catch(() => {});
       setTimeout(() => {
         window.location.href = isAdmin() ? 'admin.html' : _redirectTarget;
       }, 900);
@@ -437,7 +435,6 @@
 
     if (result.success) {
       showToast('تم إنشاء حسابك بنجاح! مرحباً بك ✓');
-      requestPushPermission().catch(() => {});
       setTimeout(() => { window.location.href = _redirectTarget; }, 900);
     } else {
       showFormError('registerError', result.error);
