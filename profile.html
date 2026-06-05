@@ -114,6 +114,9 @@
     .profile-nav-item.logout { color: var(--danger); }
     .profile-nav-item.logout:hover { background: rgba(239,68,68,0.08); }
     .profile-nav-item i { width: 20px; text-align: center; }
+    .notif-btn-on  { color: #10b981 !important; background: rgba(16,185,129,0.08) !important; }
+    .notif-btn-off { color: var(--gray-500); }
+    .notif-btn-denied { color: var(--danger) !important; cursor: default !important; }
 
     .content-card {
       background: var(--white);
@@ -312,6 +315,10 @@
             <a href="products.html" class="profile-nav-item" style="text-decoration:none;">
               <i class="fas fa-shopping-bag"></i> تسوق الآن
             </a>
+            <button class="profile-nav-item notif-btn-off" id="notifToggleBtn" onclick="handleNotifToggle()">
+              <i class="fas fa-bell-slash" id="notifBtnIcon"></i>
+              <span id="notifBtnText">تفعيل الإشعارات</span>
+            </button>
             <button class="profile-nav-item logout" onclick="logoutUser()">
               <i class="fas fa-sign-out-alt"></i> تسجيل الخروج
             </button>
@@ -389,6 +396,7 @@
   onAuthReady(async (user) => {
     if (!user) { window.location.href = 'login.html'; return; }
     requestPushPermission().catch(() => {});
+    _updateNotifBtn();
 
     // Fill sidebar
     document.getElementById('avatarLetter').textContent  = (user.name || 'م').charAt(0);
@@ -551,6 +559,43 @@
     } catch (err) {
       showToast('خطأ في الحفظ: ' + err.message);
     }
+  }
+
+  function _updateNotifBtn() {
+    const btn  = document.getElementById('notifToggleBtn');
+    const icon = document.getElementById('notifBtnIcon');
+    const text = document.getElementById('notifBtnText');
+    if (!btn || !('Notification' in window)) return;
+    const perm = Notification.permission;
+    btn.className = 'profile-nav-item';
+    if (perm === 'granted') {
+      btn.classList.add('notif-btn-on');
+      icon.className = 'fas fa-bell';
+      text.textContent = 'الإشعارات مفعّلة';
+    } else if (perm === 'denied') {
+      btn.classList.add('notif-btn-denied');
+      icon.className = 'fas fa-bell-slash';
+      text.textContent = 'الإشعارات محجوبة';
+    } else {
+      btn.classList.add('notif-btn-off');
+      icon.className = 'fas fa-bell-slash';
+      text.textContent = 'تفعيل الإشعارات';
+    }
+  }
+
+  async function handleNotifToggle() {
+    const perm = Notification.permission;
+    if (perm === 'denied') {
+      showToast('الإشعارات محجوبة — افتح إعدادات المتصفح وافعّلها يدوياً');
+      return;
+    }
+    if (perm === 'granted') {
+      showToast('الإشعارات مفعّلة بالفعل ✓');
+      return;
+    }
+    await requestPushPermission().catch(() => {});
+    _updateNotifBtn();
+    if (Notification.permission === 'granted') showToast('تم تفعيل الإشعارات ✓');
   }
 </script>
 </body>
