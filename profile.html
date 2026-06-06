@@ -588,10 +588,6 @@
       showToast('الإشعارات محجوبة — افتح إعدادات المتصفح وافعّلها يدوياً');
       return;
     }
-    if (perm === 'granted') {
-      showToast('الإشعارات مفعّلة بالفعل ✓');
-      return;
-    }
     await requestPushPermission().catch(() => {});
     _updateNotifBtn();
     if (Notification.permission === 'granted') showToast('تم تفعيل الإشعارات ✓');

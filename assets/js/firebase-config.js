@@ -331,20 +331,24 @@ async function _initPushSubscription() {
   if (!_currentUser || !('serviceWorker' in navigator) || !('PushManager' in window)) return;
   try {
     const reg = await navigator.serviceWorker.register('/firebase-messaging-sw.js');
-    let sub = await reg.pushManager.getSubscription();
-    if (!sub) {
-      sub = await reg.pushManager.subscribe({
-        userVisibleOnly: true,
-        applicationServerKey: _urlBase64ToUint8Array(VAPID_PUBLIC_KEY)
-      });
-    }
+    await reg.update();
+
+    // Unsubscribe from old subscription (e.g. old Firebase VAPID key) before creating new one
+    const existing = await reg.pushManager.getSubscription();
+    if (existing) await existing.unsubscribe();
+
+    const sub = await reg.pushManager.subscribe({
+      userVisibleOnly: true,
+      applicationServerKey: _urlBase64ToUint8Array(VAPID_PUBLIC_KEY)
+    });
     const subJson = JSON.stringify(sub);
     await db.collection('users').doc(_currentUser.uid).set({ pushSubscription: subJson }, { merge: true });
     if (isAdmin()) {
       await db.collection('settings').doc('admin').set({ pushSubscription: subJson }, { merge: true });
     }
+    console.log('[Push] subscription registered');
   } catch (e) {
-    console.error('[Push] error:', e.message);
+    console.error('[Push] error:', e.message, e);
   }
 }
 
