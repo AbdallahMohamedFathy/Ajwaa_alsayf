@@ -14,17 +14,27 @@ const messaging = firebase.messaging();
 
 messaging.onBackgroundMessage((payload) => {
   const title = payload.notification?.title || 'أجواء الصيف';
-  self.registration.showNotification(title, {
+  const url = payload.fcmOptions?.link || '/';
+  return self.registration.showNotification(title, {
     body: payload.notification?.body || '',
     icon: '/assets/images/logo.png',
     badge: '/assets/images/logo.png',
     dir: 'rtl',
     lang: 'ar',
-    vibrate: [200, 100, 200]
+    vibrate: [200, 100, 200],
+    data: { url }
   });
 });
 
 self.addEventListener('notificationclick', (event) => {
   event.notification.close();
-  event.waitUntil(clients.openWindow('/profile.html'));
+  const url = event.notification.data?.url || '/';
+  event.waitUntil(
+    clients.matchAll({ type: 'window', includeUncontrolled: true }).then(list => {
+      for (const c of list) {
+        if (c.url.includes(url) && 'focus' in c) return c.focus();
+      }
+      return clients.openWindow(url);
+    })
+  );
 });

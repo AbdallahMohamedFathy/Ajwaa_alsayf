@@ -34,7 +34,7 @@ module.exports = async function handler(req, res) {
   if (req.method === 'OPTIONS') return res.status(200).end();
   if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' });
 
-  const { token, title, body } = req.body || {};
+  const { token, title, body, link } = req.body || {};
   if (!token || !title) return res.status(400).json({ error: 'Missing token or title' });
 
   const saRaw = process.env.FIREBASE_SERVICE_ACCOUNT;
@@ -70,7 +70,7 @@ module.exports = async function handler(req, res) {
                 requireInteraction: false,
                 vibrate: [200, 100, 200]
               },
-              fcm_options: { link: '/profile.html' }
+              fcm_options: { link: link || '/profile.html' }
             }
           }
         })

@@ -351,7 +351,7 @@ async function notifyAdmin(title, body) {
     await fetch('/api/notify', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ token, title, body })
+      body: JSON.stringify({ token, title, body, link: '/admin.html' })
     });
   } catch (e) {
     console.log('Admin notify failed:', e.message);
