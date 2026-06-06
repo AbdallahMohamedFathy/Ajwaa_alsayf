@@ -1942,10 +1942,6 @@
         showToast('الإشعارات محجوبة — افتح إعدادات المتصفح وفعّلها يدوياً');
         return;
       }
-      if (perm === 'granted') {
-        showToast('إشعارات الجهاز مفعّلة بالفعل ✓');
-        return;
-      }
       await requestPushPermission().catch(() => {});
       _updateAdminNotifBtn();
       if (Notification.permission === 'granted') showToast('تم تفعيل إشعارات الجهاز ✓');
