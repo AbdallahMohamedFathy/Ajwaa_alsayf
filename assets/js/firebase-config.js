@@ -26,6 +26,21 @@ const _readyCBs = [];   // one-time "ready" callbacks
 
 auth.onAuthStateChanged(async (fbUser) => {
   if (fbUser) {
+    // Fast path for admin — skip Firestore read, fire callbacks immediately
+    if (fbUser.email?.toLowerCase() === ADMIN_EMAIL) {
+      _currentUser = { uid: fbUser.uid, email: fbUser.email, name: fbUser.displayName || '', phone: '', role: 'admin' };
+      if (!_authReady) {
+        _authReady = true;
+        _readyCBs.forEach(cb => cb(_currentUser));
+        _readyCBs.length = 0;
+      }
+      // Load full profile in background (non-blocking)
+      db.collection('users').doc(fbUser.uid).get()
+        .then(doc => { if (doc.exists) _currentUser = { uid: fbUser.uid, ...doc.data() }; })
+        .catch(() => {});
+      return;
+    }
+
     try {
       const docRef = db.collection('users').doc(fbUser.uid);
       const doc = await docRef.get();
@@ -305,22 +320,16 @@ async function deleteBeforeAfterItem(firestoreId) {
 const VAPID_KEY = 'BJ0_KieYj20EnVcinHW-024szIQrvulQ1v2F3BU3PCn5oBYIBQtEeH5USsSMrfyKCuFG3svyxbQ49KuMC5hTUow';
 
 async function _initFCMToken() {
-  if (!_currentUser) { console.warn('[FCM] no user'); return; }
-  if (!('serviceWorker' in navigator)) { console.warn('[FCM] SW not supported'); return; }
+  if (!_currentUser || !('serviceWorker' in navigator)) return;
   try {
-    console.log('[FCM] registering SW...');
     const reg = await navigator.serviceWorker.register('/firebase-messaging-sw.js');
-    console.log('[FCM] SW registered:', reg.scope);
     const messaging = firebase.messaging();
-    console.log('[FCM] getting token...');
     const token = await messaging.getToken({ vapidKey: VAPID_KEY, serviceWorkerRegistration: reg });
-    console.log('[FCM] token:', token ? token.substring(0, 20) + '...' : 'EMPTY');
     if (token) {
       await db.collection('users').doc(_currentUser.uid).update({ fcmToken: token });
       if (isAdmin()) {
         await db.collection('settings').doc('admin').set({ fcmToken: token }, { merge: true });
       }
-      console.log('[FCM] token saved to Firestore ✓');
     }
     messaging.onMessage((payload) => {
       const title = payload.notification?.title || 'أجواء الصيف';
@@ -350,12 +359,10 @@ async function notifyAdmin(title, body) {
 }
 
 async function requestPushPermission() {
-  console.log('[FCM] permission:', Notification.permission, '| user:', !!_currentUser);
   if (!('Notification' in window) || !_currentUser) return;
-  if (Notification.permission === 'denied') { console.warn('[FCM] permission denied'); return; }
+  if (Notification.permission === 'denied') return;
   if (Notification.permission !== 'granted') {
     const perm = await Notification.requestPermission();
-    console.log('[FCM] user chose:', perm);
     if (perm !== 'granted') return;
   }
   await _initFCMToken();
