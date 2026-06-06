@@ -317,10 +317,13 @@
 
       try {
         const cred = await auth.signInWithEmailAndPassword(email, pass);
-        const doc  = await db.collection('users').doc(cred.user.uid).get();
-        const role = doc.exists ? doc.data().role : '';
-
-        if (role === 'admin' || email.toLowerCase() === ADMIN_EMAIL) {
+        if (cred.user.email?.toLowerCase() === ADMIN_EMAIL) {
+          window.location.href = 'admin.html';
+          return;
+        }
+        // For role-based admins: check Firestore only if email doesn't match
+        const doc = await db.collection('users').doc(cred.user.uid).get();
+        if (doc.data()?.role === 'admin') {
           window.location.href = 'admin.html';
         } else {
           showErr('ليس لديك صلاحيات الوصول للوحة التحكم');
