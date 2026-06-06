@@ -63,15 +63,22 @@ module.exports = async function handler(req, res) {
             token,
             notification: { title, body: body || '' },
             webpush: {
+              headers: {
+                Urgency: 'high',
+                TTL: '86400'
+              },
               notification: {
+                title,
+                body: body || '',
                 icon: '/assets/images/logo.png',
                 badge: '/assets/images/logo.png',
                 dir: 'rtl',
-                requireInteraction: false,
+                requireInteraction: true,
                 vibrate: [200, 100, 200]
               },
               fcm_options: { link: link || '/profile.html' }
-            }
+            },
+            android: { priority: 'high' }
           }
         })
       }
