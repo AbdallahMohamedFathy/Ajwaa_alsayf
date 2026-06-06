@@ -17,6 +17,8 @@ firebase.initializeApp(firebaseConfig);
 const auth = firebase.auth();
 const db = firebase.firestore();
 
+db.enablePersistence({ synchronizeTabs: true }).catch(() => {});
+
 const ADMIN_EMAIL = 'ajwaaelsaif@admin.com';
 
 /* ─── Auth State Cache ─── */
