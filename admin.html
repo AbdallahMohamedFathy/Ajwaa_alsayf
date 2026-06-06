@@ -22,7 +22,6 @@
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-messaging-compat.js"></script>
   <script src="assets/js/firebase-config.js"></script>
 </head>
 
@@ -1574,12 +1573,12 @@
     async function _sendPushToUser(userId, title, body) {
       try {
         const userSnap = await db.collection('users').doc(userId).get();
-        const token = userSnap.data()?.fcmToken;
-        if (!token) return;
+        const subJson = userSnap.data()?.pushSubscription;
+        if (!subJson) return;
         await fetch('/api/notify', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ token, title, body })
+          body: JSON.stringify({ subscription: JSON.parse(subJson), title, body, link: '/profile.html' })
         });
       } catch (e) { console.log('Push failed:', e.message); }
     }

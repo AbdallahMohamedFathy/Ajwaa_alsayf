@@ -318,42 +318,45 @@ async function deleteBeforeAfterItem(firestoreId) {
   return await db.collection('before_after').doc(firestoreId).delete();
 }
 
-/* ─── Push Notifications (FCM) ─── */
-const VAPID_KEY = 'BJ0_KieYj20EnVcinHW-024szIQrvulQ1v2F3BU3PCn5oBYIBQtEeH5USsSMrfyKCuFG3svyxbQ49KuMC5hTUow';
+/* ─── Push Notifications (Web Push) ─── */
+const VAPID_PUBLIC_KEY = 'BLVpoJW661bQgkT_Yi2-PLcUnnoNC8RWHooOEDPFDWSEVh_h_5LRs7tE5hg8mf2jX0GL8c8AoX36z_zLG2l7wDk';
 
-async function _initFCMToken() {
-  if (!_currentUser || !('serviceWorker' in navigator)) return;
+function _urlBase64ToUint8Array(b64) {
+  const pad = '='.repeat((4 - b64.length % 4) % 4);
+  const raw = atob((b64 + pad).replace(/-/g, '+').replace(/_/g, '/'));
+  return Uint8Array.from([...raw].map(c => c.charCodeAt(0)));
+}
+
+async function _initPushSubscription() {
+  if (!_currentUser || !('serviceWorker' in navigator) || !('PushManager' in window)) return;
   try {
     const reg = await navigator.serviceWorker.register('/firebase-messaging-sw.js');
-    const messaging = firebase.messaging();
-    const token = await messaging.getToken({ vapidKey: VAPID_KEY, serviceWorkerRegistration: reg });
-    if (token) {
-      await db.collection('users').doc(_currentUser.uid).update({ fcmToken: token });
-      if (isAdmin()) {
-        await db.collection('settings').doc('admin').set({ fcmToken: token }, { merge: true });
-      }
+    let sub = await reg.pushManager.getSubscription();
+    if (!sub) {
+      sub = await reg.pushManager.subscribe({
+        userVisibleOnly: true,
+        applicationServerKey: _urlBase64ToUint8Array(VAPID_PUBLIC_KEY)
+      });
     }
-    messaging.onMessage((payload) => {
-      const title = payload.notification?.title || 'أجواء الصيف';
-      const body  = payload.notification?.body  || '';
-      if ('Notification' in window && Notification.permission === 'granted') {
-        new Notification(title, { body, icon: '/assets/images/logo.png', dir: 'rtl' });
-      }
-    });
+    const subJson = JSON.stringify(sub);
+    await db.collection('users').doc(_currentUser.uid).set({ pushSubscription: subJson }, { merge: true });
+    if (isAdmin()) {
+      await db.collection('settings').doc('admin').set({ pushSubscription: subJson }, { merge: true });
+    }
   } catch (e) {
-    console.error('[FCM] error:', e.code, e.message, e);
+    console.error('[Push] error:', e.message);
   }
 }
 
 async function notifyAdmin(title, body) {
   try {
     const snap = await db.collection('settings').doc('admin').get();
-    const token = snap.data()?.fcmToken;
-    if (!token) return;
+    const subJson = snap.data()?.pushSubscription;
+    if (!subJson) return;
     await fetch('/api/notify', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ token, title, body, link: '/admin.html' })
+      body: JSON.stringify({ subscription: JSON.parse(subJson), title, body, link: '/admin.html' })
     });
   } catch (e) {
     console.log('Admin notify failed:', e.message);
@@ -367,5 +370,5 @@ async function requestPushPermission() {
     const perm = await Notification.requestPermission();
     if (perm !== 'granted') return;
   }
-  await _initFCMToken();
+  await _initPushSubscription();
 }
