@@ -40,26 +40,68 @@
 <div class="menu-overlay" id="menuOverlay"></div>
 
 <!-- Auth Gate Overlay -->
-<div id="authGateOverlay" style="display:none;position:fixed;inset:0;z-index:9999;background:rgba(10,30,80,0.72);backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px);align-items:center;justify-content:center;">
-  <div style="background:#fff;border-radius:20px;box-shadow:0 20px 60px rgba(0,0,0,0.25);padding:44px 36px;max-width:440px;width:90%;text-align:center;animation:fadeInUp 0.4s ease;">
-    <div style="width:72px;height:72px;background:linear-gradient(135deg,#007bff,#00d4ff);border-radius:50%;display:flex;align-items:center;justify-content:center;margin:0 auto 20px;box-shadow:0 8px 24px rgba(0,123,255,0.3);">
-      <i class="fas fa-lock" style="font-size:1.8rem;color:#fff;"></i>
+<div id="authGateOverlay" style="display:none;position:fixed;inset:0;z-index:9999;background:rgba(10,30,80,0.72);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);align-items:center;justify-content:center;">
+  <div style="background:#fff;border-radius:20px;box-shadow:0 20px 60px rgba(0,0,0,0.3);padding:36px 32px;max-width:420px;width:92%;text-align:center;animation:fadeInUp 0.4s ease;">
+    <!-- Logo -->
+    <div style="margin:0 auto 18px;width:80px;height:80px;border-radius:50%;background:linear-gradient(135deg,#e8f4ff,#dbeeff);display:flex;align-items:center;justify-content:center;box-shadow:0 4px 20px rgba(0,123,255,0.15);border:2px solid rgba(0,123,255,0.12);">
+      <img src="assets/images/logo.png" alt="أجواء الصيف" style="width:54px;height:54px;object-fit:contain;">
     </div>
-    <h2 style="font-size:1.4rem;font-weight:800;color:#1a2744;margin-bottom:10px;">يجب تسجيل الدخول أولاً</h2>
-    <p style="color:#6b7280;font-size:0.92rem;line-height:1.7;margin-bottom:28px;">
-      لحجز موعد صيانة يرجى تسجيل الدخول أو إنشاء حساب جديد.<br>
-      بياناتك ستُملأ تلقائياً بعد التسجيل.
-    </p>
-    <div style="display:flex;gap:12px;justify-content:center;flex-wrap:wrap;">
-      <a href="login.html?redirect=booking" class="btn btn-primary" style="min-width:140px;">
-        <i class="fas fa-sign-in-alt"></i> تسجيل الدخول
-      </a>
-      <a href="login.html?tab=register&redirect=booking" class="btn btn-outline" style="min-width:140px;">
-        <i class="fas fa-user-plus"></i> حساب جديد
-      </a>
+
+    <h2 style="font-size:1.25rem;font-weight:800;color:#1a2744;margin-bottom:5px;">سجّل دخولك لإتمام الطلب</h2>
+    <p style="color:#9ca3af;font-size:0.82rem;line-height:1.6;margin-bottom:20px;">أدخل بيانات حسابك لإكمال حجز موعد الصيانة</p>
+
+    <!-- Tab switcher -->
+    <div style="display:flex;gap:0;border-radius:12px;overflow:hidden;background:#f3f4f6;padding:4px;margin-bottom:20px;">
+      <button id="agLoginTab" onclick="agSwitchTab('login')" style="flex:1;padding:9px 0;font-family:Cairo,sans-serif;font-size:0.86rem;font-weight:700;border:none;cursor:pointer;border-radius:9px;background:#007bff;color:#fff;box-shadow:0 2px 8px rgba(0,123,255,0.25);transition:all .25s;">تسجيل الدخول</button>
+      <button id="agRegTab" onclick="agSwitchTab('register')" style="flex:1;padding:9px 0;font-family:Cairo,sans-serif;font-size:0.86rem;font-weight:700;border:none;cursor:pointer;border-radius:9px;background:transparent;color:#6b7280;transition:all .25s;">حساب جديد</button>
     </div>
-    <div style="margin-top:20px;">
-      <a href="index.html" style="font-size:0.82rem;color:#9ca3af;text-decoration:none;">
+
+    <!-- Login form -->
+    <div id="agLoginForm">
+      <div style="margin-bottom:12px;text-align:right;">
+        <label style="font-size:0.78rem;font-weight:700;color:#374151;display:block;margin-bottom:5px;"><i class="fas fa-envelope" style="color:#007bff;margin-left:4px;font-size:0.72rem;"></i> البريد الإلكتروني</label>
+        <input id="agEmail" type="email" placeholder="example@email.com" style="width:100%;padding:11px 14px;border:1.5px solid #e5e7eb;border-radius:10px;font-family:Cairo,sans-serif;font-size:0.87rem;box-sizing:border-box;outline:none;direction:ltr;text-align:left;background:#fafafa;transition:border .2s,background .2s;" onfocus="this.style.borderColor='#007bff';this.style.background='#fff'" onblur="this.style.borderColor='#e5e7eb';this.style.background='#fafafa'">
+      </div>
+      <div style="margin-bottom:16px;text-align:right;">
+        <label style="font-size:0.78rem;font-weight:700;color:#374151;display:block;margin-bottom:5px;"><i class="fas fa-lock" style="color:#007bff;margin-left:4px;font-size:0.72rem;"></i> كلمة المرور</label>
+        <input id="agPassword" type="password" placeholder="••••••••" style="width:100%;padding:11px 14px;border:1.5px solid #e5e7eb;border-radius:10px;font-family:Cairo,sans-serif;font-size:0.87rem;box-sizing:border-box;outline:none;direction:ltr;text-align:left;background:#fafafa;transition:border .2s,background .2s;" onfocus="this.style.borderColor='#007bff';this.style.background='#fff'" onblur="this.style.borderColor='#e5e7eb';this.style.background='#fafafa'" onkeydown="if(event.key==='Enter')agDoLogin()">
+      </div>
+      <div id="agLoginError" style="display:none;background:#fef2f2;border:1px solid #fecaca;border-radius:8px;padding:9px 12px;font-size:0.8rem;color:#dc2626;margin-bottom:12px;text-align:right;"><i class="fas fa-exclamation-circle" style="margin-left:5px;"></i><span id="agLoginErrorMsg"></span></div>
+      <button onclick="agDoLogin()" style="width:100%;padding:13px;background:linear-gradient(135deg,#007bff,#0056b3);color:#fff;border:none;border-radius:12px;font-family:Cairo,sans-serif;font-size:0.95rem;font-weight:800;cursor:pointer;margin-bottom:10px;box-shadow:0 4px 14px rgba(0,123,255,0.3);transition:opacity .2s;" onmouseover="this.style.opacity='.9'" onmouseout="this.style.opacity='1'">
+        <i class="fas fa-sign-in-alt" style="margin-left:6px;"></i> دخول
+      </button>
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:10px;">
+        <div style="flex:1;height:1px;background:#e5e7eb;"></div>
+        <span style="font-size:0.75rem;color:#9ca3af;">أو</span>
+        <div style="flex:1;height:1px;background:#e5e7eb;"></div>
+      </div>
+      <button onclick="agDoGoogle()" style="width:100%;padding:11px;background:#fff;color:#374151;border:1.5px solid #e5e7eb;border-radius:12px;font-family:Cairo,sans-serif;font-size:0.85rem;font-weight:700;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;transition:border .2s,box-shadow .2s;" onmouseover="this.style.borderColor='#007bff';this.style.boxShadow='0 2px 8px rgba(0,123,255,0.12)'" onmouseout="this.style.borderColor='#e5e7eb';this.style.boxShadow='none'">
+        <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" style="width:18px;height:18px;"> متابعة بحساب Google
+      </button>
+    </div>
+
+    <!-- Register form -->
+    <div id="agRegForm" style="display:none;">
+      <div style="margin-bottom:10px;text-align:right;">
+        <label style="font-size:0.78rem;font-weight:700;color:#374151;display:block;margin-bottom:5px;"><i class="fas fa-user" style="color:#007bff;margin-left:4px;font-size:0.72rem;"></i> الاسم الكامل</label>
+        <input id="agRegName" type="text" placeholder="أدخل اسمك" style="width:100%;padding:11px 14px;border:1.5px solid #e5e7eb;border-radius:10px;font-family:Cairo,sans-serif;font-size:0.87rem;box-sizing:border-box;outline:none;background:#fafafa;transition:border .2s,background .2s;" onfocus="this.style.borderColor='#007bff';this.style.background='#fff'" onblur="this.style.borderColor='#e5e7eb';this.style.background='#fafafa'">
+      </div>
+      <div style="margin-bottom:10px;text-align:right;">
+        <label style="font-size:0.78rem;font-weight:700;color:#374151;display:block;margin-bottom:5px;"><i class="fas fa-envelope" style="color:#007bff;margin-left:4px;font-size:0.72rem;"></i> البريد الإلكتروني</label>
+        <input id="agRegEmail" type="email" placeholder="example@email.com" style="width:100%;padding:11px 14px;border:1.5px solid #e5e7eb;border-radius:10px;font-family:Cairo,sans-serif;font-size:0.87rem;box-sizing:border-box;outline:none;direction:ltr;text-align:left;background:#fafafa;transition:border .2s,background .2s;" onfocus="this.style.borderColor='#007bff';this.style.background='#fff'" onblur="this.style.borderColor='#e5e7eb';this.style.background='#fafafa'">
+      </div>
+      <div style="margin-bottom:16px;text-align:right;">
+        <label style="font-size:0.78rem;font-weight:700;color:#374151;display:block;margin-bottom:5px;"><i class="fas fa-lock" style="color:#007bff;margin-left:4px;font-size:0.72rem;"></i> كلمة المرور</label>
+        <input id="agRegPassword" type="password" placeholder="6 أحرف على الأقل" style="width:100%;padding:11px 14px;border:1.5px solid #e5e7eb;border-radius:10px;font-family:Cairo,sans-serif;font-size:0.87rem;box-sizing:border-box;outline:none;direction:ltr;text-align:left;background:#fafafa;transition:border .2s,background .2s;" onfocus="this.style.borderColor='#007bff';this.style.background='#fff'" onblur="this.style.borderColor='#e5e7eb';this.style.background='#fafafa'" onkeydown="if(event.key==='Enter')agDoRegister()">
+      </div>
+      <div id="agRegError" style="display:none;background:#fef2f2;border:1px solid #fecaca;border-radius:8px;padding:9px 12px;font-size:0.8rem;color:#dc2626;margin-bottom:12px;text-align:right;"><i class="fas fa-exclamation-circle" style="margin-left:5px;"></i><span id="agRegErrorMsg"></span></div>
+      <button onclick="agDoRegister()" style="width:100%;padding:13px;background:linear-gradient(135deg,#007bff,#0056b3);color:#fff;border:none;border-radius:12px;font-family:Cairo,sans-serif;font-size:0.95rem;font-weight:800;cursor:pointer;box-shadow:0 4px 14px rgba(0,123,255,0.3);transition:opacity .2s;" onmouseover="this.style.opacity='.9'" onmouseout="this.style.opacity='1'">
+        <i class="fas fa-user-plus" style="margin-left:6px;"></i> إنشاء الحساب
+      </button>
+    </div>
+
+    <div style="margin-top:18px;padding-top:14px;border-top:1px solid #f3f4f6;">
+      <a href="index.html" style="font-size:0.78rem;color:#9ca3af;text-decoration:none;display:inline-flex;align-items:center;gap:5px;transition:color .2s;" onmouseover="this.style.color='#007bff'" onmouseout="this.style.color='#9ca3af'">
         <i class="fas fa-arrow-right"></i> العودة للرئيسية
       </a>
     </div>
@@ -324,12 +366,65 @@
       document.getElementById('authGateOverlay').style.display = 'flex';
       document.body.style.overflow = 'hidden';
     } else {
+      document.getElementById('authGateOverlay').style.display = 'none';
+      document.body.style.overflow = '';
       const nameEl  = document.getElementById('bookName');
       const phoneEl = document.getElementById('bookPhone');
       if (nameEl  && user.name)  nameEl.value  = user.name;
       if (phoneEl && user.phone) phoneEl.value = user.phone;
     }
   });
+
+  function agSwitchTab(tab) {
+    const isLogin = tab === 'login';
+    document.getElementById('agLoginForm').style.display = isLogin ? 'block' : 'none';
+    document.getElementById('agRegForm').style.display   = isLogin ? 'none'  : 'block';
+    document.getElementById('agLoginTab').style.background = isLogin ? '#007bff' : '#fff';
+    document.getElementById('agLoginTab').style.color      = isLogin ? '#fff' : '#6b7280';
+    document.getElementById('agRegTab').style.background   = isLogin ? '#fff' : '#007bff';
+    document.getElementById('agRegTab').style.color        = isLogin ? '#6b7280' : '#fff';
+  }
+
+  async function agDoLogin() {
+    const email = document.getElementById('agEmail').value.trim();
+    const pass  = document.getElementById('agPassword').value;
+    const errEl = document.getElementById('agLoginError');
+    errEl.style.display = 'none';
+    if (!email || !pass) { document.getElementById('agLoginErrorMsg').textContent='يرجى إدخال الإيميل وكلمة المرور'; errEl.style.display='block'; return; }
+    try {
+      await auth.signInWithEmailAndPassword(email, pass);
+    } catch(e) {
+      const msgs = { 'auth/user-not-found':'البريد غير مسجل', 'auth/wrong-password':'كلمة المرور غير صحيحة', 'auth/invalid-email':'صيغة البريد غير صحيحة', 'auth/too-many-requests':'حاول مرة أخرى لاحقاً' };
+      document.getElementById('agLoginErrorMsg').textContent = msgs[e.code] || 'حدث خطأ، حاول مرة أخرى';
+      errEl.style.display = 'block';
+    }
+  }
+
+  async function agDoGoogle() {
+    try {
+      const provider = new firebase.auth.GoogleAuthProvider();
+      await auth.signInWithPopup(provider);
+    } catch(e) { showToast('تعذّر تسجيل الدخول بـ Google'); }
+  }
+
+  async function agDoRegister() {
+    const name  = document.getElementById('agRegName').value.trim();
+    const email = document.getElementById('agRegEmail').value.trim();
+    const pass  = document.getElementById('agRegPassword').value;
+    const errEl = document.getElementById('agRegError');
+    errEl.style.display = 'none';
+    if (!name || !email || !pass) { document.getElementById('agRegErrorMsg').textContent='يرجى ملء جميع الحقول'; errEl.style.display='block'; return; }
+    if (pass.length < 6) { document.getElementById('agRegErrorMsg').textContent='كلمة المرور يجب أن تكون 6 أحرف على الأقل'; errEl.style.display='block'; return; }
+    try {
+      const cred = await auth.createUserWithEmailAndPassword(email, pass);
+      await cred.user.updateProfile({ displayName: name });
+      await db.collection('users').doc(cred.user.uid).set({ name, email, phone:'', createdAt: firebase.firestore.FieldValue.serverTimestamp() }, { merge: true });
+    } catch(e) {
+      const msgs = { 'auth/email-already-in-use':'هذا البريد مسجل مسبقاً', 'auth/invalid-email':'صيغة البريد غير صحيحة', 'auth/weak-password':'كلمة المرور ضعيفة جداً' };
+      document.getElementById('agRegErrorMsg').textContent = msgs[e.code] || 'حدث خطأ، حاول مرة أخرى';
+      errEl.style.display = 'block';
+    }
+  }
 
 </script>
 
