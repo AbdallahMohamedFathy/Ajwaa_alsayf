@@ -1004,13 +1004,7 @@
             <img src="assets/images/logo.png" alt="أجواء الصيف">
           </div>
           <p>مؤسسة أجواء الصيف للتكييف - حلول متكاملة للتكييف والتبريد والتجميد.</p>
-          <div class="footer-social">
-            <a href="#"><i class="fab fa-facebook-f"></i></a>
-            <a href="#"><i class="fab fa-instagram"></i></a>
-            <a href="#"><i class="fab fa-twitter"></i></a>
-            <a href="#"><i class="fab fa-youtube"></i></a>
-            <a href="#"><i class="fab fa-tiktok"></i></a>
-          </div>
+          <div class="footer-social" id="footerSocial"></div>
         </div>
         <div class="footer-col">
           <h3>روابط سريعة</h3>
@@ -1102,6 +1096,18 @@
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
   <script src="assets/js/firebase-config.js"></script>
   <script src="assets/js/main.js"></script>
+  <script>
+    db.collection('settings').doc('social').get().then(doc => {
+      if (!doc.exists) return;
+      const d = doc.data();
+      const icons = { facebook:'fab fa-facebook-f', instagram:'fab fa-instagram', twitter:'fab fa-twitter', youtube:'fab fa-youtube', tiktok:'fab fa-tiktok' };
+      const container = document.getElementById('footerSocial');
+      if (!container) return;
+      Object.entries(icons).forEach(([k, icon]) => {
+        if (d[k]) container.innerHTML += `<a href="${d[k]}" target="_blank" rel="noopener"><i class="${icon}"></i></a>`;
+      });
+    });
+  </script>
 
   <!-- Work Strip Lightbox -->
   <div id="workLightbox" onclick="if(event.target===this)closeWorkLightbox()">

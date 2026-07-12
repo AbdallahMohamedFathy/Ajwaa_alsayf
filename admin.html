@@ -51,6 +51,7 @@
         <a href="#" onclick="showSection('reviews-mgmt',this)"><i class="fas fa-star"></i> التقييمات</a>
         <div class="sidebar-nav-label">أخرى</div>
         <a href="#" onclick="showSection('analytics-sec',this)"><i class="fas fa-chart-line"></i> التحليلات</a>
+        <a href="#" onclick="showSection('social-settings',this)"><i class="fas fa-share-alt"></i> السوشيال ميديا</a>
         <a href="#" onclick="logoutUser()" style="color:var(--danger);"><i class="fas fa-sign-out-alt"></i> تسجيل
           الخروج</a>
       </nav>
@@ -488,6 +489,36 @@
                 <tr><td colspan="5" style="text-align:center;"><i class="fas fa-spinner fa-spin"></i> جاري التحميل...</td></tr>
               </tbody>
             </table>
+          </div>
+        </div>
+
+        <!-- ═══ Social Media Settings ═══ -->
+        <div id="social-settings" style="display:none;">
+          <h1 class="admin-page-title">📱 إعدادات السوشيال ميديا</h1>
+          <div class="data-table-card" style="max-width:600px;">
+            <div style="padding:24px;display:flex;flex-direction:column;gap:16px;">
+              <div>
+                <label style="display:block;margin-bottom:6px;font-weight:600;"><i class="fab fa-facebook-f" style="color:#1877f2;margin-left:8px;"></i> Facebook</label>
+                <input type="url" id="social-facebook" placeholder="https://facebook.com/..." class="form-control" style="width:100%;">
+              </div>
+              <div>
+                <label style="display:block;margin-bottom:6px;font-weight:600;"><i class="fab fa-instagram" style="color:#e1306c;margin-left:8px;"></i> Instagram</label>
+                <input type="url" id="social-instagram" placeholder="https://instagram.com/..." class="form-control" style="width:100%;">
+              </div>
+              <div>
+                <label style="display:block;margin-bottom:6px;font-weight:600;"><i class="fab fa-twitter" style="color:#1da1f2;margin-left:8px;"></i> Twitter / X</label>
+                <input type="url" id="social-twitter" placeholder="https://twitter.com/..." class="form-control" style="width:100%;">
+              </div>
+              <div>
+                <label style="display:block;margin-bottom:6px;font-weight:600;"><i class="fab fa-youtube" style="color:#ff0000;margin-left:8px;"></i> YouTube</label>
+                <input type="url" id="social-youtube" placeholder="https://youtube.com/..." class="form-control" style="width:100%;">
+              </div>
+              <div>
+                <label style="display:block;margin-bottom:6px;font-weight:600;"><i class="fab fa-tiktok" style="color:#000;margin-left:8px;"></i> TikTok</label>
+                <input type="url" id="social-tiktok" placeholder="https://tiktok.com/@..." class="form-control" style="width:100%;">
+              </div>
+              <button class="btn btn-primary" onclick="saveSocialLinks()" style="margin-top:8px;"><i class="fas fa-save"></i> حفظ</button>
+            </div>
           </div>
         </div>
 
@@ -1153,9 +1184,27 @@
         'portfolio-mgmt': loadAdminPortfolio,
         'beforeafter-mgmt': loadBeforeAfterAdmin,
         'services-extra-mgmt': loadExtraServicesAdmin,
-        'reviews-mgmt': loadReviewsAdmin
+        'reviews-mgmt': loadReviewsAdmin,
+        'social-settings': loadSocialLinks
       };
       if (loaders[id]) loaders[id]();
+    }
+
+    async function loadSocialLinks() {
+      const doc = await db.collection('settings').doc('social').get();
+      const data = doc.exists ? doc.data() : {};
+      ['facebook','instagram','twitter','youtube','tiktok'].forEach(k => {
+        document.getElementById('social-' + k).value = data[k] || '';
+      });
+    }
+
+    async function saveSocialLinks() {
+      const data = {};
+      ['facebook','instagram','twitter','youtube','tiktok'].forEach(k => {
+        data[k] = document.getElementById('social-' + k).value.trim();
+      });
+      await db.collection('settings').doc('social').set(data);
+      alert('تم حفظ اللينكات بنجاح ✅');
     }
 
     function toggleDarkMode() {
