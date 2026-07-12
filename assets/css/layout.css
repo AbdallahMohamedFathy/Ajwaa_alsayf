@@ -28,12 +28,12 @@
 }
 
 .navbar-logo img {
-  height: 50px;
+  height: 68px;
   border-radius: 8px;
 }
 
 .navbar.scrolled .navbar-logo img {
-  height: 42px;
+  height: 54px;
 }
 
 .navbar-menu {
@@ -650,7 +650,7 @@ section {
 }
 
 .footer-about .footer-logo img {
-  height: 60px;
+  height: 85px;
   margin-bottom: 16px;
   border-radius: 8px;
 }

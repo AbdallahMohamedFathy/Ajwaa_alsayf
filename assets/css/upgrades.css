@@ -1286,6 +1286,24 @@ body.dark-mode .activity-desc {
   font-size: 0.85rem;
   color: var(--gray-500);
   line-height: 1.6;
+  margin-bottom: 14px;
+}
+
+.blog-read-more {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.83rem;
+  font-weight: 700;
+  color: var(--primary);
+  text-decoration: none;
+  border-bottom: 1.5px solid transparent;
+  transition: gap 0.2s, border-color 0.2s;
+}
+
+.blog-read-more:hover {
+  gap: 10px;
+  border-bottom-color: var(--primary);
 }
 
 /* Responsive bottom nav display rules */
