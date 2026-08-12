@@ -832,7 +832,7 @@
         <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
           <div class="form-group">
             <label>الماركة *</label>
-            <select class="form-control" id="pBrand">
+            <select class="form-control" id="pBrandSelect" onchange="handleBrandChange(this)">
               <option value="">اختر الماركة</option>
               <option>Carrier</option>
               <option>Sharp</option>
@@ -840,7 +840,10 @@
               <option>Tornado</option>
               <option>Fresh</option>
               <option>Midea</option>
+              <option value="__other__">أخرى (اكتب اسم الماركة)</option>
             </select>
+            <input type="hidden" id="pBrand">
+            <input type="text" class="form-control" id="pBrandCustom" placeholder="اكتب اسم الماركة..." style="display:none;margin-top:8px;">
           </div>
           <div class="form-group">
             <label>القدرة *</label>
@@ -1475,12 +1478,48 @@
         <p style="font-size:0.75rem;color:var(--gray-400);margin:4px 0 0;">PNG, JPG, WEBP — حتى 10MB</p>`;
     }
 
+    function handleBrandChange(sel) {
+      const custom = document.getElementById('pBrandCustom');
+      const hidden = document.getElementById('pBrand');
+      if (sel.value === '__other__') {
+        custom.style.display = 'block';
+        custom.focus();
+        hidden.value = '';
+        custom.oninput = () => { hidden.value = custom.value.trim(); };
+      } else {
+        custom.style.display = 'none';
+        hidden.value = sel.value;
+      }
+    }
+
+    function resetBrandField(brandValue) {
+      const sel = document.getElementById('pBrandSelect');
+      const custom = document.getElementById('pBrandCustom');
+      const hidden = document.getElementById('pBrand');
+      const known = ['Carrier','Sharp','LG','Tornado','Fresh','Midea'];
+      if (!brandValue) {
+        sel.value = '';
+        custom.style.display = 'none';
+        hidden.value = '';
+      } else if (known.includes(brandValue)) {
+        sel.value = brandValue;
+        custom.style.display = 'none';
+        hidden.value = brandValue;
+      } else {
+        sel.value = '__other__';
+        custom.style.display = 'block';
+        custom.value = brandValue;
+        hidden.value = brandValue;
+        custom.oninput = () => { hidden.value = custom.value.trim(); };
+      }
+    }
+
     function openProductModal(id) {
       document.getElementById('editProductId').value = '';
       document.getElementById('productModalTitle').textContent = 'إضافة منتج جديد';
       ['pName', 'pDesc', 'pImage'].forEach(id => document.getElementById(id).value = '');
       ['pPrice', 'pOldPrice'].forEach(id => document.getElementById(id).value = '');
-      document.getElementById('pBrand').value = '';
+      resetBrandField('');
       document.getElementById('pHp').value = '1.5';
       document.getElementById('pBadge').value = '';
       document.getElementById('pInverter').value = 'true';
@@ -1497,7 +1536,7 @@
         document.getElementById('productModalTitle').textContent = 'تعديل المنتج';
         document.getElementById('pName').value = p.name || '';
         document.getElementById('pDesc').value = p.description || '';
-        document.getElementById('pBrand').value = p.brand || '';
+        resetBrandField(p.brand || '');
         document.getElementById('pHp').value = p.hp || '1.5';
         document.getElementById('pPrice').value = p.price || '';
         document.getElementById('pOldPrice').value = p.oldPrice || '';
