@@ -1646,10 +1646,13 @@
                 </select>
               </td>
               <td>${fmtDate(o.createdAt)}</td>
-              <td onclick="event.stopPropagation()">
+              <td onclick="event.stopPropagation()" style="display:flex;gap:4px;">
                 <a href="https://wa.me/${o.phone?.replace(/^0/, '966')}" target="_blank" class="btn btn-sm" style="padding:4px 10px;font-size:0.75rem;background:#25d366;color:#fff;border-radius:6px;" title="واتساب العميل">
                   <i class="fab fa-whatsapp"></i>
                 </a>
+                <button class="btn btn-sm" onclick="deleteOrder('${o.firestoreId}','${o.orderNum}')" style="padding:4px 10px;font-size:0.75rem;background:var(--danger);color:#fff;border-radius:6px;" title="حذف الطلب">
+                  <i class="fas fa-trash"></i>
+                </button>
               </td>
             </tr>`).join('')
             : '<tr><td colspan="8" style="text-align:center;color:var(--gray-400);">لا توجد طلبات بعد</td></tr>';
@@ -1757,6 +1760,9 @@
                   <a href="https://wa.me/${b.phone?.replace(/^0/, '966')}" target="_blank" class="btn btn-sm" style="padding:4px 10px;font-size:0.75rem;background:#25d366;color:#fff;border-radius:6px;" title="واتساب">
                     <i class="fab fa-whatsapp"></i>
                   </a>
+                  <button class="btn btn-sm" onclick="deleteBooking('${b.firestoreId}','${b.customerName}')" style="padding:4px 10px;font-size:0.75rem;background:var(--danger);color:#fff;border-radius:6px;" title="حذف الحجز">
+                    <i class="fas fa-trash"></i>
+                  </button>
                 </div>
               </td>
             </tr>`).join('')
@@ -1781,6 +1787,22 @@
           if (msgs[status]) await _sendPushToUser(userId, msgs[status][0], msgs[status][1]);
         }
       } catch (e) { showToast('خطأ في التحديث'); }
+    }
+
+    async function deleteOrder(firestoreId, orderNum) {
+      if (!confirm(`هل أنت متأكد من حذف الطلب #${orderNum}؟\nلا يمكن التراجع عن هذا الإجراء.`)) return;
+      try {
+        await db.collection('orders').doc(firestoreId).delete();
+        showToast('تم حذف الطلب بنجاح 🗑️');
+      } catch (e) { showToast('خطأ في الحذف: ' + e.message); }
+    }
+
+    async function deleteBooking(firestoreId, customerName) {
+      if (!confirm(`هل أنت متأكد من حذف حجز "${customerName}"؟\nلا يمكن التراجع عن هذا الإجراء.`)) return;
+      try {
+        await db.collection('bookings').doc(firestoreId).delete();
+        showToast('تم حذف الحجز بنجاح 🗑️');
+      } catch (e) { showToast('خطأ في الحذف: ' + e.message); }
     }
 
     async function viewBooking(firestoreId) {
